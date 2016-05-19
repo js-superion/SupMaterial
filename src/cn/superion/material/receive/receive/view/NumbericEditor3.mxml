@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TextInput xmlns:fx="http://ns.adobe.com/mxml/2009"
+			  xmlns:s="library://ns.adobe.com/flex/spark"
+			  xmlns:mx="library://ns.adobe.com/flex/mx"
+			  restrict="0-9//."
+			  creationComplete="textinput1_creationCompleteHandler(event)"
+			  change="textinput1_changeHandler(event)"
+			  maxChars="10">
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.DataGrid;
+			import mx.events.FlexEvent;
+			import mx.rpc.remoting.RemoteObject;
+			import cn.superion.base.util.RemoteUtil;
+			
+			private var _isShow:Boolean=false;//显示小数位数，东方3，泰州2
+			
+			protected function textinput1_changeHandler(event:Event):void
+			{
+				changeValue(event)
+			}
+			
+			protected function changeValue(event:Event):void
+			{
+				data.retailPrice=this.text;
+				if(_isShow){
+					data.retailMoney=Number((data.amount * data.retailPrice).toFixed(3));//byzcl
+				}else{
+					data.retailMoney=Number((data.amount * data.retailPrice).toFixed(2));
+				}
+				
+				DataGrid(this.owner).invalidateList();
+			}
+			
+			protected function textinput1_creationCompleteHandler(event:FlexEvent):void
+			{
+				//是否显示备注，东方1是，泰州0否
+				var ros:RemoteObject=RemoteUtil.getRemoteObject('centerSysParamImpl', function(rev:Object):void
+				{
+					if (rev.data && rev.data[0] == '1')
+					{
+						_isShow=true; 
+					}
+					else{
+						_isShow=false; 
+					}
+					
+				});
+				ros.findSysParamByParaCode("0609");
+				
+				changeValue(event);
+			}
+		]]>
+	</fx:Script>
+</mx:TextInput>
+

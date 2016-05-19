@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    盘点单据列表模块
+    author: 芮玉红  2011.02.22
+-->
+<mx:Module xmlns:fx="http://ns.adobe.com/mxml/2009"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   layout="vertical"
+		   height="100%"
+		   width="100%"
+		   backgroundColor="#E2E8E8"
+		   horizontalScrollPolicy="auto"
+		   xmlns:controls="cn.superion.base.components.controls.*"
+		   creationComplete="doInit()"
+		   xmlns:view="cn.superion.material.util.*">
+	<fx:Script source="ModCheckListas.as"/>
+	<s:Scroller width="100%"
+				height="100%">
+
+		<s:VGroup id="vg"
+				  gap="0"
+				  height="100%"
+				  width="100%">
+			<view:MainToolBar id="tbarMain"
+							  width="100%"
+							  printClick="printClickHandler(event)"
+							  expClick="expClickHandler(event)"
+							  queryClick="queryClickHandler(event)"
+							  exitClick="exitClickHandler(event)"/>
+			<controls:BarSubTitle title="盘点单据列表"/>
+
+			<controls:PageGrid id="dgDrug"
+							   hasRowNo="true"
+							   width="100%"
+							   height="100%"
+							   styleName="dataGrid"
+							   sumField="{['checkAmount','pdItem','profitAmount','profitCost']}"
+							   format="{[,,,,,,,,,,,,,'0.00','0.00','0.00','0.00','0.00','0.00']}">
+				<controls:columns>
+					<mx:DataGridColumn dataField="rowno" 
+									   headerText="序号"
+									   width="50"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="仓库"
+									   width="100"
+									   dataField="storageName"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="盘点编号"
+									   dataField="billNo"
+									   width="100"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="盘点日期"
+									   dataField="billDate"
+									   width="80"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="部门"
+									   dataField="deptName"
+									   width="120"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="经手人"
+									   dataField="personIdName"
+									   width="100"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="物资编码"
+									   dataField="materialCode"
+									   width="120"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="物资名称"
+									   dataField="materialName"
+									   width="160"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="规格型号"
+									   dataField="materialSpec"
+									   width="100"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="单位"
+									   dataField="materialUnits"
+									   width="60"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="生产厂家"
+									   dataField="factoryName"
+									   width="120"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="批号"
+									   dataField="batch"
+									   width="80"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="有效期限"
+									   dataField="availDate"
+									   width="80"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="售价"
+									   dataField="retailPrice"
+									   width="100"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="账面数量"
+									   dataField="amount"
+									   width="80"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="账面金额"
+									   labelFunction="rhSignLabel"
+									   dataField="ite"
+									   width="100"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="盘点数量"
+									   dataField="checkAmount"
+									   width="80"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="盘点金额"
+									   labelFunction="rhSignLabel"
+									   dataField="pdItem"
+									   width="100"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="盈亏数量"
+									   labelFunction="rhSignLabel"
+									   dataField="profitAmount"
+									   width="80"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="盈亏金额"
+									   labelFunction="rhSignLabel"
+									   dataField="profitCost"
+									   width="80"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="备注"
+									   dataField="detailRemark"
+									   width="130"
+									   textAlign="left"/>
+				</controls:columns>
+			</controls:PageGrid>
+		</s:VGroup>
+	</s:Scroller>
+</mx:Module>
+

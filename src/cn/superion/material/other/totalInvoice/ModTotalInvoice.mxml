@@ -1,0 +1,1006 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Module xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		   xmlns:s="library://ns.adobe.com/flex/spark" 
+		   xmlns:mx="library://ns.adobe.com/flex/mx" layout="vertical" 
+		   height="100%" width="100%"
+		   horizontalScrollPolicy="auto"
+		   xmlns:controls="cn.superion.base.components.controls.*"
+		   creationComplete="doInit()"
+		   xmlns:view="cn.superion.material.util.*" xmlns:dataDict="cn.superion.dataDict.*">
+	
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		@namespace controls "cn.superion.base.components.controls.*";
+		@namespace view "cn.superion.drug.stock.util.*";
+		.myFormItemStyle{
+			color:blue
+		}
+	</fx:Style>
+	<fx:Script>
+		<![CDATA[
+			import cn.superion.base.components.controls.WinModual;
+			import cn.superion.base.config.AppInfo;
+			import cn.superion.base.config.BaseDict;
+			import cn.superion.base.util.ArrayCollUtils;
+			import cn.superion.base.util.FormUtils;
+			import cn.superion.base.util.PurviewUtil;
+			import cn.superion.base.util.RemoteUtil;
+			import cn.superion.dataDict.DictWinShower;
+			import cn.superion.material.other.totalInvoice.view.TotalInvoiceFilter;
+			import cn.superion.material.other.totalInvoice.view.TotalInvoiceQuery;
+			import cn.superion.material.util.DefaultPage;
+			import cn.superion.material.util.MaterialDictShower;
+			import cn.superion.report.ReportPrinter;
+			import cn.superion.report.ReportViewer;
+			import cn.superion.vo.material.MaterialFaInvoice;
+			import cn.superion.vo.material.MaterialFaMaster;
+			import com.adobe.utils.StringUtil;
+			import flexlib.scheduling.util.DateUtil;
+			import mx.controls.Alert;
+			import mx.core.IFlexDisplayObject;
+			import mx.core.UIComponent;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.remoting.RemoteObject;
+			//
+			public var _tempSalerCode:String;
+			private var _tempFactoryCode:String;
+			//
+			public static var DESTINATION:String='materialFaSettlImpl';
+			private const MENU_NO:String="0201";
+			private const PARA_CODE:String="0601";
+			private var rdsMaster:MaterialFaMaster;
+			private var rdsDetail:MaterialFaInvoice;
+			private var _materialRdsMaster:MaterialFaMaster = new MaterialFaMaster();
+			private var index:int
+			private var disAry:Array;
+			private var enAry:Array;
+			public var invoiceAutoIds:Array = null; //接受过滤后构造的数组；
+			public var operationSign:String='01';//01:增加；02:修改；00:查询 10:过滤
+			public var filterSign:String= "";//1:过滤订单 2:过滤特殊入库
+			public var menuItemsEnableValues:Object = ['0']; //1表可用，0不可用
+			private var days:Number = 0;
+			/**
+			 * 初始化
+			 * */
+			protected function doInit():void
+			{
+				initToolBar();
+				initPanel();
+			}
+			/**
+			 * 初始化工具栏
+			 * */
+			private function initToolBar():void
+			{
+				var p:Object=this.parentDocument;
+				p.title="采购单据核算";
+				//
+				disAry=[tbarMain.btPrint, tbarMain.btExp, tbarMain.imageList1, tbarMain.btAdd,
+					tbarMain.btDelete, tbarMain.btCancel, tbarMain.btSave, 
+					tbarMain.btVerify, tbarMain.imageList2,
+					tbarMain.imageList3, tbarMain.btQuery, tbarMain.imageList5, tbarMain.btFirstPage, 
+					tbarMain.btPrePage, tbarMain.btNextPage, tbarMain.btLastPage, tbarMain.imageList6, 
+					tbarMain.btExit];
+				//  可用的按钮组件
+				enAry=[ tbarMain.btAdd, tbarMain.btQuery, tbarMain.btExit];
+				//  组件可用
+				MainToolBar.showSpecialBtn(tbarMain, disAry, enAry, true);
+				tbarMain.callback = pageCallback;
+			}
+			/**
+			 * 初始化面板
+			 * */
+			private function initPanel():void
+			{
+				setToolKitEnable(hgTop,false);
+				//隐藏明细查询组件
+				detailComponents(hiddenVGroup,0,hiddenVGroup,false);
+				//初始化本地按钮
+				var menuItemsName:Array = ['采购订单'];
+				var functions:Array = [callbackOrder];
+				dgRdsDetail.contextMenu =  initContextMenu(scrol,menuItemsName,functions);
+				dgRdsDetail.contextMenu.addEventListener(ContextMenuEvent.MENU_SELECT,menuItemEnabled);
+			}
+			/**
+			 * 过滤采购订单
+			 * */
+			private function callbackOrder():void{
+				var win:TotalInvoiceFilter = PopUpManager.createPopUp(this,TotalInvoiceFilter,true) as TotalInvoiceFilter;
+				win.iparentWin = this;
+				PopUpManager.centerPopUp(win);
+			}
+			private function initContextMenu(comp:UIComponent,menuItemsName:Array,functions:Array):ContextMenu{
+				var contextMenu :ContextMenu = new ContextMenu();
+				contextMenu.hideBuiltInItems();
+				var menuItems:Array = [];
+				for (var i:int = 0;i < menuItemsName.length; i ++){
+					var menuItem:ContextMenuItem = new ContextMenuItem(menuItemsName[i]);
+					menuItem.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,functions[i]);
+					menuItems.push(menuItem);
+				}
+				contextMenu.customItems = menuItems;
+				dgRdsDetail.contextMenu = contextMenu;
+				return contextMenu;
+			}
+			/**
+			 * 响应右键弹出事件
+			 * 根据menuItemsEnableValues中的值，分别对应右键菜单项是否可用
+			 * */
+			private function menuItemEnabled(e:ContextMenuEvent):void{
+				var aryMenuItems:Array = e.target.customItems;
+				for(var i:int=0;i< aryMenuItems.length;i++){
+					aryMenuItems[i].enabled = menuItemsEnableValues[i]=="1"?true:false;
+				}
+			}
+			
+			/**
+			 * 处理键的keyUp事件
+			 * */
+			protected function keyUpCtrl(event:KeyboardEvent, ctrl:Object):void
+			{
+				if(event.keyCode != 13){
+					return;
+				}
+				if(event.currentTarget.className == "TextInput"){
+					if(StringUtil.trim(event.currentTarget.text).length == 0||
+						event.currentTarget.text == '0'){
+						return;
+					}
+				}
+				if(ctrl.className == "DropDownList"){
+					ctrl.openDropDown();
+				}
+				if(ctrl.className == "DateField"){
+					ctrl.open();
+				}
+				if(ctrl.className == "TextInputIcon"){
+					ctrl.txtContent.setFocus();
+					return;
+				}
+				ctrl.setFocus();
+			}
+			
+			/**
+			 * 生产厂家字典：点击
+			 * */
+			protected function factoryCode_queryIconClickHandler():void
+			{
+				var x:int=0;
+				var y:int=this.parentApplication.screen.height - 345;
+				DictWinShower.showProviderDict((function (item:Object):void{
+					factoryCode.txtContent.text = item.providerName;
+					_tempFactoryCode =  item.providerId;
+					if(ary.length > 0 && dgRdsDetail.selectedItem){
+						dgRdsDetail.selectedItem.factoryCode = item.providerName;
+						dgRdsDetail.invalidateList();
+					}
+				}),x,y);
+			}
+			/**
+			 * 生产厂家字典：回车
+			 * */
+			protected function factoryCode_keyDownHandler(event:KeyboardEvent):void
+			{
+				if(event.keyCode != 13)	return;
+				if(StringUtil.trim(factoryCode.txtContent.text).length > 0 ){
+					madeDate.open();
+					madeDate.setFocus();
+					return
+				}
+				factoryCode_queryIconClickHandler();
+			}
+			
+			/**
+			 * 供应单位字典：点击
+			 * */
+			protected function salerCode_queryIconClickHandler():void
+			{
+				var x:int=0;
+				var y:int=this.parentApplication.screen.height - 345;
+				DictWinShower.showProviderDict((function (item:Object):void{
+					salerCode.txtContent.text = item.providerName;
+					_tempSalerCode =  item.providerId;
+				}),x,y);
+			}
+			/**
+			 * 供应单位字典：回车
+			 * */
+			protected function salerCode_keyDownHandler(event:KeyboardEvent):void
+			{
+				if(event.keyCode != 13)	return;
+				if(salerCode.txtContent.text.length > 0 ){
+					remark.setFocus();
+					return;
+				}
+				salerCode_queryIconClickHandler();
+			}
+			/**
+			 * 增加
+			 * */
+			protected function addClickHandler(event:Event):void
+			{
+				//判断具有操作权限  -- 应用程序编号，菜单编号，权限编号
+				// 01：增加                02：修改            03：删除
+				// 04：保存                05：打印            06：审核
+				// 07：弃审                08：输出            09：输入
+				if (!PurviewUtil.getPurview(AppInfo.APP_CODE, MENU_NO, "01"))
+				{
+					Alert.show("您无此按钮操作权限！", "提示");
+					return;
+				}
+				detailComponents(bord,140,hiddenVGroup,true);
+				setToolKitEnable(hgTop,true);
+				//清除界面
+				ary.removeAll();
+				rdsMaster = new MaterialFaMaster();
+				clearForm(true,true);
+				
+				//
+				maker.text = AppInfo.currentUserInfo.userName;
+				makeDate.text = cn.superion.base.util.DateUtil.dateToString(new Date(),"YYYY-MM-DD");				
+				//
+				enAry = [tbarMain.btCancel,tbarMain.btSave,tbarMain.btExit];
+				MainToolBar.showSpecialBtn(tbarMain,disAry,enAry,true);
+				//
+				operationSign='01';
+				//使右键菜单可用
+				menuItemsEnableValues = ['1'];
+				callbackOrder();
+			}
+			private function clearForm(masterFlag:Boolean,detailFlag:Boolean):void
+			{
+				if(masterFlag)
+				{
+					billDate.selectedDate = new Date();
+					billNo.text = "";
+					remark.text="";
+				}
+				if(detailFlag)
+				{
+					materialName.text="";
+					materialSpec.text="";
+					materialUnits.text="";
+					amount.text="";
+					tradePrice.text="";
+					factoryCode.txtContent.text="";
+					madeDate.selectedDate = new Date();
+					availDate.selectedDate = new Date();
+					detailRemark.text="";
+				}
+			}
+			
+			/**
+			 * 修改
+			 * */
+			protected function modifyClickHandler(event:Event):void
+			{
+				//判断具有操作权限  -- 应用程序编号，菜单编号，权限编号
+				// 01：增加                02：修改            03：删除
+				// 04：保存                05：打印            06：审核
+				// 07：弃审                08：输出            09：输入
+				/* if (!PurviewUtil.getPurview(AppInfo.APP_CODE, MENU_NO, "02"))
+				{
+				Alert.show("您无此按钮操作权限！", "提示");
+				return;
+				}
+				*/
+				//修改之前记录状态
+				tbarMain.holdTurnPageRawState();
+				//初始工具栏
+				MainToolBar.showSpecialBtn(tbarMain,null,[tbarMain.btCancel,tbarMain.btSave,tbarMain.btExit],true);
+				//灰化翻页按钮
+				tbarMain.turnPageBtnStatus(false);
+				//打开明细组件
+				detailComponents(bord,140,hiddenVGroup,true);
+				setToolKitEnable(hgTop,true);
+				//				FormUtils.clearForm(hiddenVGroup);
+				//选中首个明细
+				dgRdsDetail.selectedIndex = 0;
+				dgRdsDetail_clickHandler();
+				//明细可编辑
+				FormUtils.setFormItemEditable(hiddenVGroup,true);
+				//修改状态，可查询库存
+			}
+			private function detailComponents(top:UIComponent,height:Number,bottom:UIComponent,b:Boolean):void{
+				top.height=height;
+				bottom.includeInLayout = b;
+				bottom.visible = b;
+			}
+			
+			/**
+			 * 删除
+			 * */
+			protected function deleteClickHandler(event:Event):void
+			{
+				//判断具有操作权限  -- 应用程序编号，菜单编号，权限编号
+				// 01：增加                02：修改            03：删除
+				// 04：保存                05：打印            06：审核
+				// 07：弃审                08：输出            09：输入
+				if (!PurviewUtil.getPurview(AppInfo.APP_CODE, MENU_NO, "03"))
+				{
+					Alert.show("您无此按钮操作权限！", "提示");
+					return;
+				}
+				if(!rdsMaster)
+				{
+					Alert.show("无可删除的记录信息！", "提示信息");
+					return;
+				}
+				Alert.show("您确定要删除当前记录？","提示信息",Alert.YES|Alert.NO,null,function(e:CloseEvent):void
+				{
+					if(e.detail==Alert.YES)
+					{
+						var ro:RemoteObject=RemoteUtil.getRemoteObject(ModTotalInvoice.DESTINATION,function(rev:Object):void
+						{
+							tbarMain.deleteSuccess = true;
+						});
+						ro.delSettleInfo(rdsMaster.autoId);
+					}
+				});
+			}
+			
+			/**
+			 * 保存
+			 * */
+			protected function saveClickHandler(event:Event):void
+			{
+				//判断具有操作权限  -- 应用程序编号，菜单编号，权限编号
+				// 01：增加                02：修改            03：删除
+				// 04：保存                05：打印            06：审核
+				// 07：弃审                08：输出            09：输入
+				if (!PurviewUtil.getPurview(AppInfo.APP_CODE, MENU_NO, "04"))
+				{
+					Alert.show("您无此按钮操作权限！", "提示");
+					return;
+				}
+				
+				if(!validateMaster()) return;
+				//保存前再次验证表格中的数据
+				if(!MainToolBar.validateItem(dgRdsDetail,["amount"],["0"])) return;
+				//主记录
+				rdsMaster.billNo = billNo.text;
+				rdsMaster.billDate = billDate.selectedDate;
+				rdsMaster.salerCode = _tempSalerCode ==null?salerCode.txtContent.text:_tempSalerCode;
+				rdsMaster.salerName = salerCode.txtContent.text;
+				rdsMaster.remark = remark.text;	
+				//明细记录
+				ary = dgRdsDetail.dataProvider as ArrayCollection;
+				if(!ary||ary.length == 0)
+				{
+//					txtMaterial.setFocus();
+					Alert.show("请输入明细记录！","提示信息");
+					return;
+				}
+				
+				var ro:RemoteObject = RemoteUtil.getRemoteObject(ModTotalInvoice.DESTINATION,function(rev:Object):void{
+					if(rev && rev.data )
+					{
+						rdsMaster = rev.data[0];
+						// 表尾部分----------------------------------------------------------------------------
+						fillReportFoot(rdsMaster)
+						_materialRdsMaster = rdsMaster;
+						fillMaster(rdsMaster);
+						billNo.text = rdsMaster.billNo;
+						billNo.enabled = false;
+						//
+//						ary = rev.data[1];
+						dgRdsDetail.selectedIndex = 0;
+						dgRdsDetail_clickHandler();
+						tbarMain.saveSuccess = true;
+						tbarMain.arc = new ArrayCollection([rdsMaster.autoId]);
+						tbarMain.verifyEnabled = rdsMaster.currentStatus == "0"?true:false;
+						bord.height=70;
+						setToolKitEnable(hgTop,false);
+						menuItemsEnableValues = ['0','0'];
+						Alert.show("保存成功！","提示信息");
+						return;
+					}
+				});
+				ro.saveSettleInfo(rdsMaster, invoiceAutoIds);
+			}
+			/**
+			 * 增行
+			 * */
+			protected function addRowClickHandler(event:Event):void
+			{	
+				FormUtils.clearForm(hiddenVGroup);
+			}
+			
+			/**
+			 * 删行
+			 * */
+			protected function delRowClickHandler(event:Event):void
+			{
+				if(!dgRdsDetail.selectedItem){
+					Alert.show('选择记录','提示信息');
+					return;
+				}
+				Alert.show('确定删除？','提示信息',Alert.YES | Alert.NO,null,function(e:*):void{
+					if (e.detail == Alert.YES ) {
+						var index:int = ary.getItemIndex(dgRdsDetail.selectedItem);
+						ary.removeItemAt(index);
+						if(ary.length >0){
+							var currentLength:int = ary.length - 1;
+							dgRdsDetail.selectedIndex = currentLength;
+							dgRdsDetail_clickHandler();
+						}else{
+							FormUtils.clearForm(hiddenVGroup);
+						}	
+					}
+				});
+			}
+			
+			/**
+			 * 审核
+			 * */
+			protected function verifyClickHandler(event:Event):void
+			{
+				//判断具有操作权限  -- 应用程序编号，菜单编号，权限编号
+				// 01：增加                02：修改            03：删除
+				// 04：保存                05：打印            06：审核
+				// 07：弃审                08：输出            09：输入
+				if (!PurviewUtil.getPurview(AppInfo.APP_CODE, MENU_NO, "06"))
+				{
+					Alert.show("您无此按钮操作权限！", "提示");
+					return;
+				}
+				rdsMaster.verifier = AppInfo.currentUserInfo.userCode;
+				rdsMaster.verifyDate = new Date();
+				if(rdsMaster.currentStatus == "1"){
+					Alert.show('该单据已审核','提示');
+					return;
+				}
+				Alert.show('确定审核单据号为['+rdsMaster.billNo+']的单据？','提示',Alert.YES | Alert.NO,null,function(e:*):void{
+					if (e.detail == Alert.YES ) {
+						//
+						var ro:RemoteObject=RemoteUtil.getRemoteObject(ModTotalInvoice.DESTINATION,function(rev:Object):void
+						{
+							Alert.show("审核成功！","提示信息");
+							tbarMain.verifyEnabled = false;
+						});
+						ro.verify(rdsMaster.autoId);
+					}else{
+						return;
+					}
+				})
+			}
+			
+			/**
+			 * 放弃
+			 * */
+			protected function cancelClickHandler(event:Event):void
+			{
+				bord.height=70;
+				MainToolBar.showSpecialBtn(tbarMain,null,[tbarMain.btAdd,tbarMain.btExit,tbarMain.btQuery],true);
+				setToolKitEnable(hgTop,false);
+				//修改放弃，恢复工具栏，同时查一次后台
+				menuItemsEnableValues = ['0'];
+			}
+			
+			/**
+			 * 查找
+			 * */
+			protected function queryClickHandler(event:Event):void
+			{
+				var win:TotalInvoiceQuery=TotalInvoiceQuery(PopUpManager.createPopUp(this, TotalInvoiceQuery, true));
+				win.iparentWin = this;
+				
+				PopUpManager.centerPopUp(win);
+			}
+			/**
+			 * 翻页回调函数
+			 * */
+			public function pageCallback(o:Object):void{
+				//
+				var ros:RemoteObject = RemoteUtil.getRemoteObject(ModTotalInvoice.DESTINATION,function(ss:Object):void{
+					
+					if(ss.data && ss.data.length >0 && ss.data[0]!=null && ss.data[1]!=null){
+						var m:MaterialFaMaster = ss.data[0] as MaterialFaMaster;
+						var details:ArrayCollection = ss.data[1] as ArrayCollection;
+						rdsMaster = m;
+						_materialRdsMaster = m;
+						_tempSalerCode = m.salerCode;
+						//主记录赋值
+						fillMaster(m);
+						tbarMain.verifyEnabled = m.currentStatus == "0"?true:false;
+						//明细赋值
+						ary = details;
+						//表尾赋值
+						fillReportFoot(ss.data[0]);
+					}else{
+						FormUtils.clearForm(masterGroup);
+						ary.removeAll();
+					}
+					
+				});
+				ros.findDetailByAutoId(o);
+			}
+			
+			private function fillMaster(o:MaterialFaMaster):void{
+				billNo.text = o.billNo;
+				billDate.selectedDate = o.billDate;
+				//供应单位
+				salerCode.text = ArrayCollUtils.findItemInArrayByValue(BaseDict.providerDict,'provider',o.salerCode)==null?
+					o.salerCode:ArrayCollUtils.findItemInArrayByValue(BaseDict.providerDict,'provider',o.salerCode).providerName;
+				//备注
+				remark.text = o.remark;
+			}
+			
+			/**
+			 * 退出
+			 * */
+			protected function exitClickHandler(event:Event):void
+			{
+				if (this.parentDocument is WinModual)					
+				{
+					PopUpManager.removePopUp(this.parentDocument as IFlexDisplayObject);
+					return;
+				}
+				DefaultPage.gotoDefaultPage();
+			}
+			
+			/**
+			 * 设置组件是否可用
+			 * rootId:指定的父组件id；b:true，为可用
+			 * */
+			private function setToolKitEnable(rootId:UIComponent, b:Boolean):void{
+				var childs:Number = rootId.numChildren;
+				for(var i :int = 0 ;i < childs; i ++){
+					var disObj:UIComponent =  rootId.getChildAt(i) as UIComponent;
+					disObj.enabled = b;
+				}
+			}
+			
+			/**
+			 * 填充面板数据
+			 * master：主记录；
+			 * detail:明细记录
+			 * */
+			protected function fillFormData(master:Object,detail:Object):void
+			{
+				var fItem:Object;
+				//主记录
+				if(master)
+				{
+					billNo.text = master.billNo;
+					billDate.selectedDate = master.billDate;
+					salerCode.txtContent.text = displayName("salerCode",master.salerCode);
+					remark.text = master.remark;
+					
+				}
+				//明细记录
+				if(detail)
+				{
+					materialName.text = detail.materialName;
+					materialSpec.text = detail.materialSpec;
+					materialUnits.text = detail.materialUnits;
+					amount.text = detail.amount.toString();
+					tradePrice.text = detail.tradePrice.toString();
+					factoryCode.txtContent.text = displayName("factoryCode",detail.factoryCode);
+					madeDate.selectedDate = detail.madeDate;
+					availDate.selectedDate = detail.availDate;
+					detailRemark.text = detail.detailRemark;
+				}				
+			}
+			
+			/**
+			 * 填充报表尾部，当保存，修改，删除，审核成功、或翻页查询时，调用
+			 * @param item,MaterialProvideMaster对象
+			 * */
+			private function fillReportFoot(item:Object):void{
+				//先清空库存量
+				currentStockAmount.text = "";
+				makeDate.text = cn.superion.base.util.DateUtil.dateToString(item.makeDate,"YYYY-MM-DD");
+				maker.text = ArrayCollUtils.findItemInArrayByValue(BaseDict.personIdDict,'personId',item.maker)==null?
+					item.maker:ArrayCollUtils.findItemInArrayByValue(BaseDict.personIdDict,'personId',item.maker).personIdName;
+				verifier.text = ArrayCollUtils.findItemInArrayByValue(BaseDict.personIdDict,'personId',item.verifier)==null?
+					item.verifier:ArrayCollUtils.findItemInArrayByValue(BaseDict.personIdDict,'personId',item.verifier).personIdName;;
+				verifyDate.text = cn.superion.base.util.DateUtil.dateToString(item.verifyDate,"YYYY-MM-DD");
+			}
+			//由编码显示名称
+			private function displayName(item:*,txt:String):*
+			{
+				var fItem:Object;
+				//仓库
+				if(item=="storageCode")
+				{
+					fItem = ArrayCollUtils.findItemInArrayByValue(BaseDict.storageDict,"storage",txt);
+					if(fItem)
+					{
+						return fItem;
+					}
+				}
+				//入库类别
+				if(item=="rdType")
+				{
+					fItem = ArrayCollUtils.findItemInArrayByValue(BaseDict.receviceTypeDict,"receviceType",txt);
+					if(fItem)
+					{
+						return fItem;
+					}
+				}
+				
+				//供应单位
+				if(item=="salerCode")
+				{
+					fItem = BaseDict.providerDict;
+					fItem = ArrayCollUtils.findItemInArrayByValue(BaseDict.providerDict,"provider",txt);
+					if(fItem)
+					{
+						return fItem.providerName;
+					}
+					return txt;
+				}
+				//业务类型
+				if(item=="operationType")
+				{
+					fItem = ArrayCollUtils.findItemInArrayByValue(BaseDict.operationReceiveDict,"operationType",txt);
+					if(fItem)
+					{
+						return fItem;
+					}
+				}
+				//部门
+				if(item=="deptCode")
+				{
+					fItem = ArrayCollUtils.findItemInArrayByValue(BaseDict.deptDict,"dept",txt);
+					if(fItem)
+					{
+						return fItem.deptName;
+					}
+					return txt;
+				}
+				//业务员
+				if(item=="personId")
+				{
+					fItem = ArrayCollUtils.findItemInArrayByValue(BaseDict.personIdDict,"personId",txt);
+					if(fItem)
+					{
+						return fItem.personIdName;
+					}
+					return txt;
+				}
+				//生产厂家
+				if(item=='factoryCode')
+				{
+					fItem=ArrayCollUtils.findItemInArrayByValue(BaseDict.providerDict,'provider',txt);
+					if(fItem)
+					{
+						return fItem.providerName;
+					}
+					return txt;
+				}
+				return fItem;
+			}
+			//label显示
+			private function labelFun(item:Object,column:DataGridColumn):String
+			{
+				if(item.notData) return '';
+				var fItem:*;
+				//生产厂家
+				if(column.dataField=='factoryCode')
+				{
+					fItem=ArrayCollUtils.findItemInArrayByValue(BaseDict.providerDict,'provider', item.factoryCode);
+					if(!fItem)
+					{
+						return item.factoryCode;
+					}
+					return fItem.providerName;
+				}
+				//受托代销
+				if(column.dataField=='agentSign')
+				{
+					return item.agentSign=='1'?"是":"否";
+				}
+				return '';
+			}
+			
+			//保存前验证主记录
+			private function validateMaster():Boolean
+			{
+				if(salerCode.txtContent.text=="")
+				{
+					salerCode.setFocus();
+					Alert.show("供应单位必填","提示");
+					return false;
+				}
+				return true;
+			}
+			/**
+			 * 响应表格单击事件
+			 * */
+			protected function dgRdsDetail_clickHandler():void
+			{
+				var selItem:Object = dgRdsDetail.selectedItem;
+				fillFormData(null,selItem);
+				madeDate.selectedDate = selItem.madeDate;
+				availDate.selectedDate = selItem.availDate;
+				amount.text = selItem.amount;
+			}
+			
+			/**
+			 * 打印，输出
+			 * */
+			protected function printExpClickHandler(lstrPurview:String, isPrintSign:String):void
+			{
+				if (!PurviewUtil.getPurview(AppInfo.APP_CODE, MENU_NO, lstrPurview))
+				{
+					Alert.show("您无此按钮操作权限！", "提示");
+					return;
+				}
+				var _dataList:ArrayCollection=dgRdsDetail.dataProvider as ArrayCollection;
+				var dict:Dictionary = new Dictionary();
+				dict["单位名称"] = AppInfo.currentUserInfo.unitsName;
+				dict["日期"] =DateField.dateToString(new Date(),'YYYY-MM-DD');
+				dict["主标题"] = "采购单据核算";
+				dict["制表人"] ="制表人:"+AppInfo.currentUserInfo.userName;
+				dict["供应单位"]=salerCode.txtContent.text;
+				dict["入库单号"]=billNo.text;
+				dict["入库日期"]=DateField.dateToString(DateField.stringToDate(billDate.text,"YYYY-MM-DD") ,"YYYY-MM-DD"); 
+				dict["备注"]=remark.text;
+				dict["制单人"]=maker.text;
+				dict["审核人"]=verifier.text;
+				dict["审核日期"]=verifyDate.text;
+				if(isPrintSign=='1') 
+				{
+					ReportPrinter.LoadAndPrint("report/material/receive/receive.xml",_dataList,dict);
+				}
+				if(isPrintSign=='0')
+				{
+					ReportViewer.Instance.Show("report/material/receive/receive.xml",_dataList,dict);
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<s:ArrayCollection id="ary"/>
+	</fx:Declarations>
+	<s:Scroller id="scrol"
+				width="100%"
+				height="100%">
+		
+		<s:VGroup id="vg" gap="0" height="100%" width="100%" >
+			<view:MainToolBar  id="tbarMain" width="100%"
+							   printClick="printExpClickHandler('05','1')"
+							   expClick="printExpClickHandler('08','0')"
+							   queryClick="queryClickHandler(event)"
+							   addClick="addClickHandler(event)"
+							   modifyClick="modifyClickHandler(event)"
+							   deleteClick="deleteClickHandler(event)"
+							   saveClick="saveClickHandler(event)"
+							   verifyClick="verifyClickHandler(event)"
+							   cancelClick="cancelClickHandler(event)"
+							   addRowClick="addRowClickHandler(event)"
+							   delRowClick="delRowClickHandler(event)"
+							   exitClick="exitClickHandler(event)"
+							   />
+			<controls:BarSubTitle title="采购单据核算"/>
+			<s:HGroup id="hgTop"
+					  gap="2" 
+					  width="100%">
+				<s:BorderContainer id="bord"
+								   width="100%"
+								   height="70"
+								   backgroundColor="#E2E8E8">
+					<s:layout>
+						<s:VerticalLayout verticalAlign="top"
+										  paddingLeft="10"
+										  paddingTop="0" />
+					</s:layout>
+					<s:HGroup id="masterGroup" 
+							  width="100%" 
+							  height="62" >
+						<s:VGroup width="100%" 
+								  paddingTop="3">
+							<s:HGroup id="hg1"
+									  paddingTop="0"  verticalAlign="middle"
+									  width="100%" >
+								<s:Label text="单据编号"/>
+								<s:TextInput width="100"
+											 id="billNo"
+											 restrict="0-9"
+											 keyUp="keyUpCtrl(event,billDate)"/>
+								<s:Label text="单据日期"/>
+								<mx:DateField width="105"
+											  id="billDate"
+											  formatString="YYYY-MM-DD"
+											  keyUp="keyUpCtrl(event,salerCode)"
+											  selectableRange="{{rangeEnd:new Date()}}"
+											  enterFrame="{billDate.selectedDate==null?billDate.selectedDate=new Date():billDate.selectedDate}"
+											  />
+								<!--供查询到货单，若没有到货记录，则手动添加-->
+								<s:Label text="供应单位"/>
+								<controls:TextInputIcon width="100%" 
+														id="salerCode"
+														queryIconClick="salerCode_queryIconClickHandler()"
+														keyUp="salerCode_keyDownHandler(event)"/>
+								<mx:Spacer width="1"/>
+							</s:HGroup>		   
+							<s:HGroup width="100%" id="hg2" verticalAlign="middle">
+								
+								<s:Label text="备　　注"/>
+								<s:TextInput  id="remark"
+											  change="{rdsMaster.remark = remark.text}"
+											  width="100%"/>
+								<mx:Spacer width="1"/>
+							</s:HGroup>
+						</s:VGroup>
+					</s:HGroup>
+					<s:VGroup id="hiddenVGroup"
+							  width="100%" >
+						<mx:HRule width="100%"
+								  id="hrule"
+								  height="1"/>
+						<s:HGroup paddingTop="0"
+								  width="100%" verticalAlign="middle"
+								  id="detailGroup">
+							<s:Label text="物资名称"/>
+							<s:TextInput width="150" 
+										 id="materialName" 
+										 keyUp="keyUpCtrl(event,amount)"
+										 enabled="false" />
+							<s:Label text="规格型号"/>
+							<s:TextInput id="materialSpec"
+										 width="133"
+										 enabled="false"/>
+							<s:Label text="单位"/>
+							<s:TextInput id="materialUnits"
+										 width="50"
+										 enabled="false"/>
+							<s:Label text="数量"/>
+							<s:TextInput id="amount"
+										 width="97" 
+										 editable="false"
+										 restrict="0-9."
+										 text="@{dgRdsDetail.selectedItem.amount}"
+										 textAlign="right"
+										 />
+							<s:Label text="进价"/>
+							<s:TextInput id="tradePrice"
+										 width="100%"
+										 editable="false"
+										 restrict="0-9."
+										 textAlign="right"/>
+							<mx:Spacer width="1"/>
+						</s:HGroup>		   
+						<s:HGroup width="100%" verticalAlign="middle">
+							<s:Label text="生产厂家"/>
+							<controls:TextInputIcon id="factoryCode"
+													width="150"
+													queryIconClick="factoryCode_queryIconClickHandler()"
+													keyUp="factoryCode_keyDownHandler(event)"
+													textChange="{if(!dgRdsDetail.selectedItem) return;
+													dgRdsDetail.selectedItem.factoryCode = factoryCode.txtContent.text;
+													dgRdsDetail.invalidateList();}"/>
+							<s:Label text="生产日期"/>
+							<mx:DateField width="105" 
+										  id="madeDate"
+										  valueCommit="if(dgRdsDetail.selectedItem)return;"
+										  formatString="YYYY-MM-DD"
+										  change="{if(!dgRdsDetail.selectedItem) return;dgRdsDetail.selectedItem.madeDate = madeDate.selectedDate;dgRdsDetail.invalidateList();}"
+										  keyUp="keyUpCtrl(event,availDate)"
+										  selectableRange="{{rangeEnd:new Date()}}"
+										  enterFrame="{madeDate.selectedDate==null?madeDate.selectedDate=new Date():madeDate.selectedDate}"
+										  />
+							<s:Label text="有效期至" id="frmAvailDate"
+									 />
+							<mx:DateField width="105" 
+										  id="availDate"
+										  formatString="YYYY-MM-DD"
+										  change="{if(!dgRdsDetail.selectedItem) return;dgRdsDetail.selectedItem.availDate = availDate.selectedDate;dgRdsDetail.invalidateList();}"
+										  keyUp="keyUpCtrl(event,detailRemark)"
+										  selectableRange="{{rangeStart:new Date()}}"
+										  enterFrame="{availDate.selectedDate==null?availDate.selectedDate=new Date():availDate.selectedDate}"
+										  />
+							<s:Label text="备注"/>
+							<s:TextInput  id="detailRemark" 
+										  width="100%"
+										  change="{if(!dgRdsDetail.selectedItem) return;dgRdsDetail.selectedItem.detailRemark = detailRemark.text;dgRdsDetail.invalidateList();}"/>
+							<mx:Spacer width="1"/>
+						</s:HGroup>
+					</s:VGroup>
+				</s:BorderContainer>
+				
+			</s:HGroup>
+			<controls:SuperDataGrid hasRowNo="true" 
+									width="100%"
+									height="100%" 
+									id="dgRdsDetail"
+									dataProvider="{ary}"
+									styleName="dataGrid"
+									format="{[,,,,,'0.00','0.00','0.00']}"
+									itemClick="dgRdsDetail_clickHandler()">
+				<controls:columns>
+					<mx:DataGridColumn headerText="序号"
+									   width="0.7" />
+					<mx:DataGridColumn headerText="物资编码"
+									   width="1.5" 
+									   dataField="materialCode"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="物资名称"
+									   width="2.5" 
+									   dataField="materialName"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="规格型号" 
+									   width="1.5"
+									   dataField="materialSpec"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="单位" 
+									   width="0.8"
+									   dataField="materialUnits"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="数量"
+									   width="1"
+									   dataField="amount"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="单价"
+									   width="1" 
+									   dataField="tradePrice"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="金额"
+									   width="1.3" 
+									   dataField="tradeMoney"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="生产厂家"
+									   width="2.5" 
+									   dataField="factoryCode"
+									   textAlign="left"
+									   labelFunction="labelFun"/>
+					<mx:DataGridColumn headerText="生产日期"
+									   width="1.5" 
+									   dataField="madeDate"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="有效期至"
+									   width="1.5" 
+									   dataField="availDate"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="备注" 
+									   width="1"
+									   dataField="detailRemark"
+									   textAlign="left"/>
+				</controls:columns>
+			</controls:SuperDataGrid>			
+			<s:HGroup paddingLeft="10"
+					  height="39"
+					  gap="10"
+					  verticalAlign="middle">
+				<mx:FormItem label="现存量"
+							 indicatorGap="2">
+					<s:TextInput id="currentStockAmount"
+								 width="90"
+								 editable="false"
+								 text=""/>
+				</mx:FormItem>
+				
+				<mx:FormItem label="制单人"
+							 indicatorGap="2">
+					<s:TextInput id="maker"
+								 width="90"
+								 enabled="false"/>
+				</mx:FormItem>
+				<mx:FormItem label="制单日期"
+							 indicatorGap="2">
+					<s:TextInput id="makeDate" width="110"
+								 enabled="false"/>
+				</mx:FormItem>
+				
+				<mx:FormItem label="审核人"
+							 indicatorGap="2">
+					<s:TextInput id="verifier"
+								 width="90"
+								 enabled="false"/>
+				</mx:FormItem>
+				<mx:FormItem label="审核日期"
+							 indicatorGap="2">
+					<s:TextInput id="verifyDate" width="110"
+								 enabled="false"/>
+				</mx:FormItem>
+			</s:HGroup>
+		</s:VGroup>
+	</s:Scroller>
+</mx:Module>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  gap="5"
+		  width="100%" creationComplete="vgroup1_showHandler(event)"
+		  height="100%"
+		  xmlns:view="cn.superion.base.components.controls.*">
+
+	<fx:Script>
+		<![CDATA[
+			import cn.superion.base.util.RemoteUtil;
+			import cn.superion.material.system.materialDict.ModMaterialDict;
+			
+			import mx.events.FlexEvent;
+			import mx.rpc.remoting.mxml.RemoteObject;
+
+			protected function vgroup1_showHandler(event:FlexEvent):void
+			{
+				var curItem:Object=parentDocument.data.selectedItem
+				var remoteObj:RemoteObject=RemoteUtil.getRemoteObject(ModMaterialDict.destination, function(rev:*):void
+				{
+					gdMaterialLogList.dataProvider=rev.data;
+				});
+				remoteObj.findMaterialDictLogById(curItem.materialId);	 			
+			}
+
+		]]>
+	</fx:Script>
+	<s:BorderContainer width="100%"
+					   height="100%"
+					   backgroundColor="#E2E8E8"
+					   borderVisible="false">
+		<mx:Spacer height="1"/>
+		<s:VGroup width="100%"
+				  height="100%"
+				  paddingBottom="10"
+				  paddingLeft="10"
+				  paddingRight="10"
+				  paddingTop="10">
+			<view:SuperDataGrid id="gdMaterialLogList"
+								width="100%"
+								height="100%"
+								hasRowNo="true"
+								styleName="dataGrid">
+				<view:columns>
+					<mx:DataGridColumn headerText="序号"
+									   width="50"/>
+					<mx:DataGridColumn headerText="变更人" dataField="createPerson"
+									   width="120"/>
+					<mx:DataGridColumn headerText="变更日期" dataField="createDate"
+									   width="100"/>
+					<mx:DataGridColumn headerText="变更项" dataField="changeItem"
+									   width="120"/>
+					<mx:DataGridColumn headerText="变更前值" dataField="changeValueOld"
+									   width="220"/>
+					<mx:DataGridColumn headerText="变更后值" dataField="changeValue"
+									   width="220"/>
+				</view:columns>
+			</view:SuperDataGrid>
+		</s:VGroup>
+	</s:BorderContainer>
+</s:VGroup>

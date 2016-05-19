@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   width="400"
+			   height="320"
+			   backgroundColor="0xE2E8E8"
+			   title="领用证卡查找"
+			   close="titlewindow1_closeHandler(event)"
+			   creationComplete="titlewindow1_creationCompleteHandler(event)"
+			   xmlns:controls="cn.superion.base.components.controls.*">
+	<s:layout>
+		<s:VerticalLayout paddingLeft="10"
+						  paddingRight="10"
+						  paddingTop="10"/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import cn.superion.base.config.AppInfo;
+			import cn.superion.base.config.ParameterObject;
+			import cn.superion.base.util.RemoteUtil;
+			import cn.superion.dataDict.DictWinShower;
+
+			import mx.collections.ArrayCollection;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.remoting.RemoteObject;
+
+			public var data:Object;
+			private var classCode:String="110";
+			private var storageCode:String="110";
+			private var destination:String='drugCurrentStockImpl';
+			private var paramQuery:ParameterObject=new ParameterObject();
+			[Bindable]
+			private var currentStatusArray:ArrayCollection=new ArrayCollection([{currentStatus: '0', currentStatusName: '新建状态'}, {currentStatus: '1', currentStatusName: '审核状态'}]);
+
+			protected function titlewindow1_closeHandler(event:CloseEvent):void
+			{
+				// TODO Auto-generated method stub
+				PopUpManager.removePopUp(this);
+			}
+
+			protected function titlewindow1_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				//				ddlStorageCode.dataProvider=AppInfo.currentUserInfo.storageList;
+
+			}
+
+			//回车跳转事件
+			private function toNextControl(e:KeyboardEvent, fcontrolNext:*, th:*):void
+			{
+				if (e.keyCode == Keyboard.ENTER)
+				{
+					if (th.className == "TextInputIcon")
+					{
+						if (th.txtContent.text == "" || th.txtContent.text == null)
+						{
+							if (th.id == "drugClass")
+							{
+								drugClass_queryIconClickHandler();
+							}
+							if (th.id == "Position")
+							{
+								Position_queryIconClickHandler();
+							}
+						}
+						else
+						{
+							if (fcontrolNext.className == "DateField")
+							{
+								fcontrolNext.open();
+								fcontrolNext.setFocus();
+								return;
+							}
+							if (fcontrolNext.className == "DropDownList")
+							{
+								fcontrolNext.openDropDown();
+								fcontrolNext.setFocus();
+								return;
+							}
+							if (fcontrolNext.className == "TextInputIcon")
+							{
+								fcontrolNext.txtContent.setFocus();
+								return;
+							}
+							fcontrolNext.setFocus();
+						}
+					}
+					else
+					{
+						if (fcontrolNext.className == "DateField")
+						{
+							fcontrolNext.open();
+							fcontrolNext.setFocus();
+							return;
+						}
+						if (fcontrolNext.className == "DropDownList")
+						{
+							fcontrolNext.openDropDown();
+							fcontrolNext.setFocus();
+							return;
+						}
+						if (fcontrolNext.className == "TextInputIcon")
+						{
+							fcontrolNext.txtContent.setFocus();
+							return;
+						}
+						fcontrolNext.setFocus();
+					}
+				}
+			}
+
+			//显示药品类别字典
+			protected function drugClass_queryIconClickHandler():void
+			{
+				// TODO Auto-generated method stub
+				DictWinShower.showDrugClassDict(showItem, 0, 380);
+			}
+
+			private function showItem(fItem:Object):void
+			{
+				//				drugClass.txtContent.text=fItem.className;
+				//				classCode=fItem.classCode;
+			}
+
+			//药品字典
+			protected function drugCode_queryIconClickHandler():void
+			{
+				// TODO Auto-generated method stub
+				// DictWinShower.showDrugDict(showDrugItem);
+			}
+
+			//显示货位字典
+			protected function Position_queryIconClickHandler():void
+			{
+				// TODO Auto-generated method stub
+				// DictWinShower.shows
+			}
+
+			//取消
+			protected function btReturn_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				PopUpManager.removePopUp(this);
+			}
+
+			//过滤
+			protected function btQuery_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				//				var lstartDate:Date=null;
+				//				var lendDate:Date=null;
+				//				var amount:Number=0;
+				//
+				//				if (chkInvalidDate.selected)
+				//				{
+				//					lstartDate=dfStartDate.selectedDate;
+				//					lendDate=new Date();
+				//					lendDate.setTime(dfEndDate.selectedDate.getTime() + 24 * 60 * 60 * 1000);
+				//				}
+				//				var amount1:Number=chkBigZero.selected ? 1 : 0;
+				//				var amount2:Number=chkEqualZero.selected ? 2 : 0;
+				//				var amount3:Number=chkLessZero.selected ? 4 : 0;
+				//				amount=amount1 + amount2 + amount3;
+				//				storageCode=ddlStorageCode.selectedItem ? ddlStorageCode.selectedItem.storageCode : '110';
+				//				paramQuery.conditions={"storageCode": storageCode, "drugClass": classCode, "drugCode": "000414113001", "beginInvalidDate": lstartDate, "endInvalidDate": lendDate, "drawDays": days.text, "amount": amount, "position": "111"};
+				//				PopUpManager.removePopUp(this);
+				//				var ro:RemoteObject=RemoteUtil.getRemoteObject(destination, function(rev:Object):void
+				//					{
+				//						if (rev.data && rev.data.length > 0)
+				//						{
+				//							data.parentWin.gdCurrentStockList.dataProvider=rev.data;
+				//							return;
+				//						}
+				//						data.parentWin.gdCurrentStockList.dataProvider=[];
+				//					});
+				//				ro.findCurrentStockListByCondition(paramQuery);
+			}
+
+
+			protected function chkStartDate_changeHandler(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				if (chkStartDate.selected)
+				{
+					dfStartDate.enabled=true;
+					dfEndDate.enabled=true;
+				}
+				else
+				{
+					dfStartDate.enabled=false;
+					dfEndDate.enabled=false;
+				}
+				if (chkStopDate.selected)
+				{
+					dfStopStartDate.enabled=true;
+					dfStopEndDate.enabled=true;
+				}
+				else
+				{
+					dfStopStartDate.enabled=false;
+					dfStopEndDate.enabled=false;
+				}
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<!-- 查询条件区 -->
+	<mx:TabNavigator width="378"
+					 height="230"
+					 paddingBottom="15"
+					 paddingTop="15"
+					 paddingLeft="15"
+					 paddingRight="15"
+					 backgroundColor="0xE2E8E8">
+		<s:NavigatorContent width="350"
+							height="200"
+							label="查询条件">
+			<s:VGroup id="currentStockQuery"
+					  width="100%"
+					  height="100%">
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<mx:FormItem label="证卡编号"
+								 fontSize="14"
+								 width="56%">
+						<s:TextInput id="cardCodeFrom"
+									 width="100%"/>
+					</mx:FormItem>
+					<mx:FormItem label="-"
+								 fontSize="14"
+								 labelWidth="10"
+								 width="44%"
+								 horizontalGap="0">
+						<s:TextInput id="cardCodeTo"
+									 width="100%"/>
+					</mx:FormItem>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="所属部门"
+							 width="60"
+							 fontSize="14"
+							 paddingLeft="2"/>
+					<controls:TextInputIcon id="deptCode"
+											width="100%"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="负 责 人"
+							 width="60"
+							 fontSize="14"
+							 paddingLeft="2"/>
+					<controls:TextInputIcon id="personId"
+											width="100%"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<mx:FormItem label="最高限额"
+								 width="346"
+								 fontSize="14">
+						<s:TextInput id="maxLimited"
+									 width="100%"/>
+					</mx:FormItem>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<mx:FormItem fontSize="14"
+								 direction="horizontal"
+								 width="100%"
+								 indicatorGap="0">
+						<s:CheckBox id="chkStartDate"
+									label="启用日期"
+									change="chkStartDate_changeHandler(event)"/>
+						<mx:DateField id="dfStartDate"
+									  width="50%"
+									  enabled="false"
+									  formatString="YYYY-MM-DD"
+									  enterFrame="{dfStartDate.selectedDate==null?dfStartDate.selectedDate=new Date():dfStartDate.selectedDate}"
+									  selectableRange="{{rangeEnd:dfEndDate.selectedDate}}"
+									  showToday="true"/>
+						<mx:FormItem label="-"
+									 fontSize="14"
+									 labelWidth="10"
+									 width="50%"
+									 horizontalGap="0">
+							<mx:DateField id="dfEndDate"
+										  width="100%"
+										  enabled="false"
+										  formatString="YYYY-MM-DD"
+										  enterFrame="{dfEndDate.selectedDate==null?dfEndDate.selectedDate=new Date():dfEndDate.selectedDate}"
+										  selectableRange="{{rangeStart:dfStartDate.selectedDate, rangeEnd:new Date()}}"
+										  showToday="true"/>
+						</mx:FormItem>
+					</mx:FormItem>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<mx:FormItem fontSize="14"
+								 direction="horizontal"
+								 width="100%"
+								 indicatorGap="0">
+						<s:CheckBox id="chkStopDate"
+									label="停用日期"
+									change="chkStartDate_changeHandler(event)"/>
+						<mx:DateField id="dfStopStartDate"
+									  width="50%"
+									  enabled="false"
+									  formatString="YYYY-MM-DD"
+									  enterFrame="{dfStopStartDate.selectedDate==null?dfStopStartDate.selectedDate=new Date():dfStopStartDate.selectedDate}"
+									  selectableRange="{{rangeEnd:dfStopEndDate.selectedDate}}"
+									  showToday="true"/>
+						<mx:FormItem label="-"
+									 fontSize="14"
+									 labelWidth="10"
+									 width="50%"
+									 horizontalGap="0">
+							<mx:DateField id="dfStopEndDate"
+										  width="100%"
+										  enabled="false"
+										  formatString="YYYY-MM-DD"
+										  enterFrame="{dfStopEndDate.selectedDate==null?dfStopEndDate.selectedDate=new Date():dfStopEndDate.selectedDate}"
+										  selectableRange="{{rangeStart:dfStopStartDate.selectedDate, rangeEnd:new Date()}}"
+										  showToday="true"/>
+						</mx:FormItem>
+					</mx:FormItem>
+				</s:HGroup>
+			</s:VGroup>
+		</s:NavigatorContent>
+	</mx:TabNavigator>
+	<s:HGroup width="100%"
+			  height="31"
+			  horizontalAlign="right"
+			  verticalAlign="middle"
+			  gap="5">
+		<mx:LinkButton id="btQuery"
+					   height="26"
+					   label=" 查 询"
+					   skin="mx.skins.halo.ButtonSkin"
+					   icon="@Embed(source='assets/images/button/filtrate20.png')"
+					   click="btQuery_clickHandler(event)"/>
+		<mx:LinkButton id="btReturn"
+					   height="26"
+					   label=" 取 消"
+					   skin="mx.skins.halo.ButtonSkin"
+					   icon="@Embed(source='assets/images/button/return20.png')"
+					   click="btReturn_clickHandler(event)"/>
+	</s:HGroup>
+</s:TitleWindow>

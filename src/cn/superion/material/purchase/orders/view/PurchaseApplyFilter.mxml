@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   title="过滤采购申请"
+			   close="PopUpManager.removePopUp(this)"
+			   xmlns:controls="cn.superion.base.components.controls.*"
+			   creationComplete="doInit(event)"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   width="940"
+			   height="500">
+	<s:layout>
+		<s:VerticalLayout/>
+	</s:layout>
+	<fx:Script source="PurchaseApplyFilteras.as"/>
+
+	<s:HGroup id="hgTop"
+			  gap="2"
+			  width="100%"
+			  height="100%">
+
+		<s:BorderContainer id="bord"
+						   width="100%"
+						   height="100%"
+						   backgroundColor="#E2E8E8">
+			<s:layout>
+				<s:VerticalLayout verticalAlign="top"
+								  paddingLeft="10"
+								  paddingTop="0"
+								  paddingRight="10"/>
+			</s:layout>
+			<s:HGroup id="masterGroup"
+					  height="62"
+					  width="100%">
+				<s:VGroup width="100%"
+						  paddingTop="5">
+					<s:HGroup id="hg1"
+							  paddingTop="0"
+							  verticalAlign="middle"
+							  width="100%">
+						<s:Label text="物资分类"/>
+						<controls:TextInputIcon width="110"
+												queryIconClick="MaterialClass_queryIconClickHandler(event)"
+												id="materialClass"
+												keyUp="keyUpCtrl(event,beginMaterialCode)"/>
+
+						<s:Label text="物资编码"/>
+						<s:TextInput width="110"
+									 id="beginMaterialCode"
+									 restrict="a-zA-Z0-9"
+									 keyUp="keyUpCtrl(event,endMaterialCode)"/>
+						<s:Label text="-"
+								 height="17"/>
+						<s:TextInput width="110"
+									 id="endMaterialCode"
+									 restrict="a-zA-Z0-9"
+									 keyUp="keyUpCtrl(event,salerCode)"/>
+						<s:Label text="供应单位"/>
+						<controls:TextInputIcon width="132"
+												id="salerCode"
+												queryIconClick="salerCode_queryIconClickHandler()"
+												keyUp="keyUpCtrl(event,deptCode)"/>
+						<s:Label text="请购部门"/>
+						<controls:TextInputIcon width="132"
+												id="deptCode"
+												queryIconClick="deptCode_queryIconClickHandler()"
+												keyUp="keyUpCtrl(event,personId)"/>
+						<mx:Spacer width="1"/>
+					</s:HGroup>
+					<s:HGroup width="888"
+							  verticalAlign="middle">
+						<s:Label text="采 购 员"/>
+						<controls:TextInputIcon width="110"
+												id="personId"
+												queryIconClick="personId_queryIconClickHandler()"
+												keyUp="keyUpCtrl(event,isBillDate)"/>
+
+						<mx:FormItem direction="horizontal"
+									 width="100%"
+									 indicatorGap="0">
+							<s:CheckBox id="isBillDate"
+										label="单据日期"
+										selected="false"
+										keyUp="keyUpCtrl(event,beginBillDate)"/>
+							<mx:DateField id="beginBillDate"
+										  width="43%"
+										  enabled="{isBillDate.selected}"
+										  formatString="YYYY-MM-DD"
+										  keyUp="keyUpCtrl(event,endBillDate)"
+										  enterFrame="{beginBillDate.selectedDate==null?beginBillDate.selectedDate=new Date():beginBillDate.selectedDate}"
+										  selectableRange="{{rangeEnd:endBillDate.selectedDate}}"/>
+							<mx:FormItem label="-"
+										 fontSize="14"
+										 labelWidth="10"
+										 width="50%"
+										 horizontalGap="0">
+								<mx:DateField id="endBillDate"
+											  width="100%"
+											  keyUp="keyUpCtrl(event,isBookDate)"
+											  enabled="{isBillDate.selected}"
+											  formatString="YYYY-MM-DD"
+											  enterFrame="{endBillDate.selectedDate==null?endBillDate.selectedDate=new Date():endBillDate.selectedDate}"
+											  selectableRange="{{rangeStart:beginBillDate.selectedDate}}"/>
+							</mx:FormItem>
+						</mx:FormItem>
+
+
+						<mx:FormItem direction="horizontal"
+									 width="100%"
+									 indicatorGap="0">
+							<s:CheckBox id="isBookDate"
+										label="需求日期"
+										keyUp="keyUpCtrl(event,beginRequireDate)"
+										selected="false"/>
+							<mx:DateField id="beginRequireDate"
+										  width="43%"
+										  enabled="{isBookDate.selected}"
+										  formatString="YYYY-MM-DD"
+										  keyUp="keyUpCtrl(event,endRequireDate)"
+										  enterFrame="{beginRequireDate.selectedDate==null?beginRequireDate.selectedDate=new Date():beginRequireDate.selectedDate}"
+										  selectableRange="{{rangeEnd:endBillDate.selectedDate}}"/>
+							<mx:FormItem label="-"
+										 fontSize="14"
+										 labelWidth="10"
+										 width="50%"
+										 horizontalGap="0">
+								<mx:DateField id="endRequireDate"
+											  width="100%"
+											  enabled="{isBookDate.selected}"
+											  formatString="YYYY-MM-DD"
+											  keyUp="keyUpCtrl(event,btQuery)"
+											  enterFrame="{endRequireDate.selectedDate==null?endRequireDate.selectedDate=new Date():endRequireDate.selectedDate}"
+											  selectableRange="{{rangeStart:beginRequireDate.selectedDate}}"/>
+							</mx:FormItem>
+						</mx:FormItem>
+
+
+						<mx:LinkButton id="btQuery"
+									   icon="@Embed('/assets/images/button/query20.png')"
+									   label=" 查  询 "
+									   skin="mx.skins.halo.ButtonSkin"
+									   buttonMode="true"
+									   fontSize="12"
+									   width="86"
+									   height="26"
+									   keyUp="btQuery_clickHandler(event)"
+									   click="btQuery_clickHandler(event)"/>
+					</s:HGroup>
+				</s:VGroup>
+			</s:HGroup>
+			<controls:SuperDataGrid width="100%"
+									height="100%"
+									id="dgApplyList"
+									textAlign="center">
+				<controls:columns>
+					<mx:DataGridColumn headerText="选择"
+									   width="0.7"
+									   textAlign="center"
+									   editable="false">
+						<mx:itemRenderer>
+							<fx:Component>
+								<mx:CheckBox change="data.isSelected=this.selected;"
+											 selected="{this.parentDocument.selAll.selected}"/>
+							</fx:Component>
+						</mx:itemRenderer>
+					</mx:DataGridColumn>
+					<mx:DataGridColumn headerText="单据日期"
+									   width="2"
+									   dataField="billDate"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="物资编码"
+									   width="2"
+									   dataField="materialCode"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="物资名称"
+									   width="3"
+									   dataField="materialName"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="规格型号"
+									   width="1.5"
+									   dataField="materialSpec"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="单位"
+									   width="1"
+									   dataField="materialUnits"/>
+					<mx:DataGridColumn headerText="单价"
+									   width="1"
+									   dataField="tradePrice"/>
+					<mx:DataGridColumn headerText="请购数量"
+									   width="1.1"
+									   dataField="amount"/>
+					<mx:DataGridColumn headerText="已生成订单数"
+									   width="1.6"
+									   dataField="orderAmount"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="需求日期"
+									   width="1.5"
+									   dataField="requireDate"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="来源单据号"
+									   width="1.5"
+									   dataField="detailAutoId"
+									   textAlign="left"
+									   visible="false"/>
+					<mx:DataGridColumn headerText="来源单据号中的序号"
+									   width="1.5"
+									   dataField="serialNo"
+									   textAlign="left"
+									   visible="false"/>
+				</controls:columns>
+			</controls:SuperDataGrid>
+			<mx:HBox width="100%"
+					 height="33"
+					 paddingLeft="4"
+					 horizontalAlign="left">
+				<s:CheckBox id="selAll"
+							label="全选"
+							click="selectAll_clickHandler()"/>
+				<mx:HBox width="100%"
+						 height="100%"
+						 horizontalAlign="right">
+					<mx:LinkButton id="btConfirm"
+								   icon="@Embed('/assets/images/button/confirm20.png')"
+								   label=" 确 定 "
+								   skin="mx.skins.halo.ButtonSkin"
+								   buttonMode="true"
+								   fontSize="12"
+								   width="86"
+								   height="26"
+								   click="btConfirmHandler();"/>
+					<mx:LinkButton id="btReturn"
+								   icon="@Embed('/assets/images/button/return20.png')"
+								   label=" 取 消 "
+								   skin="mx.skins.halo.ButtonSkin"
+								   buttonMode="true"
+								   fontSize="12"
+								   width="86"
+								   height="26"
+								   click="btReturn_clickHandler()"/>
+					<mx:Spacer width="6"/>
+				</mx:HBox>
+
+			</mx:HBox>
+		</s:BorderContainer>
+
+	</s:HGroup>
+</s:TitleWindow>

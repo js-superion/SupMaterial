@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    采购发票列表查询模块
+    author: 芮玉红  2011.02.22
+-->
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   width="500"
+			   height="490"
+			   backgroundColor="0xE2E8E8"
+			   title="采购发票列表"
+			   close="PopUpManager.removePopUp(this)"
+			   creationComplete="doInit()"
+			   xmlns:controls="cn.superion.base.components.controls.*">
+	<s:layout>
+		<s:VerticalLayout paddingLeft="10"
+						  paddingRight="10"
+						  paddingTop="10"/>
+	</s:layout>
+	<fx:Script source="PurchaseInvoiceListQueryConas.as"/>
+	<fx:Declarations>
+		<mx:NumberValidator id="beginTradePriceValid"
+							source="{beginTradePrice}"
+							property="text"
+							required="false"
+							domain="real"
+							precision="2"
+							precisionError="小数点后最多只能有2位数字"
+							minValue="0"
+							maxValue="9999999999.99"
+							exceedsMaxError="输入的值太大,不得超过最大值9999999999.99"/>
+		<mx:NumberValidator id="endTradePriceValid"
+							source="{endTradePrice}"
+							property="text"
+							required="false"
+							domain="real"
+							precision="2"
+							precisionError="小数点后最多只能有2位数字"
+							minValue="0"
+							maxValue="9999999999.99"
+							exceedsMaxError="输入的值太大,不得超过最大值9999999999.99"/>
+	</fx:Declarations>
+	<!-- 查询条件区 -->
+	<mx:TabNavigator width="100%"
+					 height="400"
+					 paddingBottom="15"
+					 paddingTop="15"
+					 paddingLeft="15"
+					 paddingRight="15"
+					 backgroundColor="0xE2E8E8">
+		<s:NavigatorContent width="100%"
+							height="370"
+							label="查询条件">
+			<s:VGroup id="purchaseInvoiceListQuery"
+					  width="100%"
+					  height="100%">
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="采购类型"
+							 width="75"/>
+						<s:DropDownList id="operationType"
+										width="100%"
+										height="25"
+										labelField="operationTypeName"
+										selectedIndex="0"
+										requireSelection="true"
+										keyUp="toNextControl(event,beginBillNo,operationType)">
+						</s:DropDownList>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="单据编码"
+							 width="75"/>
+						<s:TextInput id="beginBillNo"
+									 maxChars="30"
+									 width="100%"
+									 restrict="0-9"
+									 keyUp="toNextControl(event,endBillNo,beginBillNo)"/>
+					<s:Label text="-"/>
+						<s:TextInput id="endBillNo"
+									 maxChars="30"
+									 width="100%"
+									 restrict="0-9"
+									 keyUp="toNextControl(event,beginInvoiceNo,endBillNo)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="发票号"
+							 width="75"/>
+						<s:TextInput id="beginInvoiceNo"
+									 maxChars="30"
+									 width="100%"
+									 restrict="0-9"
+									 keyUp="toNextControl(event,endInvoiceNo,beginInvoiceNo)"/>
+					<s:Label text="-"/>
+						<s:TextInput id="endInvoiceNo"
+									 maxChars="30"
+									 width="100%"
+									 restrict="0-9"
+									 keyUp="toNextControl(event,chkBillDate,endInvoiceNo)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+						<s:CheckBox id="chkBillDate"
+									label="单据日期"
+									width="75"
+									change="chkBillDate_changeHandler(event)"
+									keyUp="toNextControl(event,dfStartDate,chkBillDate)"/>
+						<mx:DateField id="dfStartDate"
+									  width="50%"
+									  enabled="false"
+									  formatString="YYYY-MM-DD"
+									  selectedDate="{dfStartDate.selectedDate==null?dfStartDate.selectedDate=new Date():dfStartDate.selectedDate}"
+									  selectableRange="{{rangeEnd:dfEndDate.selectedDate}}"
+									  keyUp="toNextControl(event,dfEndDate,dfStartDate)"/>
+						<s:Label text="-"/>
+							<mx:DateField id="dfEndDate"
+										  width="50%"
+										  enabled="false"
+										  formatString="YYYY-MM-DD"
+										  selectedDate="{dfEndDate.selectedDate==null?dfEndDate.selectedDate=new Date():dfEndDate.selectedDate}"
+										  selectableRange="{{rangeStart:dfStartDate.selectedDate, rangeEnd:new Date()}}"
+										  keyUp="toNextControl(event,chkInvoiceDate,dfEndDate)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+						<s:CheckBox id="chkInvoiceDate"
+									label="发票日期"
+									width="75"
+									change="chkBillDate_changeHandler(event)"
+									keyUp="toNextControl(event,dfInvoiceStartDate,chkInvoiceDate)"/>
+						<mx:DateField id="dfInvoiceStartDate"
+									  width="50%"
+									  enabled="false"
+									  formatString="YYYY-MM-DD"
+									  selectedDate="{dfInvoiceStartDate.selectedDate==null?dfInvoiceStartDate.selectedDate=new Date():dfInvoiceStartDate.selectedDate}"
+									  selectableRange="{{rangeEnd:dfInvoiceEndDate.selectedDate}}"
+									  keyUp="toNextControl(event,dfInvoiceEndDate,dfInvoiceStartDate)"/>
+						<s:Label text="-"/>
+							<mx:DateField id="dfInvoiceEndDate"
+										  width="50%"
+										  enabled="false"
+										  formatString="YYYY-MM-DD"
+										  selectedDate="{dfInvoiceEndDate.selectedDate==null?dfInvoiceEndDate.selectedDate=new Date():dfInvoiceEndDate.selectedDate}"
+										  selectableRange="{{rangeStart:dfInvoiceStartDate.selectedDate, rangeEnd:new Date()}}"
+										  keyUp="toNextControl(event,materialCode,dfInvoiceEndDate)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="物资名称"
+							 width="75"
+							 fontSize="14"
+							 paddingLeft="2"/>
+					<controls:TextInputIcon id="materialCode"
+											width="100%"
+											maxChars="20"
+											queryIconClick="materialCode_queryIconClickHandler()"
+											keyUp="toNextControl(event,beginTradePrice,materialCode)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="进价范围"
+							 width="75"/>
+						<s:TextInput id="beginTradePrice"
+									 width="50%"
+									 restrict="0-9,/."
+									 textAlign="right"
+									 keyUp="toNextControl(event,endTradePrice,beginTradePrice)"/>
+<s:Label text="-"/>
+						<s:TextInput id="endTradePrice"
+									 width="50%"
+									 restrict="0-9,/."
+									 textAlign="right"
+									 keyUp="toNextControl(event,personId,endTradePrice)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="业 务 员"
+							 width="75"
+							 fontSize="14"
+							 paddingLeft="2"/>
+					<controls:TextInputIcon id="personId"
+											width="100%"
+											maxChars="10"
+											queryIconClick="personId_queryIconClickHandler()"
+											keyUp="toNextControl(event,deptCode,personId)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="部　　门"
+							 width="75"
+							 fontSize="14"
+							 paddingLeft="2"/>
+					<controls:TextInputIcon id="deptCode"
+											width="100%"
+											maxChars="20"
+											queryIconClick="deptCode_queryIconClickHandler()"
+											keyUp="toNextControl(event,salerCode,deptCode)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="供应单位"
+							 width="75"
+							 fontSize="14"
+							 paddingLeft="2"/>
+					<controls:TextInputIcon id="salerCode"
+											width="100%"
+											maxChars="40"
+											queryIconClick="salerCode_queryIconClickHandler()"
+											keyUp="toNextControl(event,factoryCode,salerCode)"/>
+				</s:HGroup>			
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="生产厂家"
+							 width="75"
+							 fontSize="14"
+							 paddingLeft="2"/>
+					<controls:TextInputIcon id="factoryCode"
+											width="100%"
+											maxChars="40"
+											queryIconClick="factoryCode_queryIconClickHandler()"
+											keyUp="toNextControl(event,currentStatus,factoryCode)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="当前状态"
+							 width="75"/>
+						<s:DropDownList id="currentStatus"
+										width="100%"
+										height="25"
+										labelField="currentStatusName"
+										selectedIndex="0"
+										dataProvider="{new ArrayCollection
+										([{currentStatus:null,currentStatusName:'全部'},
+							              {currentStatus:'0',currentStatusName:'新建状态'},
+							              {currentStatus:'1',currentStatusName:'审核状态'}, 
+							              {currentStatus:'2',currentStatusName:'记账状态'}])}"
+										keyUp="toNextControl(event,btConfirm,currentStatus)"/>
+				</s:HGroup>
+			</s:VGroup>
+		</s:NavigatorContent>
+	</mx:TabNavigator>
+	<s:HGroup width="100%"
+			  height="31"
+			  horizontalAlign="right"
+			  verticalAlign="middle"
+			  gap="5">
+		<mx:LinkButton id="btConfirm"
+					   icon="@Embed('/assets/images/button/confirm20.png')"
+					   label=" 确 定 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   height="26"
+					   click="btConfirm_clickHandler()"
+					   keyUp="btConfirm_keyUpHandler(event)"/>
+		<mx:LinkButton id="btReturn"
+					   height="26"
+					   label=" 取 消"
+					   skin="mx.skins.halo.ButtonSkin"
+					   icon="@Embed(source='assets/images/button/return20.png')"
+					   click="btReturn_clickHandler(event)"/>
+	</s:HGroup>
+</s:TitleWindow>

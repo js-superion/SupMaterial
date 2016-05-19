@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   title="自动生成"
+			   width="400"
+			   close="titlewindow1_closeHandler(event)"
+			   height="293"
+			   backgroundColor="0xE2E8E8"
+			   xmlns:controls="cn.superion.base.components.controls.*"
+			   creationComplete="doInit()">
+
+	<s:layout>
+		<s:VerticalLayout paddingLeft="10"
+						  paddingRight="10"
+						  paddingTop="10"/>
+	</s:layout>
+	<fx:Declarations>
+	</fx:Declarations>
+	<fx:Script source="PurchasePlanAutoas.as"/>
+	<mx:TabNavigator width="378"
+					 height="206"
+					 paddingBottom="15"
+					 paddingTop="15"
+					 paddingLeft="15"
+					 paddingRight="15"
+					 backgroundColor="#E2E8E8">
+
+		<s:NavigatorContent label="基本条件"
+							width="350"
+							height="100%">
+			<s:VGroup id="auto"
+					  width="100%"
+					  height="100%">
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+
+
+					<s:Label text="仓　　库"
+							 paddingTop="5"/>
+					<s:DropDownList id="storage"
+									labelField="storageName"
+									width="100%"
+									keyUp="keyUpCtrl(event,dfStart)"
+									selectedIndex="0"/>
+
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle"
+						  paddingTop="3">
+
+
+
+					<s:Label text="参考月份"
+							 paddingTop="5"/>
+
+					<mx:DateField id="dfStart"
+								  color="black"
+								  width="135"
+								  formatString="YYYY-MM"
+								  showToday="true"
+								  enterFrame="{dfStart.selectedDate==null?dfStart.selectedDate=new Date():dfStart.selectedDate}"
+								  disabledRanges="{[{rangeStart:dfEnd.selectedDate}]}"
+								  keyUp="keyUpCtrl(event,dfEnd)"/>
+					<s:Label text="-"/>
+					<mx:DateField id="dfEnd"
+								  color="black"
+								  width="140"
+								  formatString="YYYY-MM"
+								  showToday="true"
+								  enterFrame="{dfEnd.selectedDate==null?dfEnd.selectedDate=new Date():dfEnd.selectedDate}"
+								  disabledRanges="{[{rangeEnd:dfStart.selectedDate}]}"
+								  keyUp="keyUpCtrl(event,rate)"/>
+
+
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle"
+						  paddingTop="3">
+
+					<s:Label text="比例系数"
+							 paddingTop="5"/>
+
+					<s:TextInput id="rate"
+								 width="100%"
+								 restrict="0-9//."
+								 keyUp="keyUpCtrl(event,materialType)"/>
+
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle"
+						  paddingTop="3">
+					<s:Label text="物资类别"
+							 paddingTop="5"/>
+					<controls:TextInputIcon id="materialType"
+											width="100%"
+											height="23"
+											keyUp="keyUpCtrl(event,materialName)"
+											queryIconClick="materialClass_queryIconClickHandler(event)"/>
+
+
+				</s:HGroup>
+
+				<s:HGroup width="100%"
+						  verticalAlign="middle"
+						  paddingTop="3">
+					<s:Label text="物资名称"
+							 paddingTop="5"/>
+					<controls:TextInputIcon id="materialName"
+											keyUp="keyUpCtrl(event,btQuery)"
+											queryIconClick="materialName_queryIconClickHandler(event)"
+											width="100%"/>
+				</s:HGroup>
+
+
+			</s:VGroup>
+		</s:NavigatorContent>
+	</mx:TabNavigator>
+
+	<s:HGroup horizontalAlign="right"
+			  width="100%"
+			  paddingRight="10"
+			  paddingTop="2"
+			  paddingBottom="6">
+
+		<mx:LinkButton id="btQuery"
+					   height="26"
+					   label=" 确 定"
+					   skin="mx.skins.halo.ButtonSkin"
+					   icon="@Embed(source='assets/images/button/confirm20.png')"
+					   keyUp="btQuery_clickHandler(event)"
+					   click="btQuery_clickHandler(event)"/>
+		<mx:LinkButton id="btReturn"
+					   height="26"
+					   label=" 取 消"
+					   skin="mx.skins.halo.ButtonSkin"
+					   icon="@Embed(source='assets/images/button/return20.png')"
+					   click="titlewindow1_closeHandler(event)"/>
+	</s:HGroup>
+</s:TitleWindow>

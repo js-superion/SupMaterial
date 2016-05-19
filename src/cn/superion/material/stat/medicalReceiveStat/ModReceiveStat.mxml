@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Module xmlns:fx="http://ns.adobe.com/mxml/2009"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   layout="vertical"
+		   height="100%"
+		   width="100%"
+		   horizontalScrollPolicy="auto" 
+		   backgroundColor="#E2E8E8"
+		   xmlns:controls="cn.superion.base.components.controls.*"
+		   creationComplete="doInit()"
+		   xmlns:view="cn.superion.material.util.*">
+
+	<fx:Script source="ModReceiveStatas.as"/>
+
+	<s:Scroller id="scrol"
+				width="100%"
+				height="100%">
+		<s:VGroup id="vg"
+				  gap="0" 
+				  height="100%"
+				  width="100%">
+			<view:ToolBar id="toolBar"
+						  width="100%"
+						  printClick="printClickHandler(event)"
+						  expClick="expClickHandler(event)"
+						  queryClick="queryClickHandler(event)"
+						  exitClick="exitClickHandler(event)"/>
+			<controls:BarSubTitle title="产品入库统计表"/>
+   
+			<controls:GroupDataGrid id="gdReceive"
+									width="100%"
+									height="100%" 
+									hasRowNo="true"
+								    isAutoFetchDictData="false"
+									styleName="dataGrid"
+									horizontalScrollPolicy="on"
+									sumLableField="rowno"
+									sumFields="{['amount','wholeSaleMoney','inviteMoney']}"
+									format="{[,,,,,,,'0.0000','0.0000','0.0000']}">
+				<controls:columns>
+
+					<mx:DataGridColumn headerText="序号"
+									   dataField="rowno"
+									   width="80"/>
+					<mx:DataGridColumn headerText="品名"
+									   dataField="materialName"
+									   width="250"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="规格"
+									   dataField="materialSpec"
+									   width="140"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="单位"
+									   dataField="materialUnits"
+									   width="60"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="生产厂家"
+									   width="200"
+									   editable="false"
+									   dataField="factoryName"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="供货商"
+									   dataField="salerName"
+									   width="200"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="数量"
+									   dataField="amount"
+									   width="80"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="执行价"
+									   dataField="wholeSalePrice"
+									   width="110"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="执行金额"
+									   width="150"
+									   dataField="wholeSaleMoney"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="招标价"
+									   dataField="invitePrice"
+									   width="110"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="招标金额"
+									   width="150"
+									   dataField="inviteMoney"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="差价"
+									   width="150"
+									   dataField="hecPrice"
+									   labelFunction="hecMoney"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="批号"
+									   dataField="batch"
+									   width="120"
+									   textAlign="left"/>
+				</controls:columns>
+			</controls:GroupDataGrid>
+		</s:VGroup>
+	</s:Scroller>
+</mx:Module>
+

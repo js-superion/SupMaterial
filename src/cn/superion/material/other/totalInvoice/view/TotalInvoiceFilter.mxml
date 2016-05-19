@@ -1,0 +1,507 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 title="订单发票汇总"
+		 close="PopUpManager.removePopUp(this)"
+		 xmlns:controls="cn.superion.base.components.controls.*"
+		 creationComplete="doInit()"
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="940" height="600">
+	<s:layout>
+		<s:VerticalLayout/>
+	</s:layout>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import cn.superion.base.config.BaseDict;
+			import cn.superion.base.config.ParameterObject;
+			import cn.superion.base.util.ArrayCollUtils;
+			import cn.superion.base.util.RemoteUtil;
+			import cn.superion.dataDict.DictWinShower;
+			import cn.superion.material.other.totalInvoice.ModTotalInvoice;
+			import cn.superion.material.util.MainToolBar;
+			
+			import flexlib.scheduling.util.DateUtil;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ListCollectionView;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.remoting.RemoteObject;
+			import mx.states.AddItems;
+			public var iparentWin:ModTotalInvoice;
+			private var _tempClass:String = "";
+			private var _tempSalerCode:String = "";
+			private var para:ParameterObject = new ParameterObject();
+			public var selectAll:Boolean=false;
+			[Bindable]
+			private var importClassFactory:ClassFactory;
+			private var _tempIndex:int = 0;
+			private var _tempOperationNo:String = null;
+			private var _itemSelected:Boolean = false;
+			/**
+			 * 初始化
+			 * */
+			protected function doInit():void
+			{
+//				importClassFactory = new ClassFactory(CheckBoxHeaderRenderer);
+//				importClassFactory.properties={stateHost: this, stateProperty: 'selectAll'};
+			}
+			
+			/**
+			 * 物资分类字典：回车
+			 * */
+			protected function materialClass_queryIconClickHandler():void
+			{
+				var x:int=0;
+				var y:int=this.parentApplication.screen.height - 345;
+				DictWinShower.showMaterialClassDict((function (item:Object):void{
+//					materialClass.txtContent.text = item.className;
+					_tempClass = item.classCode;
+				}),x,y);
+			}
+			
+			/**
+			 * 物资分类字典：点击
+			 * */
+			protected function materialClass_keyDownHandler(event:KeyboardEvent):void
+			{
+				if(event.keyCode != 13)	return;
+//				if(materialClass.txtContent.text.length > 0 ){
+////					materialCode.setFocus();
+//					return;
+//				}
+				materialClass_queryIconClickHandler();
+			}
+			
+			/**
+			 * 供应商字典：点击
+			 * */
+			protected function salerCode_queryIconClickHandler():void
+			{
+				var x:int=0;
+				var y:int=this.parentApplication.screen.height - 345;
+				DictWinShower.showProviderDict((function (item:Object):void{
+					salerCode.txtContent.text = item.providerName;
+					_tempSalerCode =  item.providerId;
+				}),x,y);
+			}
+			/**
+			 * 供应商字典：回车
+			 * */
+			protected function salerCode_KeyDownHandler(e:KeyboardEvent):void
+			{
+				if(e.keyCode != 13)	return;
+				if(salerCode.txtContent.text.length > 0 ){
+					beginBillDate.setFocus();
+					return;
+				}
+				salerCode_queryIconClickHandler();
+			}
+			
+			/**
+			 * 处理键的keyUp事件
+			 * */
+			protected function keyUpCtrl(event:KeyboardEvent, ctrl:Object):void
+			{
+				if(event.keyCode != 13){
+					return;
+				}
+				if(ctrl.className == "DropDownList"){
+					ctrl.openDropDown();
+				}
+				if(ctrl.className == "DateField"){
+					ctrl.open();
+				}
+				if(ctrl.className == "TextInputIcon"){
+					ctrl.txtContent.setFocus();
+					return;
+				}
+				ctrl.setFocus();
+			}
+			/**
+			 * 查询,查询收发存主记录单据
+			 * */
+			protected function btQuery_clickHandler(event:MouseEvent):void
+			{
+				if(_tempSalerCode == null || _tempSalerCode == ""){
+					Alert.show('请选择供应单位','提示');
+					return;
+				}
+				para.conditions={
+					"salerCode":_tempSalerCode,
+					"beginInvoiceDate":chkBillDate.selected?beginBillDate.selectedDate:null,
+					"endInvoiceDate":chkBillDate.selected?new Date(endBillDate.selectedDate.getFullYear(),
+										endBillDate.selectedDate.getMonth(),endBillDate.selectedDate.getDate()+1):null,
+					"beginInvoiceNo":beginInvoiceNo.text,
+					"endInvoiceNo":endInvoiceNo.text
+					};
+				var ro:RemoteObject = RemoteUtil.getRemoteObject(ModTotalInvoice.DESTINATION,queryFunction);
+				ro.findInvoiceListByCondition(para);
+			}
+			/**
+			 * 配置回调
+			 * */
+			private function queryFunction(rev:Object):void{
+				if(rev.data.length == 0){
+					dgMaster.dataProvider = null;
+					dgDetail.dataProvider = null;
+					return;
+				}
+				var lst:ArrayCollection = rev.data as ArrayCollection;
+				dgMaster.dataProvider = lst;
+				//查询首条对应的明细
+				dgMaster.selectedIndex = 0;
+				dgMaster_itemClickHandler();
+				
+			}
+			/**
+			 * 单击收发存主记录，查询对应的明细
+			 * */
+			protected function dgMaster_itemClickHandler():void
+			{
+				var ro:RemoteObject = RemoteUtil.getRemoteObject(ModTotalInvoice.DESTINATION,function(rev:Object):void{
+					if(rev.data&&rev.data.length>0) 
+					{
+						dgDetail.dataProvider = rev.data;
+						return;
+					}else{
+						dgDetail.dataProvider = [];
+					}
+				});
+				ro.findInvoiceDetailById(dgMaster.selectedItem.autoId);
+				//将业务类型和业务号，赋给主页面,主页面点击 放弃、保存后，再次启用
+				_tempSalerCode = dgMaster.selectedItem.salerCode;
+			}
+			/**
+			 * 点击全选
+			 * */
+			protected function selectAll_clickHandler():void
+			{
+				for each (var item:Object in dgMaster.dataProvider)
+				{
+					item.isSelected = this.selAll.selected;
+					item.sourceAutoId = item.autoId;
+					ListCollectionView(dgMaster.dataProvider).itemUpdated(item, "isSelected");
+				}
+			}
+
+			/**
+			 * 根据物资订单发票 V_MATERIAL_ORDER_INVOICE
+			 * 构造发票系统标识号集合
+			 * */
+			private function createInvoiceAutoIds():Array{
+				var laryMaster:ArrayCollection = dgMaster.dataProvider as ArrayCollection;
+				var invoiceAutoIds:Array = [];
+				for each (var item:Object in laryMaster)
+				{
+					if(item.isSelected)
+					{
+						invoiceAutoIds.push(item.autoId); //构造发票标识号
+						_itemSelected = true;
+					}
+				}
+				return invoiceAutoIds;
+			}
+			
+			/**
+			 * 给父窗体相关的成员变量赋值
+			 * */
+			private function fillValueToParentWin(invoiceAutoIds:Array):void{
+				iparentWin.salerCode.txtContent.text = _tempSalerCode==""?"":ArrayCollUtils.findItemInArrayByValue(BaseDict.providerDict,'provider',_tempSalerCode).providerName;
+				iparentWin._tempSalerCode = _tempSalerCode;
+				iparentWin.invoiceAutoIds = invoiceAutoIds;
+			}
+			/**
+			 * 加载远程数据
+			 * */
+			private function findInvoiceDetailByIds(invoiceAutoIds:Array):void{
+				var ro:RemoteObject = RemoteUtil.getRemoteObject(ModTotalInvoice.DESTINATION,function (rev:Object):void{
+					iparentWin.ary.removeAll();
+					iparentWin.ary.addAll(rev.data);
+				});
+				ro.findInvoiceDetailByIds(invoiceAutoIds)
+			}
+			
+			/**
+			 * 确定
+			 * */
+			private function btConfirmHandler():void
+			{
+				var invoiceAutoIds:Array = createInvoiceAutoIds();
+				if(!_itemSelected)return;
+				fillValueToParentWin(invoiceAutoIds);
+				findInvoiceDetailByIds(invoiceAutoIds);
+				btReturn_clickHandler();
+			}
+			
+
+			/**
+			 * 取消
+			 * */
+			protected function btReturn_clickHandler():void
+			{
+				PopUpManager.removePopUp(this);
+			}
+
+			//label显示
+			private function labFunMaster(item:Object,column:DataGridColumn):String
+			{
+				if(item.notData)
+				{
+					return '';
+				}
+				var fItem:Object;
+				//供应单位
+				if(column.dataField=='salerCode')
+				{
+					fItem=ArrayCollUtils.findItemInArrayByValue(BaseDict.providerDict,'provider', item.factoryCode);
+					if(!fItem)
+					{
+						return item.factoryCode;
+					}
+					return fItem.providerName;
+				}
+				if(column.dataField=='personId')
+				{
+					fItem=ArrayCollUtils.findItemInArrayByValue(BaseDict.personIdDict,'personId', item.personId);
+					if(!fItem)
+					{
+						return item.personId;
+					}
+					return fItem.personIdName;
+				}
+				if(column.dataField=='deptCode')
+				{
+					fItem=ArrayCollUtils.findItemInArrayByValue(BaseDict.deptDict,'dept', item.deptCode);
+					if(!fItem)
+					{
+						return item.deptId;
+					}
+					return fItem.deptName;
+				}
+				if(column.dataField=='operationType')
+				{
+					fItem=ArrayCollUtils.findItemInArrayByValue(BaseDict.operationReceiveDict,'operationType', item.operationType);
+					if(!fItem)
+					{
+						return item.operationType;
+					}
+					return fItem.operationTypeName;
+				}
+				return "";
+				
+			}
+		
+		]]>
+	</fx:Script>
+	
+	<s:HGroup id="hgTop" 
+			  gap="2" 
+			  width="100%"
+			  height="100%">
+		
+		<s:BorderContainer id="bord" 
+						   width="100%" 
+						   height="100%"
+						   backgroundColor="#E2E8E8">
+			<s:layout>
+				<s:VerticalLayout verticalAlign="top"
+								  paddingLeft="5" 
+								  paddingRight="5"
+								  paddingTop="0" />
+			</s:layout>
+			<s:HGroup id="masterGroup" 
+					  height="66"
+					  width="100%">
+				<s:VGroup width="100%"
+						  paddingTop="3">
+					<s:HGroup id="hg1" verticalAlign="middle"
+							  paddingTop="0"
+							  paddingRight="20"
+							  paddingLeft="10"
+							  width="100%">
+<!--							<controls:TextInputIcon id="materialClass"
+													width="150"
+													queryIconClick="materialClass_queryIconClickHandler()"
+													keyDown="materialClass_keyDownHandler(event)"/>
+-->							<s:Label text="供应单位"/>
+							<controls:TextInputIcon id="salerCode"
+											 		width="180"
+													queryIconClick="salerCode_queryIconClickHandler()"
+										 			keyUp="keyUpCtrl(event,beginBillDate)"
+										 			/>
+						<s:CheckBox id="chkBillDate" selected="false" label="单据日期"/>
+						<mx:DateField width="110" 
+									  id="beginBillDate"
+									  enabled="{chkBillDate.selected}"
+									  formatString="YYYY-MM-DD"
+									  selectableRange="{{rangeEnd:new Date()}}"
+									  enterFrame="{beginBillDate.selectedDate==null?beginBillDate.selectedDate=new Date():beginBillDate.selectedDate}"
+									  />
+						<s:Label text="—"/>
+						<mx:DateField width="110"
+									  id="endBillDate"
+									  enabled="{chkBillDate.selected}"
+									  formatString="YYYY-MM-DD"
+									  selectableRange="{{rangeEnd:new Date()}}"
+									  enterFrame="{endBillDate.selectedDate==null?endBillDate.selectedDate=new Date():endBillDate.selectedDate}"
+									  />
+						<mx:Spacer width="100%"/>
+					</s:HGroup>		
+					<s:HGroup id="hg2" verticalAlign="middle"
+							  paddingTop="0"
+							  paddingRight="20"
+							  paddingLeft="10">
+						
+						<s:Label text="起始发票号"/>
+						<s:TextInput width="160" 
+									 id="beginInvoiceNo"
+									 restrict="a-zA-Z0-9"
+									 keyUp="keyUpCtrl(event,endInvoiceNo)"
+									 />
+						
+						<s:Label text="—"/>
+						<s:Label text="结束发票号"/>
+						<s:TextInput width="160" 
+									 id="endInvoiceNo"
+									 restrict="a-zA-Z0-9"
+									 keyUp="keyUpCtrl(event,btQuery)"
+									 />
+						<mx:Spacer width="100%"/>
+						<mx:LinkButton id="btQuery"
+									   icon="@Embed('/assets/images/button/query20.png')"
+									   label=" 查  询 "
+									   skin="mx.skins.halo.ButtonSkin"
+									   buttonMode="true"
+									   fontSize="12"
+									   width="86"
+									   height="26"
+									   click="btQuery_clickHandler(event)"/>
+					</s:HGroup>	
+				</s:VGroup>
+			</s:HGroup>
+			<controls:SuperDataGrid id="dgMaster"
+							   width="100%"
+							   height="155"
+							   itemClick="dgMaster_itemClickHandler()"
+							   styleName="dataGrid">
+				<controls:columns>
+					<mx:DataGridColumn headerText="选择"
+									   width="1" 
+									   textAlign="center" 
+									   editable="false"
+									   >
+						<mx:itemRenderer>
+							<fx:Component>
+								<mx:CheckBox change="data.isSelected=this.selected" 
+											 selected="{this.parentDocument.selAll.selected}"/>
+							</fx:Component>
+						</mx:itemRenderer>
+					</mx:DataGridColumn>
+					<mx:DataGridColumn headerText="业务类型"
+									   width="100"
+									   labelFunction="labFunMaster"
+									   dataField="operationType"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="部门"
+									   width="240"
+									   dataField="deptCode"
+									   labelFunction="labFunMaster"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="经手人"
+									   width="80"
+									   dataField="personId"
+									   labelFunction="labFunMaster"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="发票号"
+									   width="130"
+									   dataField="invoiceNo"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="发票日期"
+									   width="130"
+									   dataField="invoiceDate"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="总金额"
+									   width="100"
+									   dataField="totalCosts"
+									   textAlign="right"/>
+
+
+				</controls:columns>
+			</controls:SuperDataGrid>
+			<controls:SuperDataGrid hasRowNo="false" 
+									width="100%" 
+									height="100%"
+									id="dgDetail"
+									textAlign="center">
+				<controls:columns>
+				<!--	<mx:DataGridColumn headerText="订单号" 
+									   width="1.8" 
+									   dataField="billNo"/>-->
+					<!--<mx:DataGridColumn headerText="订单日期"
+									   width="1.5" 
+									   dataField="billDate"/>-->
+					<!--<mx:DataGridColumn headerText="生产厂家"
+									   width="2.5" textAlign="left"
+									   dataField="factoryCode"
+									   labelFunction="labFunMaster"/>-->
+					<mx:DataGridColumn headerText="物资编码" 
+									   width="2" textAlign="left"
+									   dataField="materialCode"/>
+					<mx:DataGridColumn headerText="物资名称" 
+									   width="4" textAlign="left"
+									   dataField="materialName"/>
+					<mx:DataGridColumn headerText="规格型号"
+									   width="1.5" textAlign="left"
+									   dataField="materialSpec"/>
+					<mx:DataGridColumn headerText="单位"
+									   width="0.8" textAlign="left"
+									   dataField="materialUnits"/>
+					<mx:DataGridColumn headerText="单价"
+									   width="1" textAlign="right"
+									   dataField="tradePrice"/>
+					<mx:DataGridColumn headerText="单价"
+									   width="1" textAlign="right"
+									   dataField="tradeMoney"/>
+					
+					<!--<mx:DataGridColumn headerText="订单数量" 
+									   width="1.2" textAlign="right"
+									   dataField="amount"/>
+					<mx:DataGridColumn headerText="已入库数量"
+									   width="1.5" textAlign="right"
+									   dataField="inputAmount"/>-->
+				</controls:columns>
+			</controls:SuperDataGrid>
+			<mx:HBox width="100%"
+					 height="33"
+					 paddingLeft="4"
+					 horizontalAlign="right">
+				<s:CheckBox id="selAll" label="全选" click="selectAll_clickHandler()"/>
+				<mx:Spacer width="100%"/>
+				<mx:LinkButton id="btConfirm"
+							   icon="@Embed('/assets/images/button/confirm20.png')"
+							   label=" 确 定 "
+							   skin="mx.skins.halo.ButtonSkin"
+							   buttonMode="true"
+							   fontSize="12"
+							   width="86"
+							   height="26"
+							   click="btConfirmHandler();"/>
+				<mx:LinkButton id="btReturn"
+							   icon="@Embed('/assets/images/button/return20.png')"
+							   label=" 取 消 "
+							   skin="mx.skins.halo.ButtonSkin"
+							   buttonMode="true"
+							   fontSize="12"
+							   width="86"
+							   height="26"
+							   click="btReturn_clickHandler()"/>
+				<mx:Spacer width="6"/>
+			</mx:HBox>
+		</s:BorderContainer>
+		
+	</s:HGroup>
+</s:TitleWindow>

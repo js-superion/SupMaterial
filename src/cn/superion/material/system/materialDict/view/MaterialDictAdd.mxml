@@ -1,0 +1,473 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:myview="cn.superion.center.drug.drugDoc.view.*"
+			   width="850"
+			   height="480"
+			   close="returnBtn_clickHandler()"
+			   borderAlpha="0.75"
+			   backgroundColor="0xE2E8E8"
+			   title="新增/修改物资信息"
+			   creationComplete="titlewindow1_creationCompleteHandler(event)"
+			   xmlns:view="cn.superion.material.system.view.*"
+			   xmlns:view1="cn.superion.material.system.materialDict.view.*">
+	<s:layout>
+		<s:VerticalLayout paddingLeft="10"
+						  paddingRight="10"
+						  paddingTop="10"/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import cn.superion.base.components.controls.TextInputIcon;
+			import cn.superion.base.config.AppInfo;
+			import cn.superion.base.config.BaseDict;
+			import cn.superion.base.util.ArrayCollUtils;
+			import cn.superion.base.util.FormUtils;
+			import cn.superion.base.util.ObjectUtils;
+			import cn.superion.base.util.PurviewUtil;
+			import cn.superion.base.util.RemoteUtil;
+			import cn.superion.base.util.StringUtils;
+			import cn.superion.material.system.materialDict.ModMaterialDict;
+			import cn.superion.vo.center.material.CdMaterialDict;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.DataGrid;
+			import mx.controls.TextInput;
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.remoting.mxml.RemoteObject;
+			import mx.validators.StringValidator;
+			import mx.validators.Validator;
+			
+			import spark.components.CheckBox;
+
+			[Bindable]
+			public var drugItem:Object;
+			[Bindable]
+			public var cdNameDict:ArrayCollection; //记录项目名称列表，由主页面传来
+			[Bindable]
+			public var selectedNode:XML;
+			private var destination:String="centerDrugImpl";
+			[Bindable]
+			public var parentWin:*;
+			[Bindable]
+			public var saveFlag:Boolean=true;
+			private var _this:*=this;
+			public var data:Object;
+			private var _validators:Array=[];
+			private var drugIdTemp:String;
+			public static var currentItem:CdMaterialDict=new CdMaterialDict;
+
+			private var lstrDrugId:String=null;
+
+			//初始化
+			protected function titlewindow1_creationCompleteHandler(event:FlexEvent):void
+			{
+				//授权仓库赋值
+				if (AppInfo.currentUserInfo.storageList != null && AppInfo.currentUserInfo.storageList.length > 0)
+				{
+					materialDocAddBasicInfo.storageDefault.dataProvider=AppInfo.currentUserInfo.storageList;
+					materialDocAddBasicInfo.storageDefault.selectedIndex=0;
+				}
+				if (data.isAdd == true)
+				{
+					tabMaterialDocInfo.removeItemAt(3);
+				}
+				else
+				{
+					tabMaterialDocInfo.addItem(navContent_add_log_info);
+				}
+				currentItem=this.data.selectedItem;
+				changBtState();
+				fillFormByItem();
+				initValidates()
+			}
+			private function fillFormByItem():void{ 
+				FormUtils.fillFormByItem(this,currentItem);
+				var providerObj:Object=ArrayCollUtils.findItemInArrayByValue(BaseDict.providerDict,'provider',currentItem.factoryCode);
+				this.materialDocAddBasicInfo.factoryCode.text=providerObj==null ? "" : providerObj.providerName;
+				
+				providerObj=ArrayCollUtils.findItemInArrayByValue(BaseDict.providerDict,'provider',currentItem.mainProvider);
+				this.materialDocAddBasicInfo.mainProvider.text=providerObj==null ? "" : providerObj.providerName;
+					
+				this.materialDocAddOtherInfo.cssdAmountPerPackage.text = currentItem.amountPerPackage.toString();
+				FormUtils.selectComboItem(this.materialDocAddBasicInfo.storageDefault,"storageName",currentItem.storageDefaultName);
+					
+				fillCheckBox(currentItem);
+			}
+			protected function fillLogGrid():void
+			{
+				var curItem:Object=MaterialDictAdd.currentItem
+				if(!curItem||!curItem.materialId){
+					return;
+				}
+				var remoteObj:RemoteObject=RemoteUtil.getRemoteObject(ModMaterialDict.destination, function(rev:*):void
+				{
+					materialDocAddLogInfo.gdMaterialLogList.dataProvider=rev.data;
+				});
+				remoteObj.findMaterialDictLogById(curItem.materialId);	 			
+			}
+			private function fillCheckBox(item:Object):void{
+				var laryCheck:Array=FormUtils.getElementsByTag(this,spark.components.CheckBox);
+				for each(var chkItem:spark.components.CheckBox in laryCheck){
+					chkItem.selected= item[chkItem.id]=='1'
+				}
+			}
+
+			private function tabChangeEvent(event:mx.events.IndexChangedEvent):void
+			{
+				if (event.newIndex == 3)
+				{
+					panelBottom.visible=false;
+					panelBottom.includeInLayout=false;
+				}
+				else
+				{
+					panelBottom.visible=true;
+					panelBottom.includeInLayout=true;
+				}
+			}
+
+			//判断按钮是否可用
+			private function btnEnabled(saveflag:Boolean, copyflag:Boolean, firstflag:Boolean, preflag:Boolean, nextflag:Boolean, lastflag:Boolean):void
+			{
+				btSave.enabled=saveflag;
+				btNew.enabled=copyflag;
+				firstBtn.enabled=firstflag;
+				previousBtn.enabled=preflag;
+				nextBtn.enabled=nextflag;
+				lastBtn.enabled=lastflag;
+			}
+
+
+
+			//跳转行查询
+			private function turnLine(flag:String):void
+			{
+				var parentGrid:DataGrid=data.parentWin.pg_material_master;
+				if(parentGrid.dataProvider==null||parentGrid.dataProvider.length==0){
+					return;
+				}
+				var curLen:int=parentGrid.dataProvider.length;
+				var curIndex:int=parentGrid.selectedIndex;
+				if(flag=="first"){
+					parentGrid.selectedIndex=0
+				}
+				if(flag=="last"){
+					parentGrid.selectedIndex=parentGrid.dataProvider.length-1
+				}
+				if(flag=="prev"){
+					if(curIndex>0){
+						parentGrid.selectedIndex=curIndex-1
+					}
+				}
+				if(flag=="next"){
+					if(curIndex<curLen){
+						parentGrid.selectedIndex=curIndex+1
+					}					
+				}
+				changBtState();
+				MaterialDictAdd.currentItem=parentGrid.selectedItem as CdMaterialDict
+				fillFormByItem();
+			}
+			/**
+			 * 保存方法入口
+			 **/
+			public function doSave():void
+			{
+				//判断具有操作权限  -- 应用程序编号，菜单编号，权限编号
+				// 01：增加                02：修改            03：删除
+				// 04：保存                05：打印            06：审核
+				// 07：弃审                08：输出            09：输入
+				if (!PurviewUtil.getPurview(AppInfo.APP_CODE, ModMaterialDict.MENU_NO, "04"))
+				{
+					Alert.show("您无此按钮操作权限！", "提示");
+					btSave.enabled=true;
+					return;
+				}
+				if(!validateForm()){
+					return;
+				}
+				if(materialDocAddBasicInfo.amountPerPackage.text==""||materialDocAddBasicInfo.amountPerPackage.text==null)
+				{
+					currentItem.amountPerPackage=1;
+				}
+				if(materialDocAddBasicInfo.generalName.text==""||materialDocAddBasicInfo.generalName.text==null)
+				{
+					materialDocAddBasicInfo.generalPhoInputCode.text=materialDocAddBasicInfo.phoInputCode.text;
+					materialDocAddBasicInfo.generalFiveInputCode.text=materialDocAddBasicInfo.fiveInputCode.text;
+					materialDocAddBasicInfo.generalName.text=currentItem.generalName=materialDocAddBasicInfo.materialName.text;
+					currentItem.generalName=materialDocAddBasicInfo.generalName.text;
+					currentItem.generalPhoInputCode=materialDocAddBasicInfo.generalPhoInputCode.text;
+					currentItem.generalFiveInputCode=materialDocAddBasicInfo.generalFiveInputCode.text;
+				}
+				else
+				{
+					currentItem.generalName=materialDocAddBasicInfo.generalName.text
+					currentItem.generalPhoInputCode=materialDocAddBasicInfo.generalPhoInputCode.text;
+					currentItem.generalFiveInputCode=materialDocAddBasicInfo.generalFiveInputCode.text;
+				}
+//				if(materialDocAddOtherInfo.accountClass.text == null || StringUtils.Trim(materialDocAddOtherInfo.accountClass.text) == ''){
+//					Alert.show("其他信息--会计科目不能为空，不能保存！","提示");
+//					return;
+//				}
+				saveBasicInfo();
+			}
+			
+			/**
+			 * 验证输入数据
+			 * */
+			private function validateForm():Boolean
+			{
+				var laryErrors:Array=Validator.validateAll(_validators);
+				if (laryErrors.length == 0)
+				{
+					return true;
+				}
+				laryErrors[0].currentTarget.source.setFocus();
+				laryErrors[0].currentTarget.source.dispatchEvent(new MouseEvent(MouseEvent.MOUSE_OVER));
+				return false;
+			}
+			
+			/**
+			 * 初始化验证
+			 * */
+			private function initValidates():void
+			{
+				_validators=[];
+				var laryTextInputs:Array=[materialDocAddBasicInfo.materialClass.txtContent,
+					materialDocAddBasicInfo.materialName,
+					materialDocAddBasicInfo.materialUnits];
+				for each (var lcompItem:UIComponent in laryTextInputs)
+				{
+					var lvaliEmpty:StringValidator=new StringValidator();
+					lvaliEmpty.requiredFieldError="必须项";
+					lvaliEmpty.source=lcompItem
+					lvaliEmpty.property="text"
+					_validators.push(lvaliEmpty);
+				}
+			}
+			
+
+			/**
+			 * 保存基本信息
+			 **/
+			private function saveBasicInfo():void
+			{
+				
+				ObjectUtils.initObject(currentItem);
+				
+				if(materialDocAddBasicInfo.factoryCode.text==""||materialDocAddBasicInfo.factoryCode.text==null)
+				{
+					currentItem.factoryCode="";
+				};
+				var o:Object=currentItem;
+				var remoteObj:RemoteObject=RemoteUtil.getRemoteObject(ModMaterialDict.destination, function(rev:*):void
+				{
+					Alert.show("保存成功","提示");
+					currentItem=rev.data[0];
+					fillFormByItem();
+					data.parentWin.requery();
+				});
+				if(!currentItem.amountPerUnits || currentItem.amountPerUnits ==0){
+					currentItem.amountPerUnits = 1;
+				}
+				var cssdAmount:String=materialDocAddOtherInfo.cssdAmountPerPackage.text;
+				var ss:Number = cssdAmount == "" || isNaN(Number(cssdAmount)) ? 1 : Number(materialDocAddOtherInfo.cssdAmountPerPackage.text);
+				currentItem.cssdAmountPerPackage = ss;
+				currentItem.amountPerUnits = currentItem.amountPerUnits;
+				currentItem.hisUnits =  currentItem.hisUnits== null||""?currentItem.materialUnits:currentItem.hisUnits;
+				currentItem.hisSpec =  currentItem.hisSpec== null||""?currentItem.materialSpec:currentItem.hisSpec;
+				currentItem.registerNo = materialDocAddBasicInfo.registerNo.text;
+				currentItem.inviteNo = materialDocAddBasicInfo.inviteNo.text;
+				currentItem.countClass = materialDocAddBasicInfo.countClass.selectedItem?materialDocAddBasicInfo.countClass.selectedItem.data:"";
+				if(materialDocAddBasicInfo.chargeSign.selected)
+				{
+					currentItem.chargeSign='1';
+				}else{
+					currentItem.chargeSign='0'; 
+				}
+				currentItem.tradePrice = Number(materialDocAddBasicInfo.tradePrice.text);
+				currentItem.retailPrice = Number(materialDocAddBasicInfo.retailPrice.text);
+				currentItem.wholeSalePrice = Number(materialDocAddBasicInfo.wholeSalePrice.text);
+				//
+				currentItem.storageMaterialSign = materialDocAddBasicInfo.storageMaterialSign.selected?"1":"0";
+				currentItem.invitedPrice = Number(materialDocAddBasicInfo.invitePrice.text);
+				currentItem.maxPrice = Number(materialDocAddBasicInfo.maxPrice.text);
+				
+				var laryCheck:Array=FormUtils.getElementsByTag(this,spark.components.CheckBox);
+				for each(var chkItem:spark.components.CheckBox in laryCheck){
+					currentItem[chkItem.id]=chkItem.selected ? "1" : "0"
+				}
+				remoteObj.saveMateriaDict(currentItem);
+			}
+
+			//验证表单事件
+			private function valid():Boolean
+			{
+				return true;
+			}
+
+			/** 返回药品档案列表窗口 **/
+			private function returnBtn_clickHandler():void
+			{
+				ModMaterialDict.flag=true;
+				PopUpManager.removePopUp(this);
+			}
+
+			protected function btNew_clickHandler(event:MouseEvent):void
+			{
+				MaterialDictAdd.currentItem= data.parentWin.initNewMaterialDict();
+				fillFormByItem();
+				materialDocAddLogInfo.gdMaterialLogList.dataProvider=[]
+				materialDocAddBasicInfo.storageDefault.selectedIndex=0;
+			}
+			private function changBtState():void{
+				trace("----");
+				var parentGrid:DataGrid=data.parentWin.pg_material_master;
+				
+				var curLen:int=parentGrid.dataProvider.length;
+				var curIndex:int=parentGrid.selectedIndex;
+				firstBtn.enabled=true;
+				previousBtn.enabled=true;
+				lastBtn.enabled=true;
+				nextBtn.enabled=true;
+				if(curIndex==0){
+					firstBtn.enabled=false;
+					previousBtn.enabled=false;
+				}
+				if(curIndex==curLen-1){
+					lastBtn.enabled=false;
+					nextBtn.enabled=false;
+				}
+				if(data.isAdd == true){
+					firstBtn.enabled=false;
+					previousBtn.enabled=false;
+					lastBtn.enabled=false;
+					nextBtn.enabled=false;
+				}
+			}
+
+		]]>
+	</fx:Script>
+	<mx:TabNavigator id="tabMaterialDocInfo"
+					 width="100%"
+					 height="385"
+					 paddingBottom="5"
+					 paddingLeft="5"
+					 paddingRight="5"
+					 paddingTop="5"
+					 backgroundColor="#E2E8E8"
+					 change="tabChangeEvent(event)"
+					 creationPolicy="all">
+		<!--物资基本信息显示区-->
+		<s:NavigatorContent id="navContent_add_basic_info"
+							label="基本信息">
+
+			<s:VGroup id="add_basic_info"
+					  width="100%"
+					  height="100%"
+					  paddingTop="0">
+				<view1:MateriaDictAddBasicInfo id="materialDocAddBasicInfo"
+											   height="100%"/>
+			</s:VGroup>
+		</s:NavigatorContent>
+		<!--物资控制信息显示区-->
+		<s:NavigatorContent id="navContent_add_control_info"
+							label="控制信息">
+
+			<s:VGroup id="add_control_info"
+					  width="100%"
+					  height="100%"
+					  paddingTop="0">
+				<view1:MateriaDictAddControlInfo id="materialDocAddControlInfo"
+												 height="100%"/>
+			</s:VGroup>
+		</s:NavigatorContent>
+		<!--物资其他信息显示区-->
+		<s:NavigatorContent id="navContent_add_other_info"
+							label="其他信息">
+			<s:VGroup id="add_other_info"
+					  width="100%"
+					  height="100%">
+				<view1:MaterialDictAddOtherInfo id="materialDocAddOtherInfo"/>
+			</s:VGroup>
+		</s:NavigatorContent>
+		<!--物资日志信息显示区-->
+		<s:NavigatorContent id="navContent_add_log_info"
+							label="日志信息">
+			<s:VGroup id="add_log_info"
+					  width="100%"
+					  height="100%">
+				<view1:MaterialDictAddLogInfo id="materialDocAddLogInfo"/>
+			</s:VGroup>
+		</s:NavigatorContent>
+	</mx:TabNavigator>
+	<!--功能按钮区-->
+	<s:HGroup id="panelBottom"
+			  width="100%"
+			  height="28"
+			  paddingTop="5"
+			  horizontalAlign="right">
+		<mx:LinkButton id="btSave"
+					   label=" 保 存 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   width="86"
+					   click="doSave()"
+					   icon="@Embed(source='/assets/images/button/save20.png')"
+					   disabledIcon="@Embed(source='/assets/images/button/save20_disabled.png')">
+		</mx:LinkButton>
+		<mx:LinkButton id="btNew"
+					   icon="@Embed('/assets/images/button/new20.png')"
+					   disabledIcon="@Embed('/assets/images/button/new20_disabled.png')"
+					   label=" 新 建 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   buttonMode="true"
+					   fontSize="12"
+					   width="86" click="btNew_clickHandler(event)"
+					   />
+		<mx:LinkButton id="firstBtn"
+					   label=" 首 条 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   width="86"
+					   icon="@Embed(source='/assets/images/button/page-first.gif')"
+					   disabledIcon="@Embed(source='/assets/images/button/page-first-disabled.gif')"
+					   click="turnLine('first')">
+		</mx:LinkButton>
+		<mx:LinkButton id="previousBtn"
+					   label="上一条"
+					   skin="mx.skins.halo.ButtonSkin"
+					   width="86"
+					   icon="@Embed(source='/assets/images/button/page-prev.gif')"
+					   disabledIcon="@Embed(source='/assets/images/button/page-prev-disabled.gif')"
+					   click="turnLine('prev')">
+		</mx:LinkButton>
+		<mx:LinkButton id="nextBtn"
+					   label="下一条"
+					   skin="mx.skins.halo.ButtonSkin"
+					   width="86"
+					   icon="@Embed(source='/assets/images/button/page-next.gif')"
+					   disabledIcon="@Embed(source='/assets/images/button/page-next-disabled.gif')"
+					   click="turnLine('next')">
+		</mx:LinkButton>
+		<mx:LinkButton id="lastBtn"
+					   label=" 末 条 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   width="86"
+					   icon="@Embed(source='/assets/images/button/page-last.gif')"
+					   disabledIcon="@Embed(source='/assets/images/button/page-last-disabled.gif')"
+					   click="turnLine('last')">
+		</mx:LinkButton>
+		<mx:LinkButton id="returnBtn"
+					   label=" 退 出 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   width="86"
+					   icon="@Embed(source='/assets/images/button/return20.png')"
+					   disabledIcon="@Embed(source='/assets/images/button/return20_disabled.png')"
+					   click="returnBtn_clickHandler()">
+		</mx:LinkButton>
+	</s:HGroup>
+</s:TitleWindow>

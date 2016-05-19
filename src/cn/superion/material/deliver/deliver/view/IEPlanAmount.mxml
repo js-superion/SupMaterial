@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TextInput xmlns:fx="http://ns.adobe.com/mxml/2009"
+			  xmlns:s="library://ns.adobe.com/flex/spark"
+			  xmlns:mx="library://ns.adobe.com/flex/mx"
+			  restrict="0-9//."
+			  creationComplete="textinput1_creationCompleteHandler(event)"
+			  change="textinput1_changeHandler(event)"
+			  maxChars="7">
+	<fx:Script>
+		<![CDATA[
+			import cn.superion.base.config.ParameterObject;
+			import cn.superion.base.util.RemoteUtil;
+			
+			import mx.controls.DataGrid;
+			import mx.events.FlexEvent;
+			import mx.rpc.remoting.RemoteObject;
+
+			protected function textinput1_changeHandler(event:Event):void
+			{
+					changeValue(event)
+			}
+
+			protected function changeValue(event:Event):void
+			{
+				var dataField:String=event.currentTarget.listData.dataField
+				this.text=this.text.replace(/\,/g, '')
+				data[dataField]=parseFloat(this.text);
+				data[dataField]=isNaN(data[dataField]) ? 0 : data[dataField]
+				data.planSign = data[dataField]>0?"1":"0";
+				
+				var param:ParameterObject = new ParameterObject;
+				var condition:Object = {};
+				condition.autoId = data.autoId;
+				condition.planSign = data.planSign;
+				condition.planAmount = data.planAmount;
+				param.conditions = condition;
+				var ro:RemoteObject=RemoteUtil.getRemoteObject("deliverImpl", function(rev:Object):void
+				{
+					
+				});
+				ro.updateProviderDetail(param);
+				DataGrid(this.owner).invalidateList();
+			}
+
+			protected function textinput1_creationCompleteHandler(event:FlexEvent):void
+			{
+				changeValue(event)
+			}
+		]]>
+	</fx:Script>
+</mx:TextInput>
+

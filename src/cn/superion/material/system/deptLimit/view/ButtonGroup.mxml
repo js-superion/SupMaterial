@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:MXDataGridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+						  xmlns:s="library://ns.adobe.com/flex/spark" 
+						  xmlns:mx="library://ns.adobe.com/flex/mx" 
+						  focusEnabled="true">
+	<fx:Script>
+		<![CDATA[
+			import cn.superion.base.util.RemoteUtil;
+			import cn.superion.vo.material.CdDeptLimit;
+			
+			import mx.controls.Alert;
+			import mx.rpc.remoting.RemoteObject;
+			protected function save_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				var item:CdDeptLimit = this.data as CdDeptLimit;
+				item.addUp = isNaN(item.addUp)?0:item.addUp;
+				item.limits = isNaN(item.limits)?0:item.limits;
+				var remoteObj:RemoteObject=RemoteUtil.getRemoteObject("sendImpl", function(rev:Object):void
+				{
+					var code:String = parentDocument.leftTree.selectedDeptCode;
+					parentDocument.queryProInfo(code);
+				});
+				remoteObj.saveDeptLimit(this.data);
+			}
+			
+			protected function del_clickHandler(event:MouseEvent):void
+			{
+				var item:CdDeptLimit = this.data as CdDeptLimit;
+				item.addUp = isNaN(item.addUp)?0:item.addUp;
+				if(item.addUp > 0){
+					Alert.show("该科已经产生累计额度，不能删除！", "提示");
+					return;
+				}
+				// TODO Auto-generated method stub
+				var remoteObj:RemoteObject=RemoteUtil.getRemoteObject("sendImpl", function(rev:Object):void
+				{
+					
+					var code:String = parentDocument.leftTree.selectedDeptCode;
+					parentDocument.queryProInfo(code);
+				});
+				remoteObj.deleteDeptLimit(this.data);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:HGroup width="100%" height="100%">
+		<s:Button id="save" label="保存" click="save_clickHandler(event)"/>
+		<s:Button id="del" label="删除" click="del_clickHandler(event)"/>
+	</s:HGroup>
+</s:MXDataGridItemRenderer>
+
+
+

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	width="100%"
+	height="100%"
+	verticalCenter="-200">
+	
+	<fx:Script>
+		<![CDATA[
+			import cn.superion.base.util.RemoteUtil;
+			
+			import mx.controls.Alert;
+			import mx.rpc.remoting.mxml.RemoteObject;
+			
+			import spark.events.TextOperationEvent;
+			
+			//按回车跳转
+			private function toNextControl(e:KeyboardEvent, fcontrolNext:TextInput):void
+			{
+				if (e.keyCode == Keyboard.ENTER)
+				{
+					fcontrolNext.setFocus();
+				}
+			}
+			
+			//按回车保存数据
+			private function keySaveHandler(e:KeyboardEvent):void
+			{
+				if (e.keyCode == Keyboard.ENTER)
+				{
+					var providerClassRight:Object=this.parentDocument;
+					providerClassRight.btSave_clickHandler();
+				}
+			}
+			
+			//检查编码规则
+			protected function classCode_focusOutHandler(event:FocusEvent):void
+			{
+				// TODO Auto-generated method stub
+				if (!event.relatedObject)
+				{
+					return;
+				}
+				if (!(event.relatedObject.parent.parent is TextInput))
+				{
+					return;
+				}
+				var selclassCode:String=this.parentDocument.leftTree.trProviderClass.selectedItem.classCode;
+				//如果是根节点
+				if (selclassCode == '00')
+				{
+					if (classCode.text.length != 2)
+					{
+						Alert.show('编码错误，请参照编码规则 ** **！', '提示');
+						this.parentDocument.setClassCodeByParentCode();
+					}
+					return;
+				}
+				//非根节点	
+				if (classCode.text.length != selclassCode.length + 2)
+				{
+					Alert.show('编码错误，请参照编码规则 ** **！', '提示');
+					this.parentDocument.setClassCodeByParentCode();
+				}
+			}
+			
+			//生成拼音，五笔码
+			protected function txtClassName_changeHandler(event:TextOperationEvent):void
+			{
+				// TODO Auto-generated method stub
+				if (txtClassName.text == "")
+				{
+					phoInputCode.text="";
+					fiveInputCode.text="";
+					return;
+				}
+				var ro:RemoteObject=RemoteUtil.getRemoteObject('baseCommonDictImpl', function(rev:Object):void
+				{
+					if (rev.data && rev.data.length > 0)
+					{
+						phoInputCode.text=rev.data[0];
+						fiveInputCode.text=rev.data[1];
+					}
+				})
+				ro.findInputCode(txtClassName.text);
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	
+	<!-- 物资类别信息 -->
+	<s:VGroup width="100%"
+		height="100%">
+		<mx:Form width="45%"
+			height="55%">
+			<mx:FormItem label="分类编码"
+				width="90%"
+				indicatorGap="10"
+				color="blue">
+				<s:TextInput id="classCode"
+					maxChars="12"
+					restrict="A-Z,0-9"
+					width="100%"
+					editable="false"
+					enabled="false"
+					keyUp="toNextControl(event,txtClassName)"
+					focusOut="classCode_focusOutHandler(event)"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="分类名称"
+				width="90%"
+				indicatorGap="10"
+				color="blue">
+				<s:TextInput id="txtClassName"
+					maxChars="20"
+					restrict="^ "
+					width="100%"
+					editable="false"
+					enabled="false"
+					keyUp="keySaveHandler(event)"
+					change="txtClassName_changeHandler(event)"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="拼 音 码"
+				width="90%"
+				indicatorGap="10">
+				<s:TextInput id="phoInputCode"
+					maxChars="10"
+					restrict="^ "
+					width="100%"
+					editable="false"
+					enabled="false"
+					keyUp="toNextControl(event,fiveInputCode)"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="五 笔 码"
+				width="90%"
+				indicatorGap="10">
+				<s:TextInput id="fiveInputCode"
+					maxChars="10"
+					restrict="^ "
+					width="100%"
+					editable="false"
+					enabled="false"/>
+			</mx:FormItem>
+			
+			<mx:FormItem label="编码规则"
+				width="90%"
+				indicatorGap="10">
+				<mx:Text text="**  **  **  **  **"
+					width="100%"/>
+			</mx:FormItem>
+		</mx:Form>
+	</s:VGroup>
+</s:Group>

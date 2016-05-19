@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   width="400"
+			   height="320"
+			   backgroundColor="0xE2E8E8"
+			   title="领用证卡"
+			   close="PopUpManager.removePopUp(this)"
+			   creationComplete="titlewindow1_creationCompleteHandler(event)"
+			   xmlns:controls="cn.superion.base.components.controls.*">
+	<s:layout>
+		<s:VerticalLayout paddingLeft="10"
+						  paddingRight="10"
+						  paddingTop="10"/>
+	</s:layout>
+	<fx:Script source="MaterialCardQueryConas.as"/>
+	<fx:Declarations>
+		<mx:NumberValidator id="maxLimitedValid"
+							source="{maxLimited}"
+							property="text"
+							required="false"
+							domain="real"
+							precision="2"
+							precisionError="小数点后最多只能有2位数字"
+							minValue="0"
+							maxValue="9999999999.99"
+							exceedsMaxError="输入的值太大,不得超过最大值9999999999.99"/>
+	</fx:Declarations>
+	<!-- 查询条件区 -->
+	<mx:TabNavigator width="378"
+					 height="230"
+					 paddingBottom="15"
+					 paddingTop="15"
+					 paddingLeft="15"
+					 paddingRight="15"
+					 backgroundColor="0xE2E8E8">
+		<s:NavigatorContent width="350"
+							height="200"
+							label="查询条件">
+			<s:VGroup id="materialCardQuery"
+					  width="100%"
+					  height="100%">
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<mx:FormItem label="证卡编号"
+								 fontSize="14"
+								 width="56%">
+						<s:TextInput id="beginCardCode"
+									 width="100%"
+									 maxChars="12"
+									 restrict="0-9"
+									 keyUp="toNextControl(event,endCardCode,beginCardCode)"/>
+					</mx:FormItem>
+					<mx:FormItem label="-"
+								 fontSize="14"
+								 labelWidth="10"
+								 width="44%"
+								 horizontalGap="0">
+						<s:TextInput id="endCardCode"
+									 width="100%"
+									 maxChars="12"
+									 restrict="0-9"
+									 keyUp="toNextControl(event,deptCode,endCardCode)"/>
+					</mx:FormItem>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="所属部门"
+							 width="60"
+							 fontSize="14"
+							 paddingLeft="2"/>
+					<controls:TextInputIcon id="deptCode"
+											width="100%"
+											maxChars="20"
+											queryIconClick="deptCode_queryIconClickHandler()"
+											keyUp="toNextControl(event,personId,deptCode)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="负 责 人"
+							 width="60"
+							 fontSize="14"
+							 paddingLeft="2"/>
+					<controls:TextInputIcon id="personId"
+											width="100%"
+											maxChars="10"
+											queryIconClick="personId_queryIconClickHandler()"
+											keyUp="toNextControl(event,maxLimited,personId)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<mx:FormItem label="最高限额"
+								 width="346"
+								 fontSize="14">
+						<s:TextInput id="maxLimited"
+									 width="100%"
+									 restrict="0-9,\."
+									 textAlign="right"
+									 keyUp="toNextControl(event,chkStartDate,maxLimited)"/>
+					</mx:FormItem>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<mx:FormItem fontSize="14"
+								 direction="horizontal"
+								 width="100%"
+								 indicatorGap="0">
+						<s:CheckBox id="chkStartDate"
+									label="启用日期"
+									change="chkStartDate_changeHandler(event)"
+									keyUp="toNextControl(event,dfStartDate,chkStartDate)"/>
+						<mx:DateField id="dfStartDate"
+									  width="50%"
+									  enabled="false"
+									  formatString="YYYY-MM-DD"
+									  enterFrame="{dfStartDate.selectedDate==null?dfStartDate.selectedDate=new Date():dfStartDate.selectedDate}"
+									  selectableRange="{{rangeEnd:dfEndDate.selectedDate}}"
+									  showToday="true"
+									  keyUp="toNextControl(event,dfEndDate,dfStartDate)"/>
+						<mx:FormItem label="-"
+									 fontSize="14"
+									 labelWidth="10"
+									 width="50%"
+									 horizontalGap="0">
+							<mx:DateField id="dfEndDate"
+										  width="100%"
+										  enabled="false"
+										  formatString="YYYY-MM-DD"
+										  enterFrame="{dfEndDate.selectedDate==null?dfEndDate.selectedDate=new Date():dfEndDate.selectedDate}"
+										  selectableRange="{{rangeStart:dfStartDate.selectedDate, rangeEnd:new Date()}}"
+										  showToday="true"
+										  keyUp="toNextControl(event,chkStopDate,dfEndDate)"/>
+						</mx:FormItem>
+					</mx:FormItem>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<mx:FormItem fontSize="14"
+								 direction="horizontal"
+								 width="100%"
+								 indicatorGap="0">
+						<s:CheckBox id="chkStopDate"
+									label="停用日期"
+									change="chkStartDate_changeHandler(event)"
+									keyUp="toNextControl(event,dfStopStartDate,chkStopDate)"/>
+						<mx:DateField id="dfStopStartDate"
+									  width="50%"
+									  enabled="false"
+									  formatString="YYYY-MM-DD"
+									  enterFrame="{dfStopStartDate.selectedDate==null?dfStopStartDate.selectedDate=new Date():dfStopStartDate.selectedDate}"
+									  showToday="true"
+									  keyUp="toNextControl(event,dfStopEndDate,dfStopStartDate)"/>
+						<mx:FormItem label="-"
+									 fontSize="14"
+									 labelWidth="10"
+									 width="50%"
+									 horizontalGap="0">
+							<mx:DateField id="dfStopEndDate"
+										  width="100%"
+										  enabled="false"
+										  formatString="YYYY-MM-DD"
+										  enterFrame="{dfStopEndDate.selectedDate==null?dfStopEndDate.selectedDate=new Date():dfStopEndDate.selectedDate}"
+										  showToday="true"
+										  keyUp="toNextControl(event,btConfirm,dfStopEndDate)"/>
+						</mx:FormItem>
+					</mx:FormItem>
+				</s:HGroup>
+			</s:VGroup>
+		</s:NavigatorContent>
+	</mx:TabNavigator>
+	<s:HGroup width="100%"
+			  height="31"
+			  horizontalAlign="right"
+			  verticalAlign="middle"
+			  gap="5">
+		<mx:LinkButton id="btConfirm"
+					   icon="@Embed('/assets/images/button/confirm20.png')"
+					   label=" 确 定 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   height="26"
+					   click="btConfirm_clickHandler()"
+					   keyUp="btConfirm_keyUpHandler(event)"/>
+		<mx:LinkButton id="btReturn"
+					   height="26"
+					   label=" 取 消"
+					   skin="mx.skins.halo.ButtonSkin"
+					   icon="@Embed(source='assets/images/button/return20.png')"
+					   click="btReturn_clickHandler(event)"/>
+	</s:HGroup>
+</s:TitleWindow>

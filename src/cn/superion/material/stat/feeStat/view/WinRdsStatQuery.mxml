@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	 收发存汇总表查询模块
+	 author: 芮玉红  2011.02.22
+-->
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   backgroundColor="0xE2E8E8"
+			   width="500"
+			   height="246"
+			   title="收发存汇总表"
+			   close="closeWin()"
+			   xmlns:controls="cn.superion.base.components.controls.*"
+			   creationComplete="doInit()">
+
+	<fx:Script source="WinRdsStatQueryas.as"/>
+
+	<fx:Declarations>
+		<s:RadioButtonGroup id="fzGroup"/>
+		<!--<mx:NumberValidator id="currentStockAmountFromValid"
+							source="{currentStockAmountFrom}"
+							property="text"
+							required="false"
+							domain="real"
+							precision="2"
+							precisionError="小数点后最多只能有2位数字"
+							minValue="0"
+							maxValue="9999999999.99"
+							exceedsMaxError="输入的值太大,不得超过最大值9999999999.99"/>
+		<mx:NumberValidator id="currentStockAmountToValid"
+							source="{currentStockAmountTo}"
+							property="text"
+							required="false"
+							domain="real"
+							precision="2"
+							precisionError="小数点后最多只能有2位数字"
+							minValue="0"
+							maxValue="9999999999.99"
+							exceedsMaxError="输入的值太大,不得超过最大值9999999999.99"/>-->
+
+	</fx:Declarations>
+
+	<s:layout>
+		<s:VerticalLayout paddingLeft="10"
+						  paddingRight="10"
+						  paddingTop="10"/>
+	</s:layout>
+	<mx:TabNavigator width="100%"
+					 height="140"
+					 paddingBottom="15"
+					 paddingTop="15"
+					 paddingLeft="15"
+					 paddingRight="15"
+					 backgroundColor="0xE2E8E8">
+		<s:NavigatorContent id="queryCondition"
+							label="查询条件"
+							width="100%"
+							height="100%">
+			<s:VGroup id="queryPanel"
+					  width="100%"
+					  height="100%"
+					  verticalAlign="middle">
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="仓    库"
+							 width="75"/>
+					<s:ComboBox id="storageCode"
+								width="100%"
+								height="25"
+								selectedIndex="0"
+								requireSelection="true"
+								labelField="storageName"
+								keyUp="toNextControl(event,materialName)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:CheckBox id="isBillDate"
+								label="单据月份"
+								keyUp="toNextControl(event,billDateFrom)"/>
+					<mx:DateField id="billDateFrom"
+								  width="50%"
+								  formatString="YYYY-MM-DD"
+								  editable="true"
+								  enabled="{isBillDate.selected}"
+								  enterFrame="{billDateFrom.selectedDate==null?billDateFrom.selectedDate=new Date():billDateFrom.selectedDate}"
+								  selectableRange="{{rangeEnd:billDateTo.selectedDate}}"
+								  change="billDateFrom_changeHandler(event)"/>
+					<s:Label text="-"
+							 verticalAlign="middle"/>
+					<mx:DateField id="billDateTo"
+								  width="50%"
+								  formatString="YYYY-MM-DD"
+								  enabled="{isBillDate.selected}"
+								  enterFrame="{billDateTo.selectedDate==null?billDateTo.selectedDate=new Date():billDateTo.selectedDate}"
+								  selectableRange="{{rangeStart:billDateFrom.selectedDate,rangeEnd:new Date()}}"
+								  editable="true"/>
+					<!--		  keyUp="toNextControl(event,currentStockAmountFrom)"/>-->
+				</s:HGroup>
+
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="物资名称"
+							 width="75"/>
+					<!--<controls:TextInputIcon id="materialClass"
+											width="100%"
+											keyUp="queryIcon_keyUpHandler(event,isBillDate)"
+											queryIconClick="materialClass_queryIconClickHandler(event)"/>-->
+						<controls:TextInputIcon id="materialName"
+											width="100%"
+											keyUp="queryIcon_keyUpHandler(event,isBillDate)"
+											queryIconClick="materialCode_queryIconClickHandler(event)"/>
+				</s:HGroup>
+		
+				<!--<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="结存数量"
+							 width="75"/>
+					<s:TextInput id="currentStockAmountFrom"
+								 width="50%"
+								 restrict="0-9,\."
+								 textAlign="right"
+								 keyUp="toNextControl(event,currentStockAmountTo)"/>
+					<s:Label text="-"
+							 width="8"/>
+					<s:TextInput id="currentStockAmountTo"
+								 width="50%"
+								 restrict="0-9,\."
+								 textAlign="right"
+								 keyUp="toNextControl(event,btConfirm)"/>
+				</s:HGroup>-->
+			</s:VGroup>
+		</s:NavigatorContent>
+	</mx:TabNavigator>
+	<s:HGroup width="100%"
+			  height="31"
+			  horizontalAlign="right"
+			  verticalAlign="middle"
+			  gap="5">
+		<mx:LinkButton id="btConfirm"
+					   icon="@Embed('/assets/images/button/confirm20.png')"
+					   label=" 确 定 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   height="26"
+					   click="btConfirm_clickHandler(event)"/>
+		<mx:LinkButton id="btReturn"
+					   height="26"
+					   label=" 取 消 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   icon="@Embed(source='assets/images/button/return20.png')"
+					   click="btReturn_clickHandler(event)"/>
+	</s:HGroup>
+</s:TitleWindow>

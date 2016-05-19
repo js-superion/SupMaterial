@@ -1,0 +1,717 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:myview="cn.superion.center.drug.drugDoc.view.*"
+			   width="700"
+			   height="380"
+			   close="btReturn_clickHandler()"
+			   borderAlpha="0.75"
+			   backgroundColor="0xE2E8E8"
+			   title="领用证卡信息"
+			   creationComplete="titlewindow1_creationCompleteHandler(event)"
+			   xmlns:controls="cn.superion.base.components.controls.*">
+	<s:layout>
+		<s:VerticalLayout paddingLeft="10"
+						  paddingRight="10"
+						  paddingTop="10"/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import cn.superion.base.config.AppInfo;
+			import cn.superion.base.config.BaseDict;
+			import cn.superion.base.util.ArrayCollUtils;
+			import cn.superion.base.util.DateUtil;
+			import cn.superion.base.util.FormUtils;
+			import cn.superion.base.util.PurviewUtil;
+			import cn.superion.base.util.RemoteUtil;
+			import cn.superion.dataDict.DictWinShower;
+			import cn.superion.material.util.MainToolBar;
+			import cn.superion.vo.center.material.CdMaterialCard;
+			import cn.superion.vo.center.material.CdMaterialCardLog;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.remoting.RemoteObject;
+			import mx.validators.NumberValidator;
+			import mx.validators.Validator;
+
+			public var data:Object;
+			public var saveType:Boolean;
+			private const MENU_NO:String="0705";
+			private var _tempDeptCode:String;
+			private var _tempPersonId:String;
+			private var _validators:Array=[];
+			private var _this:*=this;
+			private var cardInfoVo:CdMaterialCard;
+			private var logInfoVo:CdMaterialCardLog;
+			private var destination:String="materialCardImpl";
+
+			//初始化
+			protected function titlewindow1_creationCompleteHandler(event:FlexEvent):void
+			{
+				this.saveType=data.isAdd;
+				cardInfoVo=this.data.cardInfo;
+				logInfoVo=this.data.logInfo;
+				if (saveType == true)
+				{
+					stopDate.selectedDate=new Date();
+					tabCardInfo.removeItemAt(1);
+					cardCode.setFocus();
+				}
+				else
+				{
+					tabCardInfo.addItem(navContent_add_log_info);
+					FormUtils.fillFormByItem(navContent_add_basic_info, cardInfoVo);
+					if(!cardInfoVo.stopDate){
+						stopDate.selectedDate=new Date();
+					}
+					var deptItem:Object=ArrayCollUtils.findItemInArrayByValue(BaseDict.deptDict, 'dept', cardInfoVo.deptCode);
+					var personItem:Object=ArrayCollUtils.findItemInArrayByValue(BaseDict.personIdDict, 'personId', cardInfoVo.personId);
+					deptCode.txtContent.text=deptItem == null ? "" : deptItem.deptName;
+					personId.txtContent.text=personItem == null ? "" : personItem.personIdName;
+				}
+				maxLimitedValidate();
+			}
+			
+			private function tabChangeEvent(event:mx.events.IndexChangedEvent):void
+			{
+				if (event.newIndex == 1)
+				{
+					panelBottom.visible=false;
+					panelBottom.includeInLayout=false;
+				}
+				else
+				{
+					panelBottom.visible=true;
+					panelBottom.includeInLayout=true;
+				}
+				
+			}
+			//跳转行查询
+			private function turnLine(flag:String):void
+			{
+				var seleIndex:Number=data.parentWin.gdMaterialCardList.grid.selectedIndex;
+				var rowcount:Number=data.parentWin.gdMaterialCardList.grid.rowCount;
+				var allLine:Number=ArrayCollection(data.parentWin.gdMaterialCardList.grid.dataProvider).length;
+				if (flag == "first")
+				{
+					data.parentWin.gdMaterialCardList.grid.selectedIndex=0;
+					btSave.enabled=false;
+					btFirst.enabled=false;
+					btPrevious.enabled=false;
+					btNext.enabled=true;
+					btLast.enabled=true;
+				}
+				if (flag == "pre")
+				{
+					if (seleIndex == 1)
+					{
+						data.parentWin.gdMaterialCardList.grid.selectedIndex=0;
+						btSave.enabled=false;
+						btFirst.enabled=false;
+						btPrevious.enabled=false;
+						btNext.enabled=true;
+						btLast.enabled=true;
+					}
+					else
+					{
+						data.parentWin.gdMaterialCardList.grid.selectedIndex=seleIndex - 1;
+						btFirst.enabled=true;
+						btPrevious.enabled=true;
+						btNext.enabled=true;
+						btLast.enabled=true;
+					}
+				}
+				if (flag == "next")
+				{
+					if (seleIndex + 2 == allLine)
+					{
+						data.parentWin.gdMaterialCardList.grid.selectedIndex=allLine - 1;
+						btFirst.enabled=true;
+						btPrevious.enabled=true;
+						btNext.enabled=false;
+						btLast.enabled=false;
+					}
+					else
+					{
+						data.parentWin.gdMaterialCardList.grid.selectedIndex=seleIndex + 1;
+						btFirst.enabled=true;
+						btPrevious.enabled=true;
+						btNext.enabled=true;
+						btLast.enabled=true;
+					}
+				}
+				if (flag == "last")
+				{
+					data.parentWin.gdMaterialCardList.grid.selectedIndex=allLine - 1;
+					btFirst.enabled=true;
+					btPrevious.enabled=true;
+					btNext.enabled=false;
+					btLast.enabled=false;
+				}
+				cardInfoVo=data.parentWin.gdMaterialCardList.grid.selectedItem;
+				//分页时赋值
+				FormUtils.fillFormByItem(add_basic_info, cardInfoVo);
+//				barCode.text=materialCard.barCode;
+//				cardCode.text=materialCard.cardCode;	
+				var deptItem:Object=ArrayCollUtils.findItemInArrayByValue(BaseDict.deptDict, 'dept', cardInfoVo.deptCode);
+				var personItem:Object=ArrayCollUtils.findItemInArrayByValue(BaseDict.personIdDict, 'personId', cardInfoVo.personId);
+				deptCode.txtContent.text=deptItem == null ? "" : deptItem.deptName;
+				personId.txtContent.text=personItem == null ? "" : personItem.personIdName;
+//				maxLimited.text=(materialCard.maxLimited).toString();
+			}
+
+			//保存
+			protected function btSave_clickHandler(event:MouseEvent):void
+			{
+//				btSave.enabled=false;
+				if (!PurviewUtil.getPurview(AppInfo.APP_CODE, MENU_NO, "04"))
+				{
+					Alert.show("您无此按钮操作权限！", "提示");
+					btSave.enabled=true;
+					return;
+				}
+				//证卡编号不能为空
+//				if (this.cardCode.text == "")
+//				{
+//					this.cardCode.setFocus();
+//					Alert.show("证卡编号不能为空,请输入！", "提示信息");
+//					return;
+//				}
+				//所属部门不能为空
+				if (this.deptCode.txtContent.text == "")
+				{
+					this.deptCode.setFocus();
+					Alert.show("所属部门不能为空,请输入！", "提示信息");
+					return;
+				}
+				//负责人不能为空
+				if (this.personId.txtContent.text == "")
+				{
+					this.deptCode.setFocus();
+					Alert.show("负责人不能为空,请输入！", "提示信息");
+					return;
+				}
+				//最高限额不能为空
+				if (this.maxLimited.text == "")
+				{
+					this.maxLimited.setFocus();
+					Alert.show("最高限额不能为空,请输入！", "提示信息");
+					return;
+				}
+				var valResult:Array=Validator.validateAll(this._validators);
+				if (valResult.length > 0)
+				{
+					valResult[0].target.source.setFocus();
+					return;
+				}
+				cardInfoVo.cardCode=cardCode.text;
+				if (saveType == true)
+				{
+					cardInfoVo.deptCode=_tempDeptCode == null ? deptCode.txtContent.text : _tempDeptCode;
+					cardInfoVo.personId=_tempPersonId == null ? personId.txtContent.text : _tempPersonId;
+				}
+				cardInfoVo.maxLimited=maxLimited.text == '' ? 0 : Number(maxLimited.text);
+				cardInfoVo.previousDeposit=previousDeposit.text == '' ? 0 : Number(previousDeposit.text);
+				cardInfoVo.currentDeposit=currentDeposit.text == '' ? 0 : Number(currentDeposit.text);
+				cardInfoVo.currentCredit=currentCredit.text == '' ? 0 : Number(currentCredit.text);
+				cardInfoVo.accountRemain=accountRemain.text == '' ? 0 : Number(accountRemain.text);
+				cardInfoVo.startDate=DateField.stringToDate(startDate.text, 'YYYY-MM-DD');
+				cardInfoVo.stopDate=stopDate.selectedDate;
+				var _dp:ArrayCollection=data.parentWin.gdMaterialCardList.grid.dataProvider as ArrayCollection;
+				//列表没有数据
+				if (!_dp)
+				{
+					_dp=new ArrayCollection();
+				}
+				var ro:RemoteObject=RemoteUtil.getRemoteObject(destination, function(rev:Object):void
+					{
+						if (!rev.success)
+						{
+							Alert.show(rev.error, "提示信息");
+							return;
+						}
+						if (saveType == true)
+						{
+							Alert.show("保存" + cardInfoVo.cardCode + "领用证卡信息成功！", "提示信息");
+							cardInfoVo=rev.data[0];
+							barCode.text=cardInfoVo.barCode;
+							cardCode.text=cardCode.text == "" ? cardInfoVo.cardCode : cardCode.text;
+							var createPersonItem:Object=ArrayCollUtils.findItemInArrayByValue(BaseDict.personIdDict, 'personId', cardInfoVo.createPerson);
+							createPerson.text=createPersonItem == null ? "" : createPersonItem.personIdName;
+							btSave.enabled=false;
+							btNew.enabled=true;
+							_dp.addItem(cardInfoVo);
+							data.parentWin.gdMaterialCardList.grid.dataProvider=_dp;
+							return;
+						}
+						Alert.show("修改" + cardInfoVo.cardCode + "领用证卡信息成功！", "提示信息");
+						data.parentWin.gdMaterialCardList.grid.invalidateList();
+						data.parentWin.gdMaterialCardList.grid.selectedItem=cardInfoVo;
+						data.parentWin.gdMaterialCardList.grid.scrollToIndex(data.parentWin.gdMaterialCardList.grid.selectedIndex);
+						data.parentWin.preNextHandle(_this);
+					})
+				ro.saveCard(cardInfoVo);
+			}
+
+			//新建
+			protected function btNew_clickHandler(event:MouseEvent):void
+			{
+				if (!PurviewUtil.getPurview(AppInfo.APP_CODE, MENU_NO, "01"))
+				{
+					Alert.show("您无此按钮操作权限！", "提示");
+					return;
+				}
+				cardInfoVo=new CdMaterialCard();
+				cardCode.text="";
+				deptCode.txtContent.text="";
+				personId.txtContent.text="";
+				maxLimited.text="";
+				saveType=true;
+				btNew.enabled=false;
+				btSave.enabled=true;
+			}
+
+			//返回领用证卡维护列表窗口 
+			protected function btReturn_clickHandler():void
+			{
+				// TODO Auto-generated method stub
+				PopUpManager.removePopUp(this);
+//				var enAry:Array=[data.parentWin.btToolBar.btPrint, data.parentWin.btToolBar.btExp, data.parentWin.btToolBar.btAdd, data.parentWin.btToolBar.btModify, data.parentWin.btToolBar.btDelete, data.parentWin.btToolBar.btQuery, data.parentWin.btToolBar.btExit];
+//				MainToolBar.showSpecialBtn(data.parentWin.btToolBar, data.parentWin.disAry, enAry, true);
+			}
+
+			//部门字典
+			protected function deptCode_queryIconClickHandler(event:Event):void
+			{
+				btSave.enabled=true;
+				btFirst.enabled=false;
+				btPrevious.enabled=false;
+				btNext.enabled=false;
+				btLast.enabled=false;
+				var x:int=0;
+				var y:int=this.parentApplication.screen.height - 345;
+				DictWinShower.showDeptDict(function(rev:Object):void
+					{
+						deptCode.txtContent.text=rev.deptName;
+						_tempDeptCode=rev.deptCode;
+					});
+			}
+
+			//人员字典
+			protected function personId_queryIconClickHandler(event:Event):void
+			{
+				btSave.enabled=true;
+				btFirst.enabled=false;
+				btPrevious.enabled=false;
+				btNext.enabled=false;
+				btLast.enabled=false;
+				var x:int=0;
+				var y:int=this.parentApplication.screen.height - 345;
+				DictWinShower.showPersonDict(function(rev:Object):void
+					{
+						personId.txtContent.text=rev.personIdName;
+						_tempPersonId=rev.personId;
+					});
+			}
+
+			private function maxLimitedValidate():void
+			{
+				var ary:Array=[maxLimited];
+				for each (var item:Object in ary)
+				{
+					var vNumVal:NumberValidator=new NumberValidator();
+					vNumVal.source=item;
+					vNumVal.required=true;
+					vNumVal.property='text';
+					vNumVal.domain='real';
+					vNumVal.precision='4';
+					vNumVal.precisionError='小数点后最多只能有4位数字';
+					vNumVal.maxValue='99999999.9999';
+					vNumVal.exceedsMaxError='输入的值太大,不得超过最大值99999999.9999';
+					vNumVal.minValue='0';
+					_validators.push(vNumVal);
+				}
+			}
+
+			private function changHandler(e:Event):void
+			{
+				btSave.enabled=true;
+				btFirst.enabled=false;
+				btPrevious.enabled=false;
+				btNext.enabled=false;
+				btLast.enabled=false;
+			}
+			
+			/**
+			 * 处理回车键转到下一个控件
+			 * */
+			private function toNextControl(e:KeyboardEvent, fcontrolNext:Object):void
+			{
+				FormUtils.toNextControl(e, fcontrolNext);
+			}
+
+			/**
+			 * 放大镜输入框键盘处理方法
+			 * */
+			protected function textInputIcon_keyUpHandler(event:KeyboardEvent,fctrNext:Object):void
+			{
+				FormUtils.textInputIconKeyUpHandler(event,cardInfoVo,fctrNext);
+			}
+
+			/**
+			 * 计算：账户余额 = 上年结转金额 + 本年注入金额 – 本年支出金额
+			 * */
+			protected function keyDownHandle(event:KeyboardEvent):void
+			{
+				accountRemain.text=(Number(previousDeposit.text) + Number(currentDeposit.text) - Number(currentCredit.text)).toFixed(2).toString();
+			}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!--<mx:StringValidator id="cardCodeValid"
+			 source="{cardCode}"
+			 property="text"
+			 required="true"
+			 requiredFieldError="证卡编号为必填"
+			 maxLength="12"/>-->
+		<mx:StringValidator id="deptCodeValid"
+							source="{deptCode.txtContent}"
+							property="text"
+							required="true"
+							requiredFieldError="所属部门为必填"
+							maxLength="40"/>
+		<mx:StringValidator id="personIdValid"
+							source="{personId.txtContent}"
+							property="text"
+							required="true"
+							requiredFieldError="负责人为必填"
+							maxLength="20"/>
+		<!--<mx:NumberValidator id="maxLimitedValid"
+			 source="{maxLimited}"
+			 property="text"
+			 required="true"
+			 domain="real"
+			 precision="2"
+			 precisionError="小数点后最多只能有2位数字"
+			 minValue="0"
+			 maxValue="9999999999.99"
+			 exceedsMaxError="输入的值太大,不得超过最大值9999999999.99"
+			 requiredFieldError="最高限额为必填"/>-->
+	</fx:Declarations>
+	<mx:TabNavigator id="tabCardInfo"
+					 width="100%"
+					 height="295"
+					 paddingBottom="15"
+					 paddingLeft="15"
+					 paddingRight="15"
+					 paddingTop="15"
+					 backgroundColor="#E2E8E8"
+					 creationPolicy="all"
+					 change="tabChangeEvent(event)">
+		<!--领用证卡基本信息显示区-->
+		<s:NavigatorContent id="navContent_add_basic_info"
+							label="基本信息">
+			<s:VGroup id="add_basic_info"
+					  width="100%"
+					  height="100%"
+					  paddingTop="0">
+				<s:HGroup width="100%"
+						  gap="5"
+						  verticalAlign="middle">
+					<mx:FormItem label="条　 形　 码"
+								 width="330">
+						<s:TextInput id="barCode"
+									 width="100%"
+									 enabled="false"/>
+					</mx:FormItem>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  gap="5"
+						  verticalAlign="middle">
+					<mx:FormItem label="证 卡  编 号"
+								 width="330">
+						<s:TextInput id="cardCode"
+									 width="100%"
+									 maxChars="12"
+									 restrict="0-9"
+									 change="changHandler(event)"/>
+					</mx:FormItem>
+					<s:Label text="所 属  部 门"
+							 width="89"
+							 color="blue"/>
+					<controls:TextInputIcon id="deptCode"
+											width="100%"
+											maxChars="20"
+											queryIconClick="deptCode_queryIconClickHandler(event)"
+											keyUp="textInputIcon_keyUpHandler(event,personId)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  gap="5"
+						  verticalAlign="middle">
+					<s:Label text="负   责   人"
+							 width="89"
+							 color="blue"/>
+					<controls:TextInputIcon id="personId"
+											width="236"
+											maxChars="10"
+											queryIconClick="personId_queryIconClickHandler(event)"
+											keyUp="textInputIcon_keyUpHandler(event,maxLimited)"/>
+					<mx:FormItem label="最 高  限 额"
+								 width="310"
+								 color="blue">
+						<s:TextInput id="maxLimited"
+									 width="100%"
+									 restrict="0-9,\."
+									 textAlign="right"
+									 maxChars="13"
+									 change="changHandler(event)"
+									 keyUp="toNextControl(event,previousDeposit)"/>
+					</mx:FormItem>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  gap="5"
+						  verticalAlign="middle">
+					<mx:FormItem label="上年结转金额"
+								 indicatorGap="5"
+								 width="330">
+						<s:TextInput id="previousDeposit"
+									 width="100%"
+									 restrict="0-9,\."
+									 textAlign="right"
+									 keyDown="keyDownHandle(event)"
+									 keyUp="toNextControl(event,currentDeposit)"/>
+						<!--enabled="false"-->
+					</mx:FormItem>
+					<mx:FormItem label="本年注入金额"
+								 indicatorGap="5"
+								 width="310">
+						<s:TextInput id="currentDeposit"
+									 width="100%"
+									 restrict="0-9,\."
+									 textAlign="right"
+									 keyDown="keyDownHandle(event)"
+									 keyUp="toNextControl(event,stopDate)"/>
+						<!--enabled="false"-->
+					</mx:FormItem>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  gap="5"
+						  verticalAlign="middle">
+					<mx:FormItem label="本年支出金额"
+								 width="330">
+						<s:TextInput id="currentCredit"
+									 width="100%"
+									 restrict="0-9,\."
+									 textAlign="right"
+									 enabled="false"/>
+					</mx:FormItem>
+					<mx:FormItem label="账 户  余 额"
+								 indicatorGap="5"
+								 width="310">
+						<s:TextInput id="accountRemain"
+									 width="100%"
+									 restrict="0-9,\."
+									 textAlign="right"
+									 enabled="false"/>
+					</mx:FormItem>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  gap="5"
+						  verticalAlign="middle">
+					<mx:FormItem label="启 用  日 期"
+								 width="330">
+						<s:TextInput id="startDate"
+									 width="100%"
+									 enabled="false"
+									 text="{DateUtil.dateToString(new Date(),'YYYY-MM-DD')}"/>
+						<!--<mx:DateField id="startDate"
+							 width="100%"
+							 enabled="false"
+							 formatString="YYYY-MM-DD"
+							 selectableRange="{{rangeStart:new Date()}}"
+							 enterFrame="{startDate.selectedDate==null?startDate.selectedDate=new Date():startDate.selectedDate}"/>-->
+					</mx:FormItem>
+					<mx:FormItem label="停 用  日 期"
+								 width="310">
+						<mx:DateField id="stopDate"
+									  width="100%"
+									  formatString="YYYY-MM-DD"
+									  selectableRange="{{rangeStart:new Date()}}"									  
+									  change="changHandler(event)"/>
+					</mx:FormItem>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  gap="5"
+						  verticalAlign="middle">
+					<mx:FormItem label="建   档   人"
+								 indicatorGap="5"
+								 width="330">
+						<s:TextInput id="createPerson"
+									 width="100%"
+									 maxChars="10"
+									 restrict="^ "
+									 enabled="false"/>
+					</mx:FormItem>
+					<mx:FormItem label="建 档  日 期"
+								 width="310">
+						<s:TextInput id="createDate"
+									 width="100%"
+									 enabled="false"
+									 text="{DateUtil.dateToString(new Date(),'YYYY-MM-DD')}"/>
+						<!--<mx:DateField id="createDate"
+							 width="100%"
+							 formatString="YYYY-MM-DD"
+							 enabled="false"
+							 selectableRange="{{rangeStart:new Date()}}"
+							 enterFrame="{createDate.selectedDate==null?createDate.selectedDate=new Date():createDate.selectedDate}"/>-->
+					</mx:FormItem>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  gap="5"
+						  verticalAlign="middle">
+					<mx:FormItem label="变   更   人"
+								 indicatorGap="5"
+								 width="330">
+						<s:TextInput id="modifyPerson"
+									 width="100%"
+									 maxChars="10"
+									 restrict="^ "
+									 enabled="false"/>
+					</mx:FormItem>
+					<mx:FormItem label="变 更  日 期"
+								 width="310">
+						<s:TextInput id="modifyDate"
+									 width="100%"
+									 enabled="false"/>
+						<!--<mx:DateField id="modifyDate"
+							 width="100%"
+							 enabled="false"
+							 formatString="YYYY-MM-DD"
+							 selectableRange="{{rangeStart:new Date()}}"
+							 enterFrame="{modifyDate.selectedDate==null?modifyDate.selectedDate=new Date():modifyDate.selectedDate}"/>-->
+					</mx:FormItem>
+				</s:HGroup>
+			</s:VGroup>
+		</s:NavigatorContent>
+		<!--领用证卡日志信息显示区-->
+		<s:NavigatorContent id="navContent_add_log_info"
+							label="日志信息">
+			<s:VGroup id="add_log_info"
+					  width="100%"
+					  height="100%">
+				<controls:SuperDataGrid id="gdMaterialCardLogList"
+										width="100%"
+										height="100%"
+										hasRowNo="true"
+										styleName="dataGrid">
+					<controls:columns>
+						<mx:DataGridColumn headerText="序号"
+										   width="50"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="变更人"
+										   width="80"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="变更日期"
+										   width="100"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="变更项"
+										   width="120"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="变更前值"
+										   width="160"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="变更后值"
+										   width="160"
+										   textAlign="left"/>
+					</controls:columns>
+				</controls:SuperDataGrid>
+			</s:VGroup>
+		</s:NavigatorContent>
+	</mx:TabNavigator>
+	<!--功能按钮区-->
+	<s:HGroup id="panelBottom"
+			  width="100%"
+			  height="28"
+			  paddingTop="5"
+			  horizontalAlign="right">
+		<mx:LinkButton id="btSave"
+					   label=" 保 存 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   width="86"
+					   click="btSave_clickHandler(event)"
+					   icon="@Embed(source='/assets/images/button/save20.png')"
+					   disabledIcon="@Embed(source='/assets/images/button/save20_disabled.png')">
+		</mx:LinkButton>
+		<mx:LinkButton id="btNew"
+					   icon="@Embed('/assets/images/button/new20.png')"
+					   disabledIcon="@Embed('/assets/images/button/new20_disabled.png')"
+					   label=" 新 建 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   buttonMode="true"
+					   width="86"
+					   click="btNew_clickHandler(event)"/>
+		<!--<mx:LinkButton id="copyBtn"
+			 label=" 复 制 "
+			 skin="mx.skins.halo.ButtonSkin"
+			 width="86"
+			 enabled="false"
+			 icon="@Embed(source='assets/images/button/copy20.png')"
+			 disabledIcon="@Embed(source='assets/images/button/copy20_disabled.png')">
+			 </mx:LinkButton>-->
+		<mx:LinkButton id="btFirst"
+					   label=" 首 张 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   fontSize="12"
+					   width="86"
+					   height="26"
+					   icon="@Embed(source='/assets/images/button/page-first.gif')"
+					   disabledIcon="@Embed(source='/assets/images/button/page-first-disabled.gif')"
+					   click="turnLine('first')">
+		</mx:LinkButton>
+		<mx:LinkButton id="btPrevious"
+					   label="上一张"
+					   skin="mx.skins.halo.ButtonSkin"
+					   fontSize="12"
+					   width="86"
+					   height="26"
+					   icon="@Embed(source='/assets/images/button/page-prev.gif')"
+					   disabledIcon="@Embed(source='/assets/images/button/page-prev-disabled.gif')"
+					   click="turnLine('pre')">
+		</mx:LinkButton>
+		<mx:LinkButton id="btNext"
+					   label="下一张"
+					   skin="mx.skins.halo.ButtonSkin"
+					   fontSize="12"
+					   width="86"
+					   height="26"
+					   icon="@Embed(source='/assets/images/button/page-next.gif')"
+					   disabledIcon="@Embed(source='/assets/images/button/page-next-disabled.gif')"
+					   click="turnLine('next')">
+		</mx:LinkButton>
+		<mx:LinkButton id="btLast"
+					   label=" 末 张 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   fontSize="12"
+					   width="86"
+					   height="26"
+					   icon="@Embed(source='/assets/images/button/page-last.gif')"
+					   disabledIcon="@Embed(source='/assets/images/button/page-last-disabled.gif')"
+					   click="turnLine('last')">
+		</mx:LinkButton>
+		<mx:LinkButton id="btReturn"
+					   label=" 退 出 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   fontSize="12"
+					   width="86"
+					   height="26"
+					   icon="@Embed(source='/assets/images/button/return20.png')"
+					   disabledIcon="@Embed(source='/assets/images/button/return20_disabled.png')"
+					   click="btReturn_clickHandler()">
+		</mx:LinkButton>
+	</s:HGroup>
+</s:TitleWindow>

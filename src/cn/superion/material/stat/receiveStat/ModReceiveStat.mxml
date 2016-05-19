@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Module xmlns:fx="http://ns.adobe.com/mxml/2009"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   layout="vertical"
+		   height="100%"
+		   width="100%"
+		   horizontalScrollPolicy="auto" 
+		   backgroundColor="#E2E8E8"
+		   xmlns:controls="cn.superion.base.components.controls.*"
+		   creationComplete="doInit()"
+		   xmlns:view="cn.superion.material.util.*">
+
+	<fx:Script source="ModReceiveStatas.as"/>
+
+	<s:Scroller id="scrol"
+				width="100%"
+				height="100%">
+		<s:VGroup id="vg"
+				  gap="0" 
+				  height="100%"
+				  width="100%">
+			<view:ToolBar id="toolBar"
+						  width="100%"
+						  printClick="printClickHandler(event)"
+						  expClick="expClickHandler(event)"
+						  queryClick="queryClickHandler(event)"
+						  exitClick="exitClickHandler(event)"/>
+			<controls:BarSubTitle title="入库汇总表"/>
+   
+			<controls:GroupDataGrid id="gdReceive"
+									width="100%"
+									height="100%"
+									hasRowNo="true"
+									styleName="dataGrid"
+								    isAutoFetchDictData="false"
+									horizontalScrollPolicy="on"
+									sumLableField="rowno"
+									sumFields="{['amount','wholeSaleMoney']}"
+									format="{[,,,,,,,'0.00','0.00','0.00']}">
+				<controls:columns>
+
+					<mx:DataGridColumn headerText="序号"
+									   dataField="rowno"
+									   width="190"/>
+					<mx:DataGridColumn headerText="供应单位"
+									   dataField="salerName"
+									   width="200"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="物资分类"
+									   dataField="materialClassName"
+									   width="150"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="物资编码"
+									   dataField="materialCode"
+									   width="150"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="物资名称"
+									   dataField="materialName"
+									   width="250"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="规格型号"
+									   dataField="materialSpec"
+									   width="140"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="单位"
+									   dataField="materialUnits"
+									   width="60"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="数量"
+									   dataField="amount"
+									   width="80"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="进价"
+									   dataField="wholeSalePrice"
+									   width="110"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="进价金额"
+									   width="150"
+									   dataField="wholeSaleMoney"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="入库日期"
+									   dataField="billDate"
+									   width="110"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="发票日期"
+									   dataField="invoiceDate"
+									   width="0"
+									   visible="false"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="记账日期"
+									   dataField="accountDate"
+									   width="0"
+									   visible="false"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="月单号"
+									   dataField="billMonthNo"
+									   width="120"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="入库单号"
+									   dataField="billNo"
+									   width="120"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="发票号"
+									   dataField="invoiceNo"
+									   width="120"
+									   visible="true"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="批号"
+									   dataField="batch"
+									   width="120"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="生产厂家"
+									   width="200"
+									   editable="false"
+									   dataField="factoryName"
+									   textAlign="left"
+									   labelFunction="factoryLBF"/>
+					<mx:DataGridColumn headerText="备注"
+									   dataField="remark"
+									   width="120"
+									   textAlign="left"/>
+					
+					<mx:DataGridColumn headerText="明细备注"
+									   dataField="detailRemark"
+									   width="120"
+									   textAlign="left"/>
+					
+					<mx:DataGridColumn headerText="当前状态"
+									   dataField="currentStatus"
+									   width="120"
+									   textAlign="left"/>
+				</controls:columns>
+			</controls:GroupDataGrid>
+		</s:VGroup>
+	</s:Scroller>
+</mx:Module>
+

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   backgroundColor="0xE2E8E8"
+			   width="500"
+			   height="290"
+			   title="保质期预警查询"
+			   close="closeWin()"
+			   xmlns:controls="cn.superion.base.components.controls.*"
+			   creationComplete="doInit()">
+
+	<fx:Script source="WinExpiryAlarmQueryas.as"/>
+
+	<fx:Declarations>
+		<s:RadioButtonGroup id="rdoBt"/>
+		<mx:NumberValidator id="expiryDayValid"
+							source="{expiryDay}"
+							property="text"
+							required="false"
+							domain="real"
+							precision="0"
+							precisionError="只能输入整数"
+							minValue="0"
+							maxValue="9999999999.99"
+							exceedsMaxError="输入的值太大,不得超过最大值9999999999"/>
+		<mx:NumberValidator id="nearDayValid"
+							source="{nearDay}"
+							property="text"
+							required="false"
+							domain="real"
+							precision="0"
+							precisionError="只能输入整数"
+							minValue="0"
+							maxValue="9999999999"
+							exceedsMaxError="输入的值太大,不得超过最大值9999999999"/>
+
+	</fx:Declarations>
+	<s:layout>
+		<s:VerticalLayout paddingLeft="10"
+						  paddingRight="10"
+						  paddingTop="10"/>
+	</s:layout>
+	
+	<!-- 查询条件区 -->
+	<mx:TabNavigator width="478"
+					 height="191"
+					 paddingBottom="15"
+					 paddingTop="15"
+					 paddingLeft="15"
+					 paddingRight="15"
+					 backgroundColor="0xE2E8E8">
+		<s:NavigatorContent label="查询条件"
+							width="100%"
+							height="100%">
+			<s:VGroup id="expiryAlarmQuery"
+					  width="100%"
+					  height="100%">
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="仓　　库"
+							 width="75"/>
+					<s:ComboBox id="storageCode"
+								width="100%"
+								height="25"
+								labelField="storageName"
+								selectedIndex="0"
+								requireSelection="true"
+								keyUp="toNextControl(event,materialClass)"/>
+				</s:HGroup>
+
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="物资类型"
+							 width="75"/>
+					<controls:TextInputIcon id="materialClass"
+											width="100%"
+											keyUp="queryIcon_keyUpHandler(event,rdoBtAvailDate)"
+											queryIconClick="materialClass_queryIconClickHandler(event)"/>
+				</s:HGroup>
+
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:RadioButton groupName="rdoBt"
+								   id="rdoBtAvailDate"
+								   value="availDate"
+								   label="失效日期"
+								   width="75"
+								   keyUp="toNextControl(event,beginAvailDate)"/>
+					<mx:DateField id="beginAvailDate"
+								  width="50%"
+								  formatString="YYYY-MM-DD"
+								  enabled="{rdoBtAvailDate.selected}"
+								  editable="true"
+								  selectedDate="{beginAvailDate.selectedDate==null?beginAvailDate.selectedDate=new Date():beginAvailDate.selectedDate}"
+								  selectableRange="{{rangeEnd:endAvailDate.selectedDate}}"
+								  keyUp="toNextControl(event,endAvailDate)"/>
+					<s:Label text="-"
+							 width="8"/>
+					<mx:DateField id="endAvailDate"
+								  width="50%"
+								  formatString="YYYY-MM-DD"
+								  enabled="{rdoBtAvailDate.selected}"
+								  editable="true"
+								  selectedDate="{endAvailDate.selectedDate==null?endAvailDate.selectedDate=new Date():endAvailDate.selectedDate}"
+								  selectableRange="{{rangeStart:beginAvailDate.selectedDate}}"
+								  keyUp="toNextControl(event,rdoBtExpiryDay)"/>
+				</s:HGroup>
+
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:RadioButton id="rdoBtExpiryDay"
+								   groupName="rdoBt"
+								   value="expiryDay"
+								   label="过期天数"
+								   width="75"
+								   keyUp="toNextControl(event,expiryDay)"/>
+					<s:TextInput id="expiryDay"
+								 width="100%"
+								 textAlign="right"
+								 enabled="{rdoBtExpiryDay.selected}"
+								 keyUp="toNextControl(event,rdoBtNearDay)"/>
+				</s:HGroup>
+
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:RadioButton groupName="rdoBt"
+								   id="rdoBtNearDay"
+								   value="nearDay"
+								   label="临近天数"
+								   width="75"
+								   keyUp="toNextControl(event,nearDay)"/>
+					<s:TextInput id="nearDay"
+								 enabled="{rdoBtNearDay.selected}"
+								 width="100%"
+								 textAlign="right"
+								 keyUp="toNextControl(event,btConfirm)"/>
+				</s:HGroup>
+
+			</s:VGroup>
+		</s:NavigatorContent>
+	</mx:TabNavigator>
+	<s:HGroup width="100%"
+			  height="31"
+			  horizontalAlign="right"
+			  verticalAlign="middle"
+			  gap="5">
+		<mx:LinkButton id="btConfirm"
+					   icon="@Embed('/assets/images/button/confirm20.png')"
+					   label=" 确 定 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   height="26"
+					   click="btConfirm_clickHandler(event)"/>
+		<mx:LinkButton id="btReturn"
+					   height="26"
+					   label=" 取 消 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   icon="@Embed(source='assets/images/button/return20.png')"
+					   click="btReturn_clickHandler(event)"/>
+	</s:HGroup>
+</s:TitleWindow>

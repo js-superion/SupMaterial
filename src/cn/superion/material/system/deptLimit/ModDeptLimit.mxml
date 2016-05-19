@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Module xmlns:fx="http://ns.adobe.com/mxml/2009"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   verticalAlign="top"
+		   paddingBottom="5"
+		   paddingLeft="5"
+		   paddingRight="5"
+		   paddingTop="3"
+		   horizontalAlign="center"
+		   width="100%"
+		   height="100%"
+		   creationComplete="inita()" xmlns:view="cn.superion.material.system.deptLimit.view.*">
+	<fx:Script>
+		<![CDATA[
+			import cn.superion.material.system.deptLimit.view.ButtonGroup;
+		]]>
+	</fx:Script>
+
+	<fx:Script source="ModDeptLimitas.as"/>
+
+	<mx:VBox width="100%"
+			 height="100%"
+			 verticalGap="0"
+			 backgroundColor="#E2E8E8">
+		<s:HGroup width="100%"
+				  height="30"
+				  verticalAlign="middle"
+				  gap="0">
+			<s:BorderContainer backgroundImage="@Embed(source='assets/images/title/title01.png')"
+							   width="222"
+							   height="30"
+							   borderVisible="false">
+				<mx:Text width="188"
+						 height="26"
+						 fontWeight="bold"
+						 fontSize="14"
+						 text="科室领用额度维护"
+						 x="10"
+						 y="3"/>
+			</s:BorderContainer>
+			<s:BorderContainer backgroundImage="@Embed(source='assets/images/title/title02.png')"
+							   width="100%"
+							   height="30"
+							   borderVisible="false"/>
+		</s:HGroup>
+		<mx:Spacer height="5"/>
+		<s:BorderContainer width="100%"
+						   height="100%"
+						   borderStyle="solid"
+						   borderColor="#9ABBE6"
+						   backgroundColor="#E2E8E8">
+			<s:VGroup height="100%"
+					  width="100%"
+					  gap="0">
+
+				<s:HGroup width="100%"
+						  height="100%"
+						  paddingBottom="5"
+						  paddingLeft="5"
+						  paddingTop="5"
+						  paddingRight="5">
+					<view:DeptVsUserTree id="leftTree"
+										  width="230"
+										  height="100%"/>
+					<mx:DataGrid width="100%"
+								 height="100%" editable="true"
+								 id="deptPerInfo"
+								 styleName="dataGrid">
+						<mx:columns>
+							<mx:DataGridColumn headerText="部门名称"
+											   dataField="deptName"
+											   textAlign="left" editable="false"
+											   width="150"/>
+							<mx:DataGridColumn headerText="年度" editable="false"
+											   dataField="years"
+											   textAlign="left"
+											   width="80"/>
+							<mx:DataGridColumn headerText="季度" editable="true"
+											   dataField="season"
+											   textAlign="left"
+											   width="80"/>
+							<mx:DataGridColumn headerText="限额" editable="true"
+											   dataField="limits"
+											   textAlign="left"
+											   width="150"/>
+							<mx:DataGridColumn width="120" dataField="addUpp" 
+											   headerText="本季度累计" editable="false"
+											   textAlign="left"/>
+							<mx:DataGridColumn headerText="操作" editable="false"
+											   textAlign="left"
+											   itemRenderer="cn.superion.material.system.deptLimit.view.ButtonGroup"
+											   width="120"/>
+								
+							
+						</mx:columns>
+					</mx:DataGrid>
+				</s:HGroup>
+
+				<s:HGroup width="100%"
+						  height="33"
+						  horizontalAlign="right">
+					<mx:LinkButton id="btNew"
+								   icon="@Embed('/assets/images/button/new20.png')"
+								   label=" 新 建 "
+								   skin="mx.skins.halo.ButtonSkin"
+								   buttonMode="true"
+								   fontSize="12"
+								   width="86"
+								   height="26"
+								   click="addClickHandler(event)"/>
+					<mx:LinkButton id="btReturn"
+								   icon="@Embed('/assets/images/button/return20.png')"
+								   label=" 返 回 "
+								   skin="mx.skins.halo.ButtonSkin"
+								   buttonMode="true"
+								   fontSize="12"
+								   width="86"
+								   height="26"
+								   click="returnClickHandler(event)"/>
+					<mx:Spacer width="6"/>
+				</s:HGroup>
+
+			</s:VGroup>
+		</s:BorderContainer>
+	</mx:VBox>
+</mx:Module>

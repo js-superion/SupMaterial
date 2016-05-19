@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Module xmlns:fx="http://ns.adobe.com/mxml/2009"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   layout="absolute"
+		   width="100%"
+		   height="100%"
+		   xmlns:controls="cn.superion.base.components.controls.*"
+		   xmlns:util="cn.superion.material.util.*"
+		   creationComplete="doInit()"
+		   xmlns:dataDict="cn.superion.dataDict.*">
+	<fx:Script source="ModPurchaseOrdersas.as"/>
+
+	<s:BorderContainer width="100%"
+					   height="100%"
+					   backgroundColor="0xE2E8E8"
+					   borderVisible="false">
+		<s:VGroup width="100%"
+				  height="100%"
+				  gap="0">
+			<util:ToolBar id="toolBar"
+						  width="100%"
+						  printClick="printClickHandler(event)"
+						  expClick="expClickHandler(event)"
+						  addClick="toolBar_addClickHandler(event)"
+						  modifyClick="toolBar_modifyClickHandler(event)"
+						  deleteClick="toolBar_deleteClickHandler(event)"
+						  saveClick="toolBar_saveClickHandler(event)"
+						  cancelClick="toolBar_cancelClickHandler(event)"
+						  verifyClick="toolBar_verifyClickHandler(event)"
+						  addRowClick="toolBar_addRowClickHandler(event)"
+						  delRowClick="toolBar_delRowClickHandler(event)"
+						  queryClick="toolBar_queryClickHandler(event)"
+						  firstPageClick="firstPageClickHandler(event)"
+						  prePageClick="prePageClickHandler(event)"
+						  nextPageClick="nextPageClickHandler(event)"
+						  lastPageClick="lastPageClickHandler(event)"
+						  exitClick="toolBar_exitClickHandler(event)"/>
+			<controls:BarSubTitle title="采购订单处理"/>
+				<s:VGroup id="allPanel"
+						  width="100%"
+						  height="100%"
+						  paddingLeft="5"
+						  paddingBottom="5"
+						  paddingRight="5"
+						  paddingTop="5">
+					<s:HGroup id="one"
+							  paddingTop="0"
+							  width="100%"
+							  verticalAlign="middle">
+						<s:Label text="业务类型"
+								 styleName="myFormItemStyle"/>
+						<s:DropDownList id="operationType"
+										width="20%"
+										height="25"
+										labelField="operationTypeName"
+										creationComplete="ddlStorageName_creationCompleteHandler(event)"
+										keyDown="toNextControl(event,billNo)"/>
+
+						<s:Label text="订单编号"/>
+						<s:TextInput id="billNo"
+									 width="15%"
+									 restrict="0-9"
+									 keyDown="toNextControl(event,billDate)"/>
+						<s:Label text="订单日期"/>
+						<mx:DateField id="billDate"
+												width="20%"
+												formatString="YYYY-MM-DD"
+												showToday="true"
+												selectableRange="{{rangeEnd:new Date()}}"
+												enterFrame="{billDate.selectedDate==null?billDate.selectedDate=new Date():billDate.selectedDate}"
+												keyDown="toNextControl(event,salerCode)"/>
+						<!--供查询到货单，若没有到货记录，则手动添加-->
+						<s:Label text="供应单位"
+								 color="blue"
+								 styleName="myFormItemStyle"/>
+						<controls:TextInputIcon width="45%"
+												id="salerCode"
+												queryIconClick="productCode_queryIconClickHandlers(event)"
+												keyDown="toNextControl(event,deptCode)"/>
+					</s:HGroup>
+					<s:HGroup id="two"
+							  width="100%"
+							  verticalAlign="middle">
+						<s:Label text="部    门"
+								 color="blue"
+								 styleName="myFormItemStyle"/>
+						<controls:TextInputIcon id="deptCode"
+												queryIconClick="deptCode_queryIconClickHandler(event)"
+												keyDown="toNextControl(event,personId)"/>
+						<s:Label text="业 务 员"
+								 color="blue"
+								 styleName="myFormItemStyle"/>
+						<controls:TextInputIcon id="personId"
+												queryIconClick="personId_queryIconClickHandler(event)"
+												keyDown="toNextControl(event,payCondition)"/>
+						<s:Label text="付款条件"/>
+						<s:TextInput id="payCondition"
+									 keyDown="toNextControl(event,remark)"/>
+
+						<s:Label text="备    注"/>
+						<s:TextInput id="remark"
+									 width="100%"
+									 keyDown="toNextControl(event,materialCode)"/>
+					</s:HGroup>
+					<s:VGroup id="addPanel"
+							  width="100%">
+						<mx:HRule width="100%"
+								  height="2"/>
+						<s:HGroup id="panel1"
+								  width="100%"
+								  verticalAlign="middle">
+
+							<s:Label id="txPhoLabel"
+									 text="物资编码"
+									 styleName="myFormItemStyle"
+									 color="blue"
+									 width="56"/>
+							<controls:TextInputIcon id="materialCode"
+													width="15%"
+													keyDown="toNextControl(event,materialName)"
+													queryIconClick="materialCode_queryIconClickHandler(event)"/>
+							<s:Label text="物资名称"/>
+							<s:TextInput id="materialName"
+										 width="30%"
+										 enabled="false"
+										 keyDown="toNextControl(event,materialSpec)"/>
+							<s:Label text="规格型号"/>
+								<s:TextInput id="materialSpec"
+											 width="25%"
+											 enabled="false"
+											 keyDown="toNextControl(event,materialUnits)"/>
+							<s:Label text="单位"/>
+								<s:TextInput id="materialUnits"
+											 width="10%"
+											 enabled="false"
+											 keyDown="toNextControl(event,amount)"/>
+							<s:Label text="数量"
+									 color="blue"/>
+								<s:TextInput id="amount"
+											 width="10%"
+											 restrict="0-9"
+											 maxChars="6"
+											 textAlign="right"
+											 change="evaluate_changeHandler(event)"
+											 keyDown="amountKey(event,tradePrice)"/>
+							<s:Label text="进价"
+									 color="blue"/>
+							<s:TextInput id="tradePrice"
+										 width="10%"
+										 restrict="0-9."
+										 maxChars="6"
+										 textAlign="right"
+										 change="evaluate_changeHandler(event)"
+										 keyDown="toNextControl(event,factoryCode)"/>
+						</s:HGroup>
+						<s:HGroup width="100%"
+								  verticalAlign="middle">
+							<s:Label text="生产厂家"/>
+							<controls:TextInputIcon id="factoryCode"
+													keyDown="toNextControl(event,planArriveDate)"
+													queryIconClick="productCode_queryIconClickHandler(event)"/>
+
+							<s:Label text="到货日期"/>
+							<controls:DateFieldText id="planArriveDate"
+													change="evaluate_changeHandler(event)"
+													keyDown="toNextControl(event,detailRemark)"/>
+
+							<s:Label text="备    注"/>
+							<s:TextInput id="detailRemark"
+										 width="100%"
+										 change="evaluate_changeHandler(event)"
+										 keyDown="remarkDetail_keyUpHandler(event)"/>
+						</s:HGroup>
+					</s:VGroup>
+					<controls:SuperDataGrid hasRowNo="true"
+											width="100%"
+											height="100%"
+											id="dgOrdersDetail"
+											styleName="dataGrid"
+											horizontalScrollPolicy="auto"
+											click="gridDetail_doubleClickHandler(event)"
+											format="{[,,,,,,,'0.00','0.00']}">
+						<controls:columns>
+							<mx:DataGridColumn headerText="序号"
+											   width="50"
+											   editable="false"/>
+							<mx:DataGridColumn headerText="物资编码"
+											   width="120"
+											   editable="false"
+											   dataField="materialCode"/>
+							<mx:DataGridColumn headerText="物资名称"
+											   width="220"
+											   editable="false"
+											   dataField="materialName"/>
+							<mx:DataGridColumn headerText="规格型号"
+											   width="100"
+											   editable="false"
+											   dataField="materialSpec"/>
+							<mx:DataGridColumn headerText="单位"
+											   width="60"
+											   editable="false"
+											   dataField="materialUnits"/>
+							<mx:DataGridColumn headerText="数量"
+											   width="80"
+											   editable="false"
+											   dataField="amount"
+											   textAlign="right"/>
+							<mx:DataGridColumn headerText="单价"
+											   width="80"
+											   editable="false"
+											   dataField="tradePrice"
+											   textAlign="right"/>
+							<mx:DataGridColumn headerText="金额"
+											   width="100"
+											   editable="false"
+											   dataField="tradeMoney"
+											   textAlign="right"/>
+							<mx:DataGridColumn headerText="生产厂家"
+											   width="200"
+											   editable="false"
+											   labelFunction="labelFun"
+											   dataField="factoryCode"/>
+							<mx:DataGridColumn headerText="计划到货日期"
+											   width="120"
+											   editable="false"
+											   dataField="planArriveDate"/>
+							<mx:DataGridColumn headerText="备注"
+											   width="150"
+											   editable="false"
+											   dataField="detailRemark"/>
+						</controls:columns>
+					</controls:SuperDataGrid>
+
+					<s:HGroup id="hou"
+							  width="100%"
+							  verticalAlign="middle">
+						<mx:FormItem label="现存量"
+									 indicatorGap="2">
+							<s:TextInput id="currentStockAmount"
+										 width="100"
+										 enabled="false"/>
+						</mx:FormItem>
+						<mx:FormItem label="制单人">
+							<s:TextInput id="maker"
+										 width="100"
+										 enabled="false"/>
+						</mx:FormItem>
+						<mx:FormItem label="制单日期">
+							<s:TextInput id="makeDate"
+										 width="100"
+										 enabled="false"/>
+						</mx:FormItem>
+						<mx:FormItem label="审核人">
+							<s:TextInput id="verifier"
+										 width="100"
+										 enabled="false"/>
+						</mx:FormItem>
+						<mx:FormItem label="审核日期">
+							<s:TextInput id="verifyDate"
+										 width="100"
+										 enabled="false"/>
+						</mx:FormItem>
+					</s:HGroup>
+					<mx:Spacer height="5"/>
+				</s:VGroup>
+		</s:VGroup>
+	</s:BorderContainer>
+</mx:Module>

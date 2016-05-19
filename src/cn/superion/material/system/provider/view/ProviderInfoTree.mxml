@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+		   width="100%"
+		   height="100%"
+		   creationComplete="initia()"
+		   borderVisible="false"
+		   xmlns:controls="cn.superion.base.components.controls.*">
+
+	<mx:Script source="ProviderInfoTreeas.as"/>
+
+	<controls:AutoSizeTree id="itemClassTree"
+						   x="0"
+						   y="0"
+						   width="100%"
+						   height="100%"
+						   showRoot="true"
+						   labelField="className"
+						   labelFunction="labelShow"
+						   itemClick="changNodeHand(event)"
+						   itemDoubleClick="douClickHandler(event)"
+						   doubleClickEnabled="true"/>
+</mx:Canvas>

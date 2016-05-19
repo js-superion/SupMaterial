@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	 物资档案维护模块药品档案信息树
+-->
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 width="100%"
+		 height="100%"
+		 creationComplete="init()"
+		 xmlns:controls="cn.superion.base.components.controls.*"
+		 xmlns:s="library://ns.adobe.com/flex/spark">
+	<fx:Script>
+		<![CDATA[
+			import cn.superion.base.config.TreeDictWinConfig;
+			import cn.superion.base.util.ArrayCollUtils;
+			import cn.superion.base.util.RemoteUtil;
+			import cn.superion.vo.center.material.CdMaterialClass;
+			import mx.rpc.remoting.mxml.RemoteObject;
+
+			public var SelectNode:Number=0; //标记列表查询的方式，是树点击查询还是拼音简码查询,用于表格操作后刷新
+			public var dictWinConfig:TreeDictWinConfig;
+			private var destination:String="materialDictImpl";
+			//private var parameter:ParameterObject;
+			//类型树数据源
+			[Bindable]
+			public var treeData:*={};
+			[Bindable]
+			public var parentThis:*;
+			[Bindable]
+			public var cdMaterialClass:CdMaterialClass=new CdMaterialClass();
+
+			//Methods
+			private function init():void
+			{
+				buildAreaTree();
+			}
+
+			private function buildAreaTree():*
+			{
+				var ro:RemoteObject=RemoteUtil.getRemoteObject(destination, function(rev:*):void
+				{
+					var config:Object={dataList: rev.data, labelField: 'className', rootParentCode: '00', parentCodeField: 'parentCode', codeField: 'classCode'}
+					var treeData:Object=ArrayCollUtils.buildTreeData(config);
+					treeData.className="物资分类";
+					itemClassTree.dataProvider=treeData;
+					itemClassTree.openItems=[treeData];
+				})
+				ro.findAllMeaterialClass();
+				return;
+
+//				var config:TreeDictWinConfig=new TreeDictWinConfig();
+//
+//				config.destination=destination;
+//				config.typeName='物资分类';
+//				config.classMethod="findMaterialClassListByPaernetCode";
+//				config.treeLabelField="className";
+//				config.treeRootParentCode="00";
+//				config.treeCodeField="classCode";
+//				itemClassTree.data=config;
+//				itemClassTree.init();
+			}
+
+
+			private function changNodeHand(e:*):*
+			{
+				var node:*=e.target.selectedItem;
+				var materialClass:*=node.classCode;
+				if (!materialClass)
+				{
+					return;
+				}
+				SelectNode=1; //标记为树点击检索
+				var pd:*=this.parentDocument;
+				pd.queryGridByClassCode();
+			}
+
+			private function isParentNode(subArray:*):*
+			{
+				for each (var item:* in subArray)
+				{
+					if (item[dictWinConfig.treeLeafSignField] != dictWinConfig.treeLeafCode)
+					{
+						return true;
+					}
+				}
+			}
+
+			private function addChildrenToTreeArray(array:Array):*
+			{
+				var children:Array=[]
+				for each (var it:* in array)
+				{
+					if (it[dictWinConfig.treeLeafSignField] == dictWinConfig.treeLeafCode)
+					{
+						it.children=null;
+					}
+					else
+					{
+						it.children=[];
+					}
+				}
+			}
+
+			private function labelShow(item:Object):String
+			{
+				if (item is CdMaterialClass)
+				{
+					return item.classCode + ' ' + item.className;
+				}
+				else
+				{
+					return item.className;
+				}
+			}
+
+			/**
+			 * 回车事件
+			 */
+			private function toNextControl(e:KeyboardEvent, fcontrolNext:*):*
+			{
+				if (e.keyCode == Keyboard.ENTER)
+				{
+					this.parentDocument.addMaterialClass();
+					fcontrolNext.setFocus()
+				}
+			}
+		]]>
+	</fx:Script>
+	<mx:Tree id="itemClassTree"
+			 x="0"
+			 y="0"
+			 width="100%"
+			 height="100%"
+			 labelField="className"
+			 labelFunction="labelShow"
+			 itemClick="changNodeHand(event)"/>
+</s:Group>

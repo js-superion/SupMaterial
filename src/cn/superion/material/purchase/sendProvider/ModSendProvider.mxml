@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Module xmlns:fx="http://ns.adobe.com/mxml/2009"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   layout="absolute"
+		   width="100%"
+		   height="100%"
+		   xmlns:controls="cn.superion.base.components.controls.*"
+		   xmlns:util="cn.superion.material.util.*"
+		   creationComplete="doInit()"
+		   xmlns:dataDict="cn.superion.dataDict.*">
+	
+	<fx:Script source="ModSendProvideras.as"/>
+
+	<s:BorderContainer width="100%"
+					   height="100%"
+					   backgroundColor="0xE2E8E8"
+					   borderVisible="false">
+		<s:VGroup width="100%"
+				  height="100%"
+				  gap="0">
+			<util:ToolBar id="toolBar"
+						  width="100%"
+						  printClick="printClickHandler(event)"
+						  expClick="expClickHandler(event)"
+						  excelClick="excelClickHandler(event)"
+						  saveClick="saveClickHandler(event)"
+						  verifyClick="verifyClickHandler(event)"
+						  queryClick="queryClickHandler(event)"
+						  exitClick="exitClickHandler(event)"/>
+			<controls:BarSubTitle title="供货商审核"/>
+			
+				<s:VGroup id="allPanel"
+						  width="100%"
+						  height="100%"
+						  paddingLeft="5"
+						  paddingBottom="5"
+						  paddingRight="5" 
+						  paddingTop="5">
+					<s:HGroup id="two"
+							  width="100%"
+							  verticalAlign="middle">
+						<s:Label text="状　　态"/>
+						<s:DropDownList id="status" width="161" change="status_changeHandler(event)"
+										dataProvider="{new ArrayCollection([{'k':'3','v':'未审'},{'k':'4','v':'已审'}])}"
+										labelField="v" selectedIndex="0"/>
+						<s:Label text="仓　　库"
+								 color="#0000FF"/>
+						<s:DropDownList id="storageCode"
+										change="storageCode_changeHandler(event)"
+										labelField="storageName"
+										width="147"
+										height="25"/>
+						<s:Label id="txPhoLabel"
+								 text="物资编码"
+								 visible="false"
+								 includeInLayout="false"
+								 styleName="myFormItemStyle"
+								 width="56"/>
+						<controls:TextInputIcon id="materialCode"
+												width="15%"
+												visible="false"
+												includeInLayout="false"
+												queryIconClick="materialCode_queryIconClickHandler(event)"/>
+						
+						
+						<s:Label text="单据日期"/>
+						<mx:DateField id="fromDate" formatString="YYYY-MM-DD" width="120" /><s:Label text="--"/><mx:DateField id="toDate" formatString="YYYY-MM-DD" width="120" />
+						
+						<s:Button label="清空日期" click="{fromDate.text = toDate.text = '';}"/>
+					</s:HGroup>
+					<s:HGroup  width="100%"
+							   verticalAlign="middle">
+						<s:Label text="供应单位"
+								 styleName="myFormItemStyle"/>
+						<controls:TextInputIcon width="161"
+												id="salerCode"
+												queryIconClick="productCode_queryIconClickHandlers(event)"
+												keyDown="toNextControl(event,deptCode)"/>
+						<s:Label text="申领部门"
+								 styleName="myFormItemStyle"/>
+						<controls:TextInputIcon width="148"
+												id="deptCode"
+												queryIconClick="deptCode_queryIconClickHandler(event)"
+												keyDown="toNextControl(event,deptCode)"/>
+					</s:HGroup>
+					<s:HGroup width="1137"
+							  height="100%">
+						<s:VGroup width="184" height="100%">
+							<controls:SuperDataGrid id="gridMasterList" width="178"
+										height="100%" colorWhereColor="0x3F48CC" colorWhereField="currentStatus"
+										colorWhereValue="4"
+										verticalScrollPolicy="auto">
+								<controls:columns>
+									<mx:DataGridColumn headerText="选择"
+													  width="25">
+										<mx:itemRenderer>
+											<fx:Component>
+												<mx:CheckBox change="checkbox1_changeHandler(event)"
+															 selected="{data.isSelected}"
+															 enabled="true"
+															 textAlign="center">
+													<fx:Script>
+														<![CDATA[
+															protected function checkbox1_changeHandler(event:Event):void
+															{
+																data.isSelected=event.target.selected;
+																if(data.isSelected){
+																	//选中的时候，查出对应的明细
+																	this.parentDocument.findDetailByMainAutoId(data);
+																	
+																}else{
+																	this.parentDocument._autoId = this.data.autoId;
+																	this.parentDocument.removeDataByAutoId();
+																}
+																var selectedAutoIds:Array = this.parentDocument.getSelectedAutoIds();
+																this.parentDocument.findSendMaterialTotal(selectedAutoIds);
+															}
+														]]>
+													</fx:Script>
+												</mx:CheckBox>
+												
+											</fx:Component>
+										</mx:itemRenderer>
+									</mx:DataGridColumn>
+									<!--<mx:DataGridColumn headerText="序号"
+													  dataField="rowNo"
+													  labelFunction="labFun"
+													  width="25"/>-->
+									<mx:DataGridColumn headerText="单号"
+													  dataField="billNo"
+													  width="120"/>
+									<!--<mx:DataGridColumn headerText="日期"
+													  dataField="billDate"
+													  width="120"
+													  labelFunction="labFun"
+													  />-->
+								</controls:columns>
+							</controls:SuperDataGrid>
+							<s:HGroup>
+								<s:Label text="全选" visible="false" includeInLayout="false"/>
+								<s:CheckBox id="selAll" change="selAll_changeHandler(event)" visible="false" includeInLayout="false"/>
+							</s:HGroup>
+							
+						</s:VGroup>
+						
+						<mx:TabNavigator width="100%" change="tabnavigator1_changeHandler(event)"
+										 height="100%"
+										 creationPolicy="all">
+							<s:NavigatorContent
+									width="100%"
+									height="100%"
+									label="申请明细"
+									>
+								<s:DataGrid id="gridDetailList" width="100%" height="100%"
+											alternatingRowColors="[#EFF3FA,#FFFFFF]" 
+											selectedIndex="0"
+											editable="true"
+											gridItemEditorSessionStarting="gridDetailList_gridItemEditorSessionStartingHandler(event)"
+											styleName="gridTemplate"
+											variableRowHeight="false" 
+											verticalScrollPolicy="auto"
+											horizontalScrollPolicy="auto" >
+									<s:columns>
+										<s:ArrayList>
+											<s:GridColumn headerText="序号"
+														  editable="false"
+														  dataField="rowNo"
+														  width="50"
+														  labelFunction="labFunDetail"
+											/>
+											
+											<s:GridColumn headerText="物资名称"
+														  dataField="materialName"
+														  editable="false"
+														  width="140"/>
+											<s:GridColumn headerText="规格型号"
+														  dataField="materialSpec"
+														  editable="false"
+														  width="80"/>
+											<s:GridColumn headerText="单位"
+														  dataField="materialUnits"
+														  editable="false"
+														  width="80"/>
+											<s:GridColumn headerText="备注"
+														  dataField="detailRemark"
+														  editable="false"
+														  width="100"/>
+											<s:GridColumn headerText="供应商"
+														  dataField="mainProvider"
+														  editable="true"
+														  labelFunction="labFunDetail"
+														  itemEditor="cn.superion.material.purchase.sendProvider.IEProvider"
+														  width="200"
+														  />
+											<s:GridColumn headerText="数量"
+														  dataField="amount"
+														  editable="false"
+														  width="60"/>
+											<s:GridColumn headerText="配送数量"
+														  itemEditor="cn.superion.material.purchase.send.IESendAmount"
+														  dataField="sendAmount"
+														  editable="false"
+														  width="60"/>
+											<s:GridColumn headerText="进价"
+														  dataField="tradePrice"
+														  itemEditor="cn.superion.material.purchase.sendProvider.IETradePrice"
+														  editable="true"
+														  width="80"/>
+											<s:GridColumn headerText="进价金额"
+														  dataField="tradeMoney"
+														  editable="false"
+														  width="80"/>
+											<s:GridColumn headerText="物资编码"
+														  dataField="materialCode"
+														  editable="false"
+														  width="100"/>
+										
+										</s:ArrayList>
+									</s:columns>
+								</s:DataGrid>
+							</s:NavigatorContent>
+							<s:NavigatorContent
+								width="100%"
+								height="100%"
+								label="申请汇总"
+								>
+								<s:DataGrid id="gridListCount" width="100%" height="100%"
+											alternatingRowColors="[#EFF3FA,#FFFFFF]" 
+											editable="false"
+											requestedMaxRowCount="2"
+											selectedIndex="0"
+											selectionMode="singleRow"
+											sortableColumns="false"
+											styleName="gridTemplate"
+											variableRowHeight="false" 
+											verticalScrollPolicy="auto"
+											horizontalScrollPolicy="auto" 
+											>
+									<s:columns>
+										<s:ArrayList>
+											<s:GridColumn headerText="序号"
+														  dataField="rowNo"
+														  width="50"
+														  labelFunction="labFunTotal"
+														  />
+											<s:GridColumn headerText="供应单位"
+														  dataField="mainProvider"
+														  labelFunction="labFunTotal"
+														  width="200"/>
+											<s:GridColumn headerText="物资名称"
+														  dataField="materialName"
+														  width="140"/>
+											<s:GridColumn headerText="规格型号"
+														  dataField="materialSpec"
+														  width="140"/>
+											<s:GridColumn headerText="单位"
+														  dataField="materialUnits"
+														  width="80"/>
+											<s:GridColumn headerText="数量"
+														  dataField="amount"
+														  width="80"/>
+											<s:GridColumn headerText="配送数量"
+														  dataField="sendAmount"
+														  width="80"/>
+											<s:GridColumn headerText="进价"
+														  dataField="tradePrice"
+														  width="80"/>
+											<s:GridColumn headerText="进价金额"
+														  dataField="tradeMoney"
+														  width="80"
+														  />
+										</s:ArrayList>
+									</s:columns>
+								</s:DataGrid>
+							</s:NavigatorContent>
+						</mx:TabNavigator>
+					</s:HGroup>
+					<mx:Spacer height="5"/>
+				</s:VGroup>
+		</s:VGroup>
+	</s:BorderContainer>
+</mx:Module>

@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:controls="cn.superion.base.components.controls.*"
+			   width="500"
+			   height="300"
+			   backgroundColor="0xE2E8E8"
+			   title="现存量查询"
+			   close="closeWin()"
+			   creationComplete="doInit()" dropShadowVisible="false">
+
+	<fx:Script>
+		<![CDATA[
+			private var _stockAmountFlag:String = null;
+			protected function StockAmount_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				StockAmountst.selected=false;
+				StockAmount.selected=true;
+				minStockAmount.enabled=true;
+				maxStockAmount.enabled=true;
+				checkBox1.selected=true;
+				checkBox2.selected=true;
+				checkBox3.selected=true;
+				_stockAmountFlag=null;
+			}
+			protected function StockAmountst_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				StockAmountst.selected=true;
+				StockAmount.selected=false;
+				minStockAmount.enabled=false;
+				minStockAmount.text="";
+				maxStockAmount.enabled=false;
+				maxStockAmount.text="";
+				checkBox1.selected=true;
+				checkBox2.selected=true;
+				checkBox3.selected=true;
+				_stockAmountFlag="1";
+			}
+			/**
+			 * 针对按钮不同组合处理
+			 * */
+			private function chkBox_changeHandler(event:Event):void{
+				if(checkBox1.selected && !checkBox2.selected && !checkBox3.selected){
+					_stockAmountFlag = "1";
+				}else if(checkBox2.selected && !checkBox1.selected && !checkBox3.selected){
+					_stockAmountFlag = "2";
+				}else if(checkBox3.selected && !checkBox1.selected && !checkBox2.selected){
+					_stockAmountFlag = "3";
+				}else if(checkBox1.selected && checkBox2.selected && !checkBox3.selected){
+					_stockAmountFlag = "4";
+				}else if(checkBox2.selected && checkBox3.selected && !checkBox1.selected){
+					_stockAmountFlag = "5";
+				}else if(checkBox1.selected && checkBox3.selected && !checkBox2.selected){
+					_stockAmountFlag = "6";
+				}else{
+					_stockAmountFlag =null;
+				}
+			}
+		]]>
+	</fx:Script>
+
+
+	<fx:Script source="WinCurrentStockStatQueryas.as"/>
+	
+	<fx:Declarations>
+		
+	</fx:Declarations>
+	
+	<s:layout>
+		<s:VerticalLayout paddingLeft="10"
+						  paddingRight="10"
+						  paddingTop="10"/>
+	</s:layout>
+	<s:VGroup width="100%"
+			  height="100%"
+			  gap="0">
+
+	<!-- 查询条件区 -->
+	<mx:TabNavigator width="100%"
+					 height="100%"
+					 paddingBottom="15"
+					 paddingTop="15"
+					 paddingLeft="15"
+					 paddingRight="15"
+					 backgroundColor="0xE2E8E8">
+		<s:NavigatorContent width="100%"
+							height="100%"
+							label="查询条件">
+			<s:VGroup id="currentStockStatQuery"
+					  width="100%"
+					  height="100%">
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="仓    库:"
+							 width="85"
+							 textAlign="right"/>
+					<s:ComboBox id="storageCode"
+								width="100%"
+								height="25"
+								labelField="storageName"
+								selectedIndex="0"
+								requireSelection="true"
+								keyUp="toNextControl(event,materialClass)"/>
+
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="物资分类:"
+							 width="85"
+							 textAlign="right"/>
+					<controls:TextInputIcon id="materialClass"
+											width="100%"
+											queryIconClick="materialClass_queryIconClickHandler(event)"
+											keyUp="queryIcon_keyUpHandler(event,materialCode)"/>
+
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle"
+						  paddingTop="3">
+					<s:Label text="物资名称:"
+							 textAlign="right"
+							 width="85"/>
+					<controls:TextInputIcon id="materialCode"
+											width="100%"
+											queryIconClick="materialCode_queryIconClickHandler(event)"
+											keyUp="queryIcon_keyUpHandler(event,minStockAmount)"/>
+				</s:HGroup>
+
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:CheckBox id="StockAmount"
+								label="现 存 量:"
+								width="85"
+								click="StockAmount_clickHandler(event)"/>
+					<mx:TextInput id="minStockAmount"
+								  width="50%"
+								  restrict="0-9,\-."
+								  enabled="false"
+								  keyUp="toNextControl(event,maxStockAmount)"/>
+					<s:Label text="-"/>
+					<mx:TextInput id="maxStockAmount"
+								  width="50%"
+								  restrict="0-9,\-."
+								  textAlign="right"
+								  enabled="false"
+								  keyUp="toNextControl(event,StockAmountst)"/>
+				</s:HGroup>
+
+				
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+
+					<s:CheckBox id="StockAmountst"
+								label="现 存 量:"
+								width="85"
+								selected="true"
+								click="StockAmountst_clickHandler(event)"
+								keyUp="toNextControl(event,checkBox1)"/>
+					<s:CheckBox id="checkBox1"
+								label=" ＞ 0"
+								change="chkBox_changeHandler(event)"
+								selected="true"
+								width="100"
+								keyUp="toNextControl(event,checkBox2)"/>
+					
+					<s:CheckBox id="checkBox2"
+								label=" ＝ 0"
+								selected="true"
+								width="100"
+								change="chkBox_changeHandler(event)"
+								keyUp="toNextControl(event,checkBox3)"/>
+					<s:CheckBox id="checkBox3"
+								label=" ＜ 0"
+								selected="true"
+								width="100"
+								change="chkBox_changeHandler(event)"
+								keyUp="toNextControl(event,isAvailDate)"/>
+				</s:HGroup>
+				
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:CheckBox id="isAvailDate"
+								label="有效期至:"
+								width="85"
+								keyUp="toNextControl(event,beginAvailDate)"/>
+					<mx:DateField id="beginAvailDate"
+								  width="100%"
+								  enabled="{isAvailDate.selected}"
+								  formatString="YYYY-MM-DD"
+								  editable="true"
+								  selectedDate="{beginAvailDate.selectedDate==null?beginAvailDate.selectedDate=new Date():beginAvailDate.selectedDate}"
+								  selectableRange="{{rangeEnd:endAvailDate.selectedDate}}"
+								  keyUp="toNextControl(event,endAvailDate)"/>
+					<s:Label text="-"/>
+					<mx:DateField width="100%"
+								  id="endAvailDate"
+								  enabled="{isAvailDate.selected}"
+								  formatString="YYYY-MM-DD"
+								  editable="true"
+								  selectedDate="{endAvailDate.selectedDate==null?endAvailDate.selectedDate=new Date():endAvailDate.selectedDate}"
+								  selectableRange="{{rangeStart:beginAvailDate.selectedDate}}"
+								  keyUp="toNextControl(event,btConfirm)"/>
+				</s:HGroup>
+			</s:VGroup>
+		</s:NavigatorContent>
+	</mx:TabNavigator>
+	<s:HGroup width="100%"
+			  height="35"
+			  horizontalAlign="right"
+			  verticalAlign="middle"
+			  gap="5">
+		<mx:LinkButton id="btConfirm"
+					   icon="@Embed('/assets/images/button/confirm20.png')"
+					   label=" 确 定 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   height="26"
+					   click="btConfirm_clickHandler(event)"/>
+		<mx:LinkButton id="btReturn"
+					   height="26"
+					   label=" 取 消 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   icon="@Embed(source='assets/images/button/return20.png')"
+					   click="btReturn_clickHandler(event)"/>
+	</s:HGroup>
+		
+	</s:VGroup>
+</s:TitleWindow>

@@ -1,0 +1,832 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   width="900"
+			   height="500"
+			   backgroundColor="0xE2E8E8"
+			   xmlns:code="http://code.google.com/p/flexlib/"
+			   xmlns:controls="cn.superion.base.components.controls.*"
+			   title="供应单位信息"
+			   fontSize="14"
+			   creationComplete="initia()"
+			   close="returnHadler()" xmlns:dataDict="cn.superion.dataDict.*">
+	<s:layout>
+		<s:VerticalLayout/>
+	</s:layout>
+	<fx:Script source="ProviderInfoAddas.as"/>
+	<fx:Script source="ProviderInfoBasic.as"/>
+	<fx:Script source="ProviderInfoUpFiles.as"/>
+	<fx:Script source="ProviderInfoProducts.as"/>
+	<fx:Declarations>
+		<s:RadioButtonGroup id="checkAdvice"/>
+		<s:ArrayCollection id="aryProviderGrade">
+			<fx:Object providerGradeCode = "01" providerGradeName="一级"/>
+			<fx:Object providerGradeCode = "02" providerGradeName="二级"/>
+			<fx:Object providerGradeCode = "03" providerGradeName="三级"/>
+		</s:ArrayCollection>
+		<s:ArrayCollection id="gridFileAry"/>
+		<s:ArrayCollection id="aryFileType">
+			<fx:Object fileType = "1" fileTypeName="营业执行附件"/>
+			<fx:Object fileType = "2" fileTypeName="组织代码证附件"/>
+		</s:ArrayCollection>
+		<s:ArrayCollection id="ary"/>
+		<mx:EmailValidator id="emailValid"
+						   source="{EMail}"
+						   property="text"
+						   required="false"
+						   invalidCharError="含有不可识别字符."
+						   invalidDomainError="email地址输入错误,正确格式如:abc@abc.com."
+						   invalidIPDomainError="email地址输入错误,正确格式如:abc@abc.com."
+						   invalidPeriodsInDomainError="email地址输入错误,正确格式如:abc@abc.com."
+						   missingAtSignError="email地址输入错误,正确格式如:abc@abc.com."
+						   missingPeriodInDomainError="email地址输入错误,正确格式如:abc@abc.com."
+						   tooManyAtSignsError="email地址输入错误,正确格式如:abc@abc.com."/>
+	</fx:Declarations>
+	<mx:VBox width="100%"
+			 height="100%"
+			 paddingTop="10"
+			 paddingLeft="10"
+			 paddingRight="10"
+			 paddingBottom="10">
+	<mx:TabNavigator width="100%"
+					 id="tabDrugInfo"
+					 height="100%"
+					 backgroundColor="#E2E8E8" creationPolicy="all"
+					 >
+		<s:NavigatorContent id="nav_basic" width="30%"
+							label="基础信息">
+			
+			
+			<s:VGroup id="providerPanel"
+					  width="100%"
+					  height="100%"
+					  paddingLeft="15"
+					  paddingRight="15"
+					  paddingTop="10"
+					  gap="15">
+				
+				<mx:HBox width="100%"
+						 horizontalGap="0">
+					<mx:HBox width="35%"
+							 height="100%"
+							 horizontalGap="2"
+							 verticalAlign="bottom">
+						<mx:Label text="编　　码"
+								  color="blue"/>
+						<s:TextInput id="providerCode"
+									 width="100%"
+									 maxChars="12"
+									 restrict="^ "
+									 change="changHandler(event)"
+									 keyUp="toNextControl(event,providerName)"
+									 text="@{simpleObj.providerCode}"/>
+					</mx:HBox>
+					<mx:HBox width="35%"
+							 height="100%"
+							 horizontalGap="2"
+							 paddingLeft="3"
+							 verticalAlign="bottom">
+						<mx:Label text="名　　称"
+								  color="blue"/>
+						<s:TextInput id="providerName"
+									 width="100%"
+									 maxChars="40"
+									 change="changHandler(event)"
+									 keyUp="toNextControl(event,shortName)"
+									 text="@{simpleObj.providerName}"/>
+					</mx:HBox>
+					<mx:HBox width="30%"
+							 height="100%"
+							 horizontalGap="2"
+							 paddingLeft="3"
+							 verticalAlign="bottom">
+						<mx:Label text="简　　称"/>
+						<s:TextInput id="shortName"
+									 width="100%"
+									 maxChars="20"
+									 restrict="^ "
+									 change="changHandler(event)"
+									 keyUp="toNextControl(event,providerClass)"
+									 text="@{simpleObj.shortName}"/>
+					</mx:HBox>
+				</mx:HBox>
+				<mx:HBox width="100%"
+						 horizontalGap="0">
+					<mx:HBox width="35%"
+							 height="100%"
+							 horizontalGap="2"
+							 verticalAlign="bottom">
+						<mx:Label text="所属分类"
+								  color="blue"/>
+						<!--<s:TextInput id="providerClass"
+						width="100%"
+						editable="true"
+						change="changHandler(event)"
+						keyUp="toNextControl(event,area)"
+						text="@{simpleObj.providerClass}"/>-->
+						<controls:TextInputIcon id="providerClass"
+												width="100%"
+												keyUp="toNextControl(event,area)"
+												queryIconClick="showProviderClassDict(event)"/>
+					</mx:HBox>
+					<mx:HBox width="35%"
+							 height="100%"
+							 horizontalGap="2"
+							 paddingLeft="3"
+							 verticalAlign="bottom">
+						<mx:Label text="所属地区"/>
+						<controls:TextInputIcon id="area"
+												width="100%"
+												keyUp="toNextControl(event,occupation)"
+												queryIconClick="showAreaDict(event)"/>
+					</mx:HBox>
+					<mx:HBox width="30%"
+							 height="100%"
+							 horizontalGap="2"
+							 paddingLeft="3"
+							 verticalAlign="bottom">
+						<mx:Label text="所属行业"/>
+						<!--<s:TextInput id="occupation"
+						width="100%"
+						editable="true"
+						change="changHandler(event)"
+						keyUp="toNextControl(event,bank)"
+						text="@{simpleObj.occupation}"/>-->
+						<controls:TextInputIcon queryIconClick="showOccupDict(event)"
+												id="occupation"
+												width="100%"
+												keyUp="toNextControl(event,bank)"/>
+					</mx:HBox>
+				</mx:HBox>
+				<mx:HBox width="100%"
+						 horizontalGap="0">
+					<mx:HBox width="35%"
+							 height="100%"
+							 horizontalGap="2"
+							 verticalAlign="bottom">
+						<mx:Label text="开户银行"/>
+						<s:TextInput id="bank"
+									 width="100%"
+									 maxChars="30"
+									 restrict="^ "
+									 change="changHandler(event)"
+									 keyUp="toNextControl(event,bankAccount)"
+									 text="@{simpleObj.bank}"/>
+					</mx:HBox>
+					<mx:HBox width="65%"
+							 height="100%"
+							 horizontalGap="2"
+							 paddingLeft="3"
+							 verticalAlign="bottom">
+						<mx:Label text="银行账号"/>
+						<s:TextInput id="bankAccount"
+									 width="100%"
+									 maxChars="20"
+									 restrict="0-9"
+									 change="changHandler(event)"
+									 keyUp="toNextControl(event,corporation)"
+									 text="@{simpleObj.bankAccount}"/>
+					</mx:HBox>
+				</mx:HBox>
+				<mx:HBox width="100%"
+						 horizontalGap="0">
+					<mx:HBox width="35%"
+							 height="100%"
+							 horizontalGap="2"
+							 verticalAlign="bottom">
+						<mx:Label text="法　　人"/>
+						<s:TextInput id="corporation"
+									 width="100%"
+									 maxChars="10"
+									 restrict="^ "
+									 change="changHandler(event)"
+									 keyUp="toNextControl(event,taxCode)"
+									 text="@{simpleObj.corporation}"/>
+					</mx:HBox>
+					<mx:HBox width="65%"
+							 height="100%"
+							 horizontalGap="2"
+							 paddingLeft="3"
+							 verticalAlign="bottom">
+						<mx:Label text="税　　号"/>
+						<s:TextInput id="taxCode"
+									 width="100%"
+									 maxChars="20"
+									 restrict="0-9"
+									 change="changHandler(event)"
+									 keyUp="toNextControl(event,fax)"
+									 text="@{simpleObj.taxCode}"/>
+					</mx:HBox>
+				</mx:HBox>
+				<mx:HBox width="100%"
+						 horizontalGap="0">
+					<mx:HBox width="35%"
+							 height="100%"
+							 horizontalGap="2"
+							 verticalAlign="bottom">
+						<mx:Label text="传　　真"/>
+						<s:TextInput id="fax"
+									 width="100%"
+									 maxChars="60"
+									 restrict="0-9,\-"
+									 change="changHandler(event)"
+									 keyUp="toNextControl(event,EMail)"
+									 text="@{simpleObj.fax}"/>
+					</mx:HBox>
+					<mx:HBox width="65%"
+							 height="100%"
+							 horizontalGap="2"
+							 paddingLeft="3"
+							 verticalAlign="bottom">
+						<mx:Label text="E-mail　"/>
+						<s:TextInput id="EMail"
+									 width="100%"
+									 maxChars="60"
+									 restrict="^ "
+									 change="changHandler(event)"
+									 keyUp="toNextControl(event,phone)"
+									 text="@{simpleObj.EMail}"/>
+					</mx:HBox>
+				</mx:HBox>
+				<mx:HBox horizontalGap="0"
+						 width="100%">
+					<mx:HBox width="35%"
+							 height="100%"
+							 horizontalGap="2"
+							 verticalAlign="bottom">
+						<mx:Label text="电　　话"/>
+						<s:TextInput id="phone"
+									 width="100%"
+									 maxChars="60"
+									 restrict="0-9,\-"
+									 change="changHandler(event)"
+									 keyUp="toNextControl(event,mobilePhone)"
+									 text="@{simpleObj.phone}"/>
+					</mx:HBox>
+					<mx:HBox width="35%"
+							 height="100%"
+							 horizontalGap="2"
+							 paddingLeft="3"
+							 verticalAlign="bottom">
+						<mx:Label text="手　　机"/>
+						<s:TextInput id="mobilePhone"
+									 width="100%"
+									 maxChars="60"
+									 restrict="0-9,\-"
+									 change="changHandler(event)"
+									 keyUp="toNextControl(event,linkman)"
+									 text="@{simpleObj.mobilePhone}"/>
+					</mx:HBox>
+					<mx:HBox width="30%"
+							 height="100%"
+							 horizontalGap="2"
+							 paddingLeft="3"
+							 verticalAlign="bottom">
+						<mx:Label text="联 系 人"/>
+						<s:TextInput id="linkman"
+									 width="100%"
+									 maxChars="20"
+									 restrict="^ "
+									 change="changHandler(event)"
+									 keyUp="toNextControl(event,address)"
+									 text="@{simpleObj.linkman}"/>
+					</mx:HBox>
+				</mx:HBox>
+				<mx:HBox horizontalGap="0"
+						 width="100%">
+					<mx:HBox width="70%"
+							 height="100%"
+							 horizontalGap="2"
+							 verticalAlign="bottom">
+						<mx:Label text="地　　址"/>
+						<s:TextInput id="address"
+									 width="100%"
+									 maxChars="40"
+									 restrict="^ "
+									 change="changHandler(event)"
+									 keyUp="toNextControl(event,zip)"
+									 text="@{simpleObj.address}"/>
+					</mx:HBox>
+					<mx:HBox width="30%"
+							 height="100%"
+							 horizontalGap="2"
+							 paddingLeft="3"
+							 verticalAlign="bottom">
+						<mx:Label text="邮政编码"/>
+						<s:TextInput id="zip"
+									 width="100%"
+									 restrict="0-9"
+									 maxChars="6"
+									 change="changHandler(event)"
+									 keyUp="toNextControl(event,chargeDept)"
+									 text="@{simpleObj.zip}"/>
+					</mx:HBox>
+				</mx:HBox>
+				<mx:HBox horizontalGap="0"
+						 width="100%">
+					<mx:HBox width="35%"
+							 height="100%"
+							 horizontalGap="2"
+							 verticalAlign="bottom">
+						<mx:Label text="分管部门" color="blue"/>
+						<s:DropDownList change="showDeptDict(event)"
+												id="chargeDept"
+												width="100%"
+												labelField="deptName"
+												keyUp="toNextControl(event,charge)"/>
+					</mx:HBox>
+					<mx:HBox width="35%"
+							 height="100%"
+							 horizontalGap="2"
+							 paddingLeft="3"
+							 verticalAlign="bottom">
+						<mx:Label text="专 管 员"/>
+						<controls:TextInputIcon queryIconClick="showPersonDict(event)"
+												id="charge"
+												width="100%"
+												maxChars="10"
+												keyUp="toNextControl(event,startDate)"/>
+					</mx:HBox>
+					<mx:HBox width="30%"
+							 height="100%"
+							 horizontalGap="2"
+							 paddingLeft="3"
+							 verticalAlign="bottom">
+						<mx:Label text="发展日期"/>
+						<mx:DateField width="100%"
+									  editable="true"
+									  disabledRanges="{[{rangeEnd:new Date(1900,0,1)},{rangeStart:new Date()}]}"
+									  selectedDate="@{simpleObj.startDate}"
+									  id="startDate"
+									  restrict="0-9\-^ "
+									  yearNavigationEnabled="true"
+									  formatString="YYYY-MM-DD"
+									  enterFrame="{startDate.selectedDate==null?startDate.selectedDate=new Date():''}"
+									  change="changHandler(event)"
+									  keyUp="toNextControl(event,stopDate)"/>
+						
+					</mx:HBox>
+				</mx:HBox>
+				<mx:HBox horizontalGap="0"
+						 width="100%">
+					<mx:HBox width="35%"
+							 height="100%"
+							 horizontalGap="2"
+							 verticalAlign="bottom">
+						<mx:Label text="停用日期"/>
+						<mx:DateField width="100%"
+									  editable="true"
+									  disabledRanges="{[{rangeEnd:new Date()},{rangeStart:new Date(2099,12,31)}]}"
+									  selectedDate="@{simpleObj.stopDate}"
+									  id="stopDate"
+									  restrict="0-9\-^ "
+									  yearNavigationEnabled="true"
+									  formatString="YYYY-MM-DD"
+									  enterFrame="{stopDate.selectedDate==null?stopDate.selectedDate=new Date():''}"
+									  change="changHandler(event)"
+									  keyUp="toNextControl(event,phoInputCode)"/>
+					</mx:HBox>
+					<mx:HBox width="35%"
+							 height="100%"
+							 horizontalGap="2"
+							 paddingLeft="3"
+							 verticalAlign="bottom">
+						<mx:Label text="拼 音 码"/>
+						<s:TextInput id="phoInputCode"
+									 width="100%"
+									 restrict="^ "
+									 maxChars="20"
+									 change="changHandler(event)"
+									 keyUp="toNextControl(event,fiveInputCode)"
+									 text="@{simpleObj.phoInputCode}"/>
+					</mx:HBox>
+					<mx:HBox width="30%"
+							 height="100%"
+							 horizontalGap="2"
+							 paddingLeft="3"
+							 verticalAlign="bottom">
+						<mx:Label text="五 笔 码"/>
+						<s:TextInput id="fiveInputCode"
+									 width="100%"
+									 restrict="^ "
+									 maxChars="10"
+									 change="changHandler(event)"
+									 keyUp="toNextControl(event,btSaveProvider)"
+									 text="@{simpleObj.fiveInputCode}"/>
+					</mx:HBox>
+				</mx:HBox>
+				<mx:Spacer height="100%"/>	
+			</s:VGroup>
+		</s:NavigatorContent>
+		<s:NavigatorContent id="nav_quality" width="30%"
+							creationComplete="nav_upfile_init()"
+							label="附件">
+		
+				<s:VGroup width="100%" height="100%" 
+						  >
+					<s:HGroup width="100%" verticalAlign="middle" paddingLeft="6">
+						<s:Label text="文件类型"
+								 color="blue"/>
+						<s:DropDownList id="fileType" 
+										dataProvider="{aryFileType}"
+										labelField="fileTypeName"
+										width="150"/>
+						<mx:Spacer width="2"/>
+						<s:Label text="文 件 名"
+								 color="blue"/>
+						<s:TextInput id="fileName"
+									 width="247"
+									 editable="false"
+									 imeMode="CHINESE"
+									 maxChars="80"/>
+						<mx:LinkButton id="btUpload"
+									   fontSize="12"
+									   label="添加附件"
+									   skin="mx.skins.halo.ButtonSkin"
+									   click="btUpload_clickHandler(event)"/>
+					</s:HGroup>
+					<s:HGroup width="100%" height="100%" paddingLeft="5" paddingRight="5">
+						<controls:SuperDataGrid id="gridFile"
+												width="100%"
+												height="100%"
+												dataProvider="{gridFileAry}"
+												hasRowNo="true"
+												paddingTop="0"
+												horizontalScrollPolicy="off"
+												styleName="dataGrid"
+												headerStyleName="myGridHead"
+												doubleClickEnabled="true">
+							<controls:columns>
+								<mx:DataGridColumn headerText="序号"
+												   dataField="rowNo"
+												   width="40"/>
+								<!--<mx:DataGridColumn headerText="供应商名称"
+												   dataField="providerName"
+												   width="160"/>-->
+								<mx:DataGridColumn headerText="文件类型"
+												   dataField="fileType"
+												   labelFunction="labFunFileType"
+												   width="80"/>
+								<mx:DataGridColumn headerText="文件名称"
+												   dataField="fileName"
+												   width="160"/>
+								<mx:DataGridColumn headerText="删除"
+												   width="50">
+									<mx:itemRenderer>
+										<fx:Component>
+											<mx:LinkButton useHandCursor="true"
+														   buttonMode="true"
+														   mouseChildren="false"
+														   icon="@Embed('assets/images/button/delete20.png')"
+														   toolTip="删除"
+														   click="dispatchEvent(new Event('delRow', true))"/>
+										</fx:Component>
+									</mx:itemRenderer>
+								</mx:DataGridColumn>
+								<mx:DataGridColumn headerText="下载"
+												   width="50">
+									<mx:itemRenderer>
+										<fx:Component>
+											<mx:LinkButton useHandCursor="true"
+														   buttonMode="true"
+														   mouseChildren="false"
+														   icon="@Embed('assets/images/button/particular_t.gif')"
+														   toolTip="下载"
+														   click="dispatchEvent(new Event('downloadRow', true))"/>
+										</fx:Component>
+									</mx:itemRenderer>
+								</mx:DataGridColumn>
+							</controls:columns>
+						</controls:SuperDataGrid>
+					</s:HGroup>
+					<s:HGroup  width="100%"
+							   height="33" 
+							   verticalAlign="middle"
+							   horizontalAlign="right">
+						<s:Label  color="blue" text="上传附件最大50M，已上传附件"/>
+						<s:Label  color="blue" id="txUploadInfo"
+								 text="{upLoadSize}M。"
+								 width="50"/>
+					</s:HGroup>
+				</s:VGroup>
+		</s:NavigatorContent>
+		<s:NavigatorContent id="nav_product" width="40%"
+							creationComplete="nav_product_init()"
+							label="产品列表">
+				<s:VGroup width="100%" height="100%" 
+						  paddingTop="8"
+						  paddingLeft="8"
+						  paddingRight="8"
+						  gap="15">
+					<s:HGroup width="100%" verticalAlign="middle" paddingLeft="6" paddingRight="6">
+						<s:Label text="拼音简码"
+								 color="blue"/>
+						<dataDict:AutoCompleteMaterGrid callback="showItemDict" width="131" height="24" id="txtMaterial"/>
+						<s:Label text="物资名称"/>
+						<s:TextInput id="materialName"
+									 editable="false"
+									 text="@{gridProduct.selectedItem.materialName}"
+									 keyUp="toNextControl(event,invitedPrice)"
+									 textAlign="left" restrict="0-9." width="131"/>
+						<s:Label text="规格型号"/>
+						<s:TextInput id="materialSpec" 
+									 editable="false"
+									 text="@{gridProduct.selectedItem.materialSpec}"
+									 keyUp="toNextControl(event,invitedPrice)"
+									 textAlign="right" restrict="0-9." width="150"/>
+						<s:Label text="单　　位"/>
+						<s:TextInput id="materialUnits" 
+									 editable="false"
+									 text="@{gridProduct.selectedItem.materialUnits}"
+									 keyUp="toNextControl(event,invitedPrice)"
+									 textAlign="left"  width="100%"/>
+					</s:HGroup>
+					<s:HGroup width="100%" verticalAlign="middle"  paddingLeft="6" paddingRight="6">
+						<s:Label text="中 标 价" color="blue"/>
+						<s:TextInput id="invitedPrice" 
+									 enter="if(StringUtil.trim(invitedPrice.text).length ==0) return;retailPrice.setFocus();"
+									 text="@{gridProduct.selectedItem.invitedPrice}"
+									 textAlign="right" restrict="0-9." width="131"/>
+						<s:Label text="售　　价" color="blue"/>
+						<s:TextInput id="retailPrice" 
+									 enter="if(StringUtil.trim(retailPrice.text).length ==0) return;authorizeNo.setFocus();"
+									 text="@{gridProduct.selectedItem.retailPrice}"
+									 textAlign="right" restrict="0-9." width="131"/>
+						<s:Label text="生产厂家"/>
+						<s:TextInput id="txtProviderCode" keyUp="toNextControl(event,retailPrice)"
+									 editable="false"
+									 width="150"/>
+						<s:Label text="批准文号"
+								 color="blue"/>
+						<s:TextInput id="authorizeNo"
+									 keyUp="if(event.keyCode!=13)return;
+									 if(StringUtil.trim(authorizeNo.text).length ==0) return;
+									 accreditStartDate.open();
+									 accreditStartDate.setFocus();" 
+									 text="@{gridProduct.selectedItem.authorizeNo}"
+									 textAlign="left" width="100%"/>
+					</s:HGroup>
+					
+					<s:HGroup width="100%"  verticalAlign="middle" paddingLeft="6" paddingRight="6">
+						<s:Label text="授权开始" color="blue"/>
+						<mx:DateField id="accreditStartDate" 
+									  formatString="YYYY-MM-DD"
+									  selectedDate="@{gridProduct.selectedItem.accreditStartDate}"
+									  selectableRange="{{rangeEnd:new Date(_date.getFullYear(),_date.getMonth(),_date.getDate())}}"
+									  keyUp="{if(event.keyCode!=13)return;
+									  accreditStopDate.open();accreditStopDate.setFocus();
+									  }"
+									   width="132" height="24"/>
+						<s:Label text="授权结束" color="blue"/>
+						<mx:DateField id="accreditStopDate" 
+									  keyUp="{if(event.keyCode!=13)return;
+									  accreditDescri.setFocus();
+									  }"
+									  selectedDate="@{gridProduct.selectedItem.accreditStopDate}"
+									  selectableRange="{{rangeStart:new Date()}}"
+									  formatString="YYYY-MM-DD"  height="24" width="130"/>
+						
+						<s:Label text="证书描述"/>
+						<s:TextInput id="accreditDescri"
+									 keyUp="{if(event.keyCode!=13)return;
+									 txtMaterial.setFocus();
+									 }"
+									 editable="true"
+									 width="100%"
+									 height="24"/>
+						<s:Button label="删除" id="btDelProductRow" click="btDelProductRow_clickHandler(event)"/>
+					</s:HGroup>
+					<s:HGroup width="100%" height="100%" paddingLeft="5" paddingRight="5">
+						<controls:SuperDataGrid width="100%"
+									 dataProvider="{ary}"
+									 styleName="dataGrid"
+									 format="{[,,,,,'0.00','0.00']}"
+									 id="gridProduct" horizontalScrollPolicy="on"
+									 height="100%">
+							<controls:columns>
+								<mx:DataGridColumn headerText="物资编码"
+												   dataField="materialCode"
+												   width="70"
+												   textAlign="left"/>
+								<mx:DataGridColumn headerText="物资名称"
+												   dataField="materialName"
+												   width="240"
+												   textAlign="left"/>
+								<mx:DataGridColumn headerText="分类名称"
+												   labelFunction="labFunMaterialClass"
+												   dataField="materialClass"
+												   width="65"
+												   textAlign="left"/>
+								<mx:DataGridColumn headerText="规格型号"
+												   dataField="materialSpec"
+												   width="65"
+												   textAlign="left"/>
+								<mx:DataGridColumn headerText="单位"
+												   dataField="materialUnits"
+												   width="40"
+												   textAlign="left" />
+								<mx:DataGridColumn headerText="售价"
+												   dataField="retailPrice"
+												   width="70"
+												   textAlign="right" />
+								<mx:DataGridColumn headerText="中标价"
+												   dataField="invitedPrice"
+												   width="70"
+												   textAlign="right" />
+								<mx:DataGridColumn headerText="生产厂家"
+												   labelFunction="labFunFactoryCode"
+												   dataField="factoryCode"
+												   width="120"
+												   textAlign="left" />
+								<mx:DataGridColumn headerText="批准文号"
+												   dataField="authorizeNo"
+												   width="120"
+												   textAlign="left" />
+								<mx:DataGridColumn headerText="授权起始日期"
+												   dataField="accreditStartDate"
+												   width="120"
+												   textAlign="left" />
+								<mx:DataGridColumn headerText="授权终止日期"
+												   dataField="accreditStopDate"
+												   width="120"
+												   textAlign="left" />
+								
+							</controls:columns>
+						</controls:SuperDataGrid>
+					</s:HGroup>
+					<mx:FormItem width="100%"
+								 height="110" creationComplete="{txtItems=[txUpload1, txUpload2, txUpload3];}"
+								
+								 indicatorGap="10">
+						<s:VGroup width="100%"
+								  height="100%">
+							<s:Label text="附件"
+									 color="blue"/>
+							<s:HGroup width="100%">
+								<s:TextInput id="txUpload1"
+											 width="100%"
+											 text="@{gridProduct.selectedItem.accreditFileName1}"
+											 editable="false"
+											 maxChars="60"/>
+								
+								<mx:LinkButton id="productBtUpload1"
+											   fontSize="12"
+											   label="添加"
+											   skin="mx.skins.halo.ButtonSkin"
+											   click="productBtUpload_clickHandler(event,'0')"/>
+								<mx:LinkButton id="btDelFile1"
+											   label="删除"
+											   skin="mx.skins.halo.ButtonSkin"
+											   click="btDelFile_clickHandler(event,'0')">
+								</mx:LinkButton>
+								<mx:LinkButton id="btDownload1"
+											   label="下载"
+											   visible="{this.data.type!='add'}"
+											   includeInLayout="{this.data.type!='add'}"
+											   skin="mx.skins.halo.ButtonSkin"
+											   click="btDownload_clickHandler(event)">
+								</mx:LinkButton>
+								<mx:Spacer width="2"/>
+							</s:HGroup>
+							<s:HGroup width="100%">
+								
+								<s:TextInput id="txUpload2"
+											 width="100%"
+											 text="@{gridProduct.selectedItem.accreditFileName2}"
+											 editable="false"
+											 maxChars="60"/>
+								<mx:LinkButton id="productBtUpload2"
+											   fontSize="12"
+											   label="添加"
+											   skin="mx.skins.halo.ButtonSkin"
+											   click="productBtUpload_clickHandler(event,'1')"/>
+								<mx:LinkButton id="btDelFile2"
+											   label="删除"
+											   skin="mx.skins.halo.ButtonSkin"
+											   click="btDelFile_clickHandler(event,'1')">
+								</mx:LinkButton>
+								<mx:LinkButton id="btDownload2"
+											   label="下载"
+											   visible="{this.data.type!='add'}"
+											   includeInLayout="{this.data.type!='add'}"
+											   skin="mx.skins.halo.ButtonSkin"
+											   click="btDownload_clickHandler(event)">
+								</mx:LinkButton>
+								<mx:Spacer width="2"/>
+							</s:HGroup>
+							<s:HGroup width="100%">
+								
+								<s:TextInput id="txUpload3"
+											 text="@{gridProduct.selectedItem.accreditFileName3}"
+											 width="100%"
+											 editable="false"
+											 maxChars="60"/>
+								<mx:LinkButton id="productBtUpload3"
+											   fontSize="12"
+											   label="添加"
+											   skin="mx.skins.halo.ButtonSkin"
+											   click="productBtUpload_clickHandler(event,'2')"/>
+								<mx:LinkButton id="btDelFile3"
+											   label="删除"
+											   skin="mx.skins.halo.ButtonSkin"
+											   click="btDelFile_clickHandler(event,'2')">
+								</mx:LinkButton>
+								<mx:LinkButton id="btDownload3"
+											   label="下载"
+											   visible="{this.data.type!='add'}"
+											   includeInLayout="{this.data.type!='add'}"
+											   skin="mx.skins.halo.ButtonSkin"
+											   click="btDownload_clickHandler(event)">
+								</mx:LinkButton>
+								<mx:Spacer width="2"/>
+							</s:HGroup>
+							<s:HGroup width="100%">
+								<s:Label text="上传附件最大50M，已上传附件"/>
+								<s:Label id="productTxtUploadInfo"
+										 text="{productUpLoadSize}M。"
+										 width="100%"/>
+							</s:HGroup>
+						</s:VGroup>
+					</mx:FormItem>
+				</s:VGroup>
+		</s:NavigatorContent>
+	</mx:TabNavigator>
+	<mx:HBox width="100%"
+			 height="31"
+			 horizontalAlign="right"
+			 verticalAlign="middle">
+		
+		<mx:LinkButton id="btSaveProvider"
+					   icon="@Embed('/assets/images/button/save20.png')"
+					   label=" 保 存 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   buttonMode="true"
+					   fontSize="12"
+					   width="86"
+					   height="26"
+					   click="saveHandler();"
+					   keyUp="keUpHandler(event)"/>
+		<mx:LinkButton id="btAdd"
+					   icon="@Embed('/assets/images/button/add20.png')"
+					   disabledIcon="@Embed('/assets/images/button/add20_disabled.png')"
+					   skin="mx.skins.halo.ButtonSkin"
+					   buttonMode="true"
+					   fontSize="12" 
+					   width="86"
+					   height="26"
+					   label=" 新 增 "
+					   click="addHandler()"/>
+		<mx:LinkButton id="btFirst"
+					   label=" 首 条 "
+					   icon="@Embed('/assets/images/button/page-first.gif')"
+					   disabledIcon="@Embed('/assets/images/button/page-first-disabled.gif')"
+					   skin="mx.skins.halo.ButtonSkin"
+					   buttonMode="true"
+					   fontSize="12"
+					   width="86"
+					   height="26"
+					   click="turnLine('first')"/>
+		<mx:LinkButton id="btPrevious"
+					   label="上一条"
+					   icon="@Embed('/assets/images/button/page-prev.gif')"
+					   disabledIcon="@Embed('/assets/images/button/page-prev-disabled.gif')"
+					   skin="mx.skins.halo.ButtonSkin"
+					   buttonMode="true"
+					   fontSize="12"
+					   width="86"
+					   height="26"
+					   click="turnLine('pre')"/>
+		<mx:LinkButton id="btNext"
+					   label="下一条"
+					   icon="@Embed('/assets/images/button/page-next.gif')"
+					   disabledIcon="@Embed('/assets/images/button/page-next-disabled.gif')"
+					   skin="mx.skins.halo.ButtonSkin"
+					   buttonMode="true"
+					   fontSize="12"
+					   width="86"
+					   height="26"
+					   click="turnLine('next')"/>
+		<mx:LinkButton id="btLast"
+					   label=" 末 条 "
+					   icon="@Embed('/assets/images/button/page-last.gif')"
+					   disabledIcon="@Embed('/assets/images/button/page-last-disabled.gif')"
+					   skin="mx.skins.halo.ButtonSkin"
+					   buttonMode="true"
+					   fontSize="12"
+					   width="86"
+					   height="26"
+					   click="turnLine('last')"/>
+		<mx:LinkButton id="btReturn"
+					   label=" 退 出 "
+					   icon="@Embed('/assets/images/button/exit20.png')"
+					   skin="mx.skins.halo.ButtonSkin"
+					   buttonMode="true"
+					   fontSize="12"
+					   width="86"
+					   height="26"
+					   click="returnHadler()"/>
+	</mx:HBox>
+	
+			</mx:VBox>
+</s:TitleWindow>

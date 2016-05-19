@@ -1,0 +1,598 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Module xmlns:fx="http://ns.adobe.com/mxml/2009"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   layout="vertical"
+		   width="100%"
+		   height="100%"
+		   paddingBottom="5"
+		   paddingLeft="5"
+		   paddingRight="5"
+		   paddingTop="5"
+		   creationComplete="module1_creationCompleteHandler(event)" 
+		   xmlns:view="cn.superion.material.system.materialClass.view.*">
+
+	<fx:Script>
+		<![CDATA[
+			import cn.superion.base.components.controls.WinModual;
+			import cn.superion.base.config.AppInfo;
+			import cn.superion.base.util.PurviewUtil;
+			import cn.superion.base.util.RemoteUtil;
+			import cn.superion.material.util.DefaultPage;
+			import cn.superion.report2.ReportPrinter;
+			import cn.superion.report2.ReportViewer;
+			import cn.superion.vo.center.material.CdMaterialClass;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.Button;
+			import mx.controls.DateField;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.remoting.mxml.RemoteObject;
+			
+			import spark.components.TextInput;
+
+			private var saveType:String;
+			private var materialClassVo:CdMaterialClass;
+			private var destination:String="materialClassImpl";
+			private const MENU_NO:String="0701";
+
+			//初始化
+			protected function module1_creationCompleteHandler(event:FlexEvent):void
+			{
+				setVisBtn([btAbandon, btSave], false);
+				setVisBtn([btNew, btChange, btDelete], true);
+			}
+
+			//设置按钮是否灰化 
+			private function setVisBtn(fArray:Array, vSign:Boolean):void
+			{
+				for each (var btnItem:Button in fArray)
+				{
+					btnItem.enabled=vSign;
+				}
+			}
+
+			//设置是否可编辑
+			private function setEditTxt(fArray:Array, eSign:Boolean):void
+			{
+				for each (var txtItem:TextInput in fArray)
+				{
+					txtItem.editable=eSign;
+					txtItem.enabled=eSign;
+				}
+			}
+
+			//清空TextInput文本信息
+			private function clearTxtForm(fArray:Array):void
+			{
+				for each (var txtItem:TextInput in fArray)
+				{
+					txtItem.text='';
+				}
+			}
+
+			//新建
+			protected function btNew_clickHandler(event:MouseEvent):void
+			{
+				if (!PurviewUtil.getPurview(AppInfo.APP_CODE, MENU_NO, "01"))
+				{
+					Alert.show("您无此按钮操作权限！", "提示信息");
+					return;
+				}
+				if (leftTree.trMaterialClass.dataProvider && !leftTree.trMaterialClass.selectedItem)
+				{
+					Alert.show("请选择节点,再点击新增", "提示信息");
+					return;
+				}
+				if (leftTree.trMaterialClass.selectedItem.classCode.length == 12)
+				{
+					Alert.show('已经是最末级，不能在该节点下增加子节点', '提示');
+					return;
+				}
+				//按钮灰化
+				setVisBtn([btChange, btDelete], false);
+				setVisBtn([btAbandon, btSave], true);
+				//清空，设置可编辑
+				var txtAry:Array=[rightDetail.classCode, rightDetail.txtClassName, rightDetail.phoInputCode, rightDetail.fiveInputCode];
+				clearTxtForm(txtAry);
+				setEditTxt(txtAry, true);
+				saveType='add';
+				setClassCodeByParentCode();
+			}
+
+			//修改
+			protected function btChange_clickHandler(event:MouseEvent):void
+			{
+				if (!PurviewUtil.getPurview(AppInfo.APP_CODE, MENU_NO, "02"))
+				{
+					Alert.show("您无此按钮操作权限！", "提示信息");
+					return;
+				}
+				if (leftTree.trMaterialClass.dataProvider && !leftTree.trMaterialClass.selectedItem)
+				{
+					Alert.show("请选择上级节点,再点击修改", "提示信息");
+					return;
+				}
+				setVisBtn([btNew, btDelete], false);
+				setVisBtn([btAbandon, btSave], true);
+				//设置可编辑
+				var txtAry:Array=[rightDetail.txtClassName, rightDetail.phoInputCode, rightDetail.fiveInputCode];
+				setEditTxt(txtAry, true);
+				saveType='update';
+				rightDetail.txtClassName.setFocus();
+			}
+
+			//删除
+			protected function btDelete_clickHandler(event:MouseEvent):void
+			{
+				if (!PurviewUtil.getPurview(AppInfo.APP_CODE, MENU_NO, "03"))
+				{
+					Alert.show("您无此按钮操作权限！", "提示信息");
+					return;
+				}
+				if (leftTree.trMaterialClass.dataProvider && !leftTree.trMaterialClass.selectedItem)
+				{
+					Alert.show("请选择节点,再点击删除", "提示信息");
+					return;
+				}
+				if (leftTree.trMaterialClass.selectedItem.classCode == '00')
+				{
+					Alert.show('物资类别根节点不能删除', '提示信息');
+					return;
+				}
+				//按钮灰化
+				setVisBtn([btSave, btAbandon], false);
+				var item:Object=leftTree.trMaterialClass.selectedItem;
+				var fCode:String=item.classCode;
+				var curChildren:ArrayCollection;
+				if (item.parent.children is Array)
+				{
+					curChildren=new ArrayCollection(item.parent.children);
+				}
+				else
+				{
+					curChildren=item.parent.children;
+				}
+				var index:int=curChildren.getItemIndex(item);
+
+				Alert.show("您是否要删除：" + item.className + "物资类别信息？", "提示信息", Alert.YES | Alert.NO, null, function(e:CloseEvent):void
+					{
+						if (e.detail == Alert.YES)
+						{
+							var ro:RemoteObject=RemoteUtil.getRemoteObject(destination, function(rev:Object):void
+								{
+									Alert.show( '物资类别删除成功', '提示');
+									curChildren.removeItemAt(index);
+									var curItem:Object=item.parent;
+									if (curItem.children.length == 0)
+									{
+										curItem.children=null;
+									}
+									item.parent=null;
+									leftTree.trMaterialClass.invalidateList();
+									//先清空，再赋值
+									var txtAry:Array=[rightDetail.classCode, rightDetail.txtClassName, rightDetail.phoInputCode, rightDetail.fiveInputCode];
+									clearTxtForm(txtAry);
+									leftTree.trMaterialClass.selectedItem=curItem;
+									fillFormByItem(curItem);
+								})
+							ro.deleteMaterialClass(fCode);
+						}
+					})
+			}
+
+			//放弃
+			protected function btAbandon_clickHandler(event:MouseEvent):void
+			{
+				fillFormByItem(leftTree.trMaterialClass.selectedItem);
+				//按钮灰化
+				setVisBtn([btSave, btAbandon], false);
+				setVisBtn([btNew, btChange, btDelete], true);
+			}
+
+			//保存
+			public function btSave_clickHandler():void
+			{
+				setVisBtn([btSave], false);
+				if (!PurviewUtil.getPurview(AppInfo.APP_CODE, MENU_NO, "04"))
+				{
+					Alert.show("您无此按钮操作权限！", "提示");
+					setVisBtn([btSave], true);
+					return;
+				}
+				//分类编码不能为空
+				if (rightDetail.classCode.text == '')
+				{
+					this.rightDetail.classCode.setFocus();
+					Alert.show('分类编码不能为空，请输入！', '提示信息');
+					setVisBtn([btSave], true);
+					return;
+				}
+				//分类名称不能为空
+				if (rightDetail.txtClassName.text == '')
+				{
+					this.rightDetail.txtClassName.setFocus();
+					Alert.show('分类名称不能为空，请输入！', '提示信息');
+					setVisBtn([btSave], true);
+					return;
+				}
+				
+
+				// 新增
+				if (saveType == 'add')
+				{
+					setVisBtn([btSave], true);
+					setVisBtn([btChange, btDelete], false);
+					materialClassVo=new CdMaterialClass();
+					materialClassVo.classCode=rightDetail.classCode.text;
+					materialClassVo.className=rightDetail.txtClassName.text;
+					materialClassVo.phoInputCode=rightDetail.phoInputCode.text;
+					materialClassVo.fiveInputCode=rightDetail.fiveInputCode.text;
+					materialClassVo.endSign = rightDetail.grpEndSign.selectedValue.toString();
+					materialClassVo.parentCode=leftTree.trMaterialClass.selectedItem.classCode;
+				}
+
+				//修改
+				if (saveType == 'update')
+				{
+					setVisBtn([btChange, btDelete], false);
+					materialClassVo=leftTree.trMaterialClass.selectedItem as CdMaterialClass;
+					materialClassVo.className=rightDetail.txtClassName.text;
+					materialClassVo.phoInputCode=rightDetail.phoInputCode.text;
+					materialClassVo.fiveInputCode=rightDetail.fiveInputCode.text;
+					materialClassVo.endSign = rightDetail.grpEndSign.selectedValue.toString();
+				}
+				var ro:RemoteObject=RemoteUtil.getRemoteObject(destination, function(rev:Object):void
+					{
+						var txtAry:Array=[rightDetail.classCode, rightDetail.txtClassName, rightDetail.phoInputCode, rightDetail.fiveInputCode];
+						setEditTxt(txtAry, false);
+						setVisBtn([btNew, btChange, btDelete], true);
+						setVisBtn([btSave, btAbandon], false);
+
+						var children:*=leftTree.trMaterialClass.selectedItem.children;
+						//增加
+						if (saveType == 'add')
+						{
+							if (!children)
+							{
+								children=new ArrayCollection();
+								leftTree.trMaterialClass.selectedItem.children=children;
+							}
+
+							if (children is Array)
+							{
+								children=new ArrayCollection(children);
+							}
+							children.addItem(materialClassVo);
+							materialClassVo.parent=leftTree.trMaterialClass.selectedItem;
+
+							leftTree.trMaterialClass.expandItem(materialClassVo.parent, true);
+							leftTree.trMaterialClass.invalidateList();
+							//选中添加的节点，并给form赋值
+							fillFormByItem(materialClassVo);
+							//排序
+							leftTree.trMaterialClass.selectedItem.children=sortChildren(children);
+							leftTree.trMaterialClass.selectedItem=materialClassVo;
+
+							leftTree.trMaterialClass.invalidateList();
+							Alert.show('保存' + materialClassVo.className + '物资类别信息成功', '提示信息');
+							return;
+						}
+						//修改
+						if (saveType == 'update')
+						{
+							if (children)
+							{
+								leftTree.trMaterialClass.invalidateList();
+							}
+							Alert.show('修改' + materialClassVo.className + '物资类别信息成功', '提示信息');
+						}
+					})
+				ro.saveMaterialClass(materialClassVo);
+			}
+
+			/**
+			 * 打印 输出
+			 * @param 参数说明
+			 * 		  lstrPurview 权限编号;
+			 * 		  isPrintSign 打印输出标识。直接打印：1，输出：0
+			 */
+			protected function btPrintExp_clickHandler(lstrPurview:String, isPrintSign:String):void
+			{
+				if (!PurviewUtil.getPurview(AppInfo.APP_CODE, MENU_NO, lstrPurview))
+				{
+					Alert.show("您无此按钮操作权限！", "提示");
+					return;
+				}
+			var _dataList:ArrayCollection=new ArrayCollection();
+			var dict:Dictionary = new Dictionary();
+			dict["单位名称"] = AppInfo.currentUserInfo.unitsName;
+			dict["日期"] =DateField.dateToString(new Date(),'YYYY-MM-DD');
+			dict["主标题"] = "物资类别分类";
+			dict["制表人"] =AppInfo.currentUserInfo.userName;				
+			if(isPrintSign=='1') ReportPrinter.LoadAndPrint("report/material/system/materialClass.xml",_dataList,dict);
+			if(isPrintSign=='0')ReportViewer.Instance.Show("report/material/system/materialClass.xml",_dataList,dict);		
+				
+				
+			}
+
+			//返回
+			protected function btReturn_clickHandler(event:MouseEvent):void
+			{
+				if (this.parentDocument is WinModual)
+				{
+					PopUpManager.removePopUp(this.parentDocument as IFlexDisplayObject);
+					return;
+				}
+				DefaultPage.gotoDefaultPage();
+			}
+
+			private function sortChildren(array:*):Array
+			{
+				var sortArray:Array=[];
+				var minItem:*;
+				for each (var item:*in array)
+				{
+					for each (var it:*in array)
+					{
+						if (it.dirty)
+						{
+							continue;
+						}
+						if (!minItem)
+						{
+							minItem=it;
+						}
+						else
+						{
+							var a0:int=parseInt(it.classCode);
+							var a1:int=parseInt(minItem.classCode);
+							if (a0 < a1)
+							{
+								minItem=it;
+							}
+						}
+					}
+					minItem.dirty=true;
+					sortArray.push(minItem);
+					minItem=null;
+				}
+				//清除dirty属性
+				for each (var arrItem:*in sortArray)
+				{
+					if (arrItem.hasOwnProperty("dirty"))
+					{
+						delete arrItem.dirty;
+					}
+				}
+
+				return sortArray;
+
+			}
+
+			//根据选中节点,填充表单
+			public function fillFormByItem(fItem:Object):void
+			{
+				var txtAry:Array=[rightDetail.classCode, rightDetail.txtClassName, rightDetail.phoInputCode, rightDetail.fiveInputCode];
+				setEditTxt(txtAry, false);
+				clearTxtForm(txtAry);
+				setVisBtn([btSave, btAbandon], false);
+				setVisBtn([btNew, btChange, btDelete], true);
+				//如果是根节点，清空返回
+				if (fItem.classCode == '00')
+				{
+					clearTxtForm(txtAry);
+					return;
+				}
+				rightDetail.classCode.text=fItem.classCode;
+				rightDetail.txtClassName.text=fItem.className;
+				rightDetail.phoInputCode.text=fItem.phoInputCode;
+				rightDetail.fiveInputCode.text=fItem.fiveInputCode;
+				//先将按钮组复位
+				rightDetail.rdoNo.selected = rightDetail.rdoYes.selected = false;
+				if(fItem.endSign){
+					rightDetail.grpEndSign.selection = fItem.endSign == "0" ? rightDetail.rdoNo:rightDetail.rdoYes;
+				}
+				 
+			}
+
+			//增加自动获取classCode
+			public function setClassCodeByParentCode():void
+			{
+
+				var selItem:Object=leftTree.trMaterialClass.selectedItem;
+				var ro:RemoteObject=RemoteUtil.getRemoteObject("baseToolImpl", function(rev:Object):void
+					{
+						if (rev.data && rev.data.length > 0)
+						{
+							var rCode:String=rev.data[0];
+							var index:int=parseInt(rCode.substr(rCode.length - 2, 2)) + 1;
+							if (index > 99)
+							{
+								rightDetail.classCode.text="";
+								rightDetail.classCode.setFocus();
+								Alert.show("当前编码已为最大值99，请您自定义分类编码", "提示");
+								return;
+							}
+							else
+							{
+								if (index < 10)
+								{
+									rightDetail.classCode.text=rCode.substr(0, rCode.length - 2) + '0' + index;
+								}
+								else
+								{
+									rightDetail.classCode.text=rCode.substr(0, rCode.length - 2) + index;
+								}
+								rightDetail.txtClassName.setFocus();
+								return;
+							}
+						}
+						else if (selItem.classCode == "00" && rev.data == null)
+						{
+							rightDetail.classCode.text="01";
+							rightDetail.txtClassName.setFocus();
+							return;
+						}
+						else
+						{
+							rightDetail.classCode.text=selItem.classCode + '01';
+							rightDetail.txtClassName.setFocus();
+							return;
+						}
+					})
+				ro.findMaxClassCode('cd_material_class', selItem.classCode, 'class_code');
+			}
+		]]>
+	</fx:Script>
+	<s:BorderContainer backgroundColor="0xE2E8E8"
+					   width="100%"
+					   height="100%"
+					   borderVisible="false">
+		<s:layout>
+			<s:VerticalLayout/>
+		</s:layout>
+		<!-- 标题部分 -->
+		<s:HGroup width="100%"
+				  height="31"
+				  gap="0">
+			<s:BorderContainer x="0"
+							   y="0"
+							   width="227"
+							   height="100%"
+							   backgroundImage="@Embed(source='assets/images/title/title01.png')"
+							   borderVisible="false">
+				<mx:Text x="19"
+						 y="2"
+						 width="188"
+						 height="28"
+						 fontWeight="bold"
+						 fontSize="14"
+						 text="物资类别维护"/>
+			</s:BorderContainer>
+			<s:BorderContainer backgroundImage="@Embed(source='assets/images/title/title02.png')"
+							   width="100%"
+							   height="100%"
+							   borderVisible="false">
+			</s:BorderContainer>
+		</s:HGroup>
+		<!-- 表体部分 -->
+		<s:BorderContainer width="100%"
+						   height="100%"
+						   borderStyle="solid"
+						   borderColor="#9ABBE6"
+						   backgroundColor="#E2E8E8">
+			<s:layout>
+				<s:VerticalLayout gap="0"/>
+			</s:layout>
+			<s:HGroup width="100%"
+					  height="100%"
+					  paddingBottom="10"
+					  paddingLeft="5"
+					  paddingRight="5"
+					  paddingTop="5">
+				<!-- 物资类别树 -->
+				<view:MaterialClassLeftTree id="leftTree"
+											width="213"
+											height="100%"/>
+				<!-- 物资类别信息 -->
+				<s:BorderContainer width="100%"
+								   height="100%"
+								   borderColor="#9ABBE6"
+								   backgroundColor="#E2E8E8">
+					<view:MaterialClassRightDetail id="rightDetail"
+												   width="100%"
+												   height="100%"/>
+
+				</s:BorderContainer>
+			</s:HGroup>
+			<!-- 按钮部分 -->
+			<s:HGroup width="100%"
+					  height="33"
+					  horizontalAlign="right">
+				<mx:LinkButton id="btNew"
+							   icon="@Embed('/assets/images/button/new20.png')"
+							   disabledIcon="@Embed('/assets/images/button/new20_disabled.png')"
+							   label=" 新 建 "
+							   skin="mx.skins.halo.ButtonSkin"
+							   buttonMode="true"
+							   fontSize="12"
+							   width="86"
+							   height="26"
+							   click="btNew_clickHandler(event)"/>
+				<mx:LinkButton id="btChange"
+							   icon="@Embed('/assets/images/button/change20.png')"
+							   disabledIcon="@Embed('/assets/images/button/change20_disabled.png')"
+							   label=" 修 改 "
+							   skin="mx.skins.halo.ButtonSkin"
+							   buttonMode="true"
+							   fontSize="12"
+							   width="86"
+							   height="26"
+							   click="btChange_clickHandler(event)"/>
+				<mx:LinkButton id="btDelete"
+							   icon="@Embed('/assets/images/button/delete20.png')"
+							   disabledIcon="@Embed('/assets/images/button/delete20_disabled.png')"
+							   label=" 删 除 "
+							   skin="mx.skins.halo.ButtonSkin"
+							   buttonMode="true"
+							   fontSize="12"
+							   width="86"
+							   height="26"
+							   click="btDelete_clickHandler(event)"/>
+				<mx:LinkButton id="btAbandon"
+							   icon="@Embed('/assets/images/button/abandon20.png')"
+							   disabledIcon="@Embed('/assets/images/button/abandon20_disabled.png')"
+							   label=" 放 弃 "
+							   skin="mx.skins.halo.ButtonSkin"
+							   buttonMode="true"
+							   fontSize="12"
+							   width="86"
+							   height="26"
+							   click="btAbandon_clickHandler(event)"/>
+				<mx:LinkButton id="btSave"
+							   icon="@Embed('/assets/images/button/save20.png')"
+							   disabledIcon="@Embed('/assets/images/button/save20_disabled.png')"
+							   label=" 保 存 "
+							   skin="mx.skins.halo.ButtonSkin"
+							   buttonMode="true"
+							   fontSize="12"
+							   width="86"
+							   height="26"
+							   click="btSave_clickHandler()"/>
+				<mx:LinkButton id="btPrint"
+							   icon="@Embed('/assets/images/button/print20.png')"
+							   label=" 打 印 "
+							   skin="mx.skins.halo.ButtonSkin"
+							   buttonMode="true"
+							   fontSize="12"
+							   width="86"
+							   height="26"
+							   click="btPrintExp_clickHandler('05','1')"/>
+				<mx:LinkButton id="btExp"
+							   icon="@Embed('/assets/images/button/exp20.png')"
+							   label=" 输 出 "
+							   skin="mx.skins.halo.ButtonSkin"
+							   buttonMode="true"
+							   fontSize="12"
+							   width="86"
+							   height="26"
+							   click="btPrintExp_clickHandler('08','0')"/>
+				<mx:LinkButton id="btReturn"
+							   icon="@Embed('/assets/images/button/return20.png')"
+							   label=" 返 回 "
+							   skin="mx.skins.halo.ButtonSkin"
+							   buttonMode="true"
+							   fontSize="12"
+							   width="86"
+							   height="26"
+							   click="btReturn_clickHandler(event)"/>
+				<mx:Spacer width="5"/>
+			</s:HGroup>
+		</s:BorderContainer>
+	</s:BorderContainer>
+</mx:Module>

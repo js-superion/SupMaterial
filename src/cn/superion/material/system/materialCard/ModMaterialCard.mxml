@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Module xmlns:fx="http://ns.adobe.com/mxml/2009"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   paddingBottom="5"
+		   paddingLeft="5"
+		   paddingRight="5"
+		   paddingTop="5"		   
+		   layout="vertical"
+		   width="100%"
+		   height="100%"
+		   xmlns:controls="cn.superion.base.components.controls.*"
+		   creationComplete="module1_creationCompleteHandler(event)" xmlns:util="cn.superion.material.util.*">
+
+	<fx:Script>
+		<![CDATA[
+			import cn.superion.base.components.controls.WinModual;
+			import cn.superion.base.config.AppInfo;
+			import cn.superion.base.config.ParameterObject;
+			import cn.superion.base.util.FormUtils;
+			import cn.superion.base.util.PurviewUtil;
+			import cn.superion.base.util.RemoteUtil;
+			import cn.superion.material.system.materialCard.view.MaterialCardAdd;
+			import cn.superion.material.system.materialCard.view.MaterialCardQueryCon;
+			import cn.superion.material.util.DefaultPage;
+			import cn.superion.material.util.MainToolBar;
+			import cn.superion.report2.ReportPrinter;
+			import cn.superion.report2.ReportViewer;
+			import cn.superion.vo.center.material.CdMaterialCard;
+			import cn.superion.vo.center.material.CdMaterialCardLog;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.DateField;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.remoting.mxml.RemoteObject;
+
+			public var disAry:Array=[];
+			public var enAry:Array=[];
+			private const MENU_NO:String="0705";
+			private var destination:String="materialCardImpl";
+
+			//初始化
+			protected function module1_creationCompleteHandler(event:FlexEvent):void
+			{
+				disAry=[btPrint, btExp,  btAdd, btModify, btDelete,  btQuery, btExit];
+				enAry=[btAdd, btQuery, btExit];
+//				MainToolBar.showSpecialBtn(btToolBar, disAry, disAry, true);
+				var paramQuery:ParameterObject=new ParameterObject();
+				paramQuery.conditions={};
+				gdMaterialCardList.config(paramQuery, destination, 'findCardListByCondition', function(rev:Object):void
+					{
+						gdMaterialCardList.grid.dataProvider=rev.data;
+					}, null, false);
+			}
+
+			//增加
+			protected function btToolBar_addClickHandler(event:Event):void
+			{
+				if (!PurviewUtil.getPurview(AppInfo.APP_CODE, MENU_NO, "01"))
+				{
+					Alert.show("您无此按钮操作权限！", "提示");
+					return;
+				}
+				enAry=[btPrint, btExp, btQuery, btExit];
+//				MainToolBar.showSpecialBtn(btToolBar, disAry, enAry, true);
+				var win:MaterialCardAdd=PopUpManager.createPopUp(this, MaterialCardAdd, true) as MaterialCardAdd;
+				win.data={parentWin: this, isAdd: true, cardInfo: new CdMaterialCard()};
+				win.btFirst.enabled=false;
+				win.btPrevious.enabled=false;
+				win.btNext.enabled=false;
+				win.btLast.enabled=false;
+				win.btNew.enabled=false;
+				win.btSave.enabled=false;
+				PopUpManager.centerPopUp(win);
+				win.title="增加领用证卡信息";
+			}
+
+			//修改
+			protected function btToolBar_modifyClickHandler(event:Event):void
+			{
+				if (!PurviewUtil.getPurview(AppInfo.APP_CODE, MENU_NO, "02"))
+				{
+					Alert.show("您无此按钮操作权限！", "提示");
+					return;
+				}
+				var selectItem:CdMaterialCard=gdMaterialCardList.grid.selectedItem as CdMaterialCard;
+				var selItem:CdMaterialCardLog=gdMaterialCardList.grid.selectedItem as CdMaterialCardLog;
+				if (!selectItem)
+				{
+					Alert.show("请选择要修改的记录", "提示信息");
+					return;
+				}
+				enAry=[btQuery, btExit];
+//				MainToolBar.showSpecialBtn(btToolBar, disAry, enAry, true);
+				var seleIndex:Number=gdMaterialCardList.grid.selectedIndex;
+				var allLine:Number=ArrayCollection(gdMaterialCardList.grid.dataProvider).length;
+				var win:MaterialCardAdd=PopUpManager.createPopUp(this, MaterialCardAdd, true) as MaterialCardAdd;
+				win.data={parentWin: this, isAdd: false, cardInfo: selectItem, logInfo: selItem, index: seleIndex, lines: allLine};
+				PopUpManager.centerPopUp(win);
+				win.title="修改领用证卡信息";
+//				win.btNew.enabled=false;
+//				win.btSave.enabled=false;
+				preNextHandle(win);
+			}
+
+			//分页
+			public function preNextHandle(win:MaterialCardAdd):void
+			{
+				var selIndex:Number=gdMaterialCardList.grid.selectedIndex;
+				//只有一条记录
+				if (gdMaterialCardList.grid.dataProvider.length == 1)
+				{
+					win.btFirst.enabled=false;
+					win.btPrevious.enabled=false;
+					win.btNext.enabled=false;
+					win.btLast.enabled=false;
+					return;
+				}
+				//选中第一条
+				if (selIndex == 0)
+				{
+					win.btFirst.enabled=false;
+					win.btPrevious.enabled=false;
+					win.btNext.enabled=true;
+					win.btLast.enabled=true;
+					return;
+				}
+				//选中最后一条
+				if (selIndex == gdMaterialCardList.grid.dataProvider.length - 1)
+				{
+					win.btFirst.enabled=true;
+					win.btPrevious.enabled=true;
+					win.btNext.enabled=false;
+					win.btLast.enabled=false;
+					return;
+				}
+				win.btFirst.enabled=true;
+				win.btPrevious.enabled=true;
+				win.btNext.enabled=true;
+				win.btLast.enabled=true;
+			}
+
+			//删除
+			protected function btToolBar_deleteClickHandler(event:Event):void
+			{
+				if (!PurviewUtil.getPurview(AppInfo.APP_CODE, MENU_NO, "03"))
+				{
+					Alert.show("您无此按钮操作权限！", "提示");
+					return;
+				}
+				if (!gdMaterialCardList.grid.selectedItem)
+				{
+					Alert.show("请选择要删除的记录", "提示信息");
+					return;
+				}
+//				enAry=[btPrint, btExport, btAdd, btQuery, btReturn];
+//				MainToolBar.showSpecialBtn(btToolBar, disAry, enAry, true);
+				var _gd:ArrayCollection=gdMaterialCardList.grid.dataProvider as ArrayCollection;
+				var selItem:Object=gdMaterialCardList.grid.selectedItem;
+				var _index:int=_gd.getItemIndex(gdMaterialCardList.grid.selectedItem);
+				Alert.show("您是否要删除：" + selItem.cardCode + "领用证卡信息？", "提示信息", Alert.YES | Alert.NO, null, function(e:CloseEvent):void
+					{
+						if (e.detail == Alert.YES)
+						{
+							var ro:RemoteObject=RemoteUtil.getRemoteObject(destination, function(rev:Object):void
+								{
+									_gd.removeItemAt(_index);
+									gdMaterialCardList.grid.dataProvider=_gd;
+									gdMaterialCardList.grid.invalidateList();
+									if (gdMaterialCardList.grid.dataProvider.length > 0)
+									{
+										gdMaterialCardList.grid.selectedIndex=gdMaterialCardList.grid.dataProvider.length - 1;
+										btModify.enabled=true;
+										btDelete.enabled=true;
+									}
+								})
+							ro.deleteCard(selItem.autoId);
+						}
+					});
+			}
+
+			/**
+			 * @param 参数说明
+			 * 		  lstrPurview 权限编号;
+			 * 		  isPrintSign 打印输出标识。直接打印：1，输出：0
+			 */
+			protected function btToolBar_printExpClickHandler(lstrPurview:String, isPrintSign:String):void
+			{
+				if (!PurviewUtil.getPurview(AppInfo.APP_CODE, MENU_NO, lstrPurview))
+				{
+					Alert.show("您无此按钮操作权限！", "提示");
+					return;
+				}
+				var cardListPrintItems:ArrayCollection=gdMaterialCardList.grid.dataProvider as ArrayCollection;
+				var dict:Dictionary=new Dictionary();
+				dict["单位名称"]=AppInfo.currentUserInfo.unitsName;
+				dict["日期"]=DateField.dateToString(new Date(), 'YYYY-MM-DD');
+				dict["主标题"]="领用证卡维护";
+				dict["制表人"]="制表人:"+AppInfo.currentUserInfo.userName;
+				if (isPrintSign == '1')
+					ReportPrinter.LoadAndPrint("report/material/system/materialCard.xml", cardListPrintItems, dict);
+				if (isPrintSign == '0')
+					ReportViewer.Instance.Show("report/material/system/materialCard.xml", cardListPrintItems, dict);
+			}
+
+			//查找
+			protected function btToolBar_queryClickHandler(event:Event):void
+			{
+				var win:MaterialCardQueryCon=PopUpManager.createPopUp(this, MaterialCardQueryCon, true) as MaterialCardQueryCon;
+				win.data={parentWin: this};
+				PopUpManager.centerPopUp(win);
+			}
+
+			//退出
+			protected function btToolBar_exitClickHandler(event:Event):void
+			{
+				if (this.parentDocument is WinModual)
+				{
+					PopUpManager.removePopUp(this.parentDocument as IFlexDisplayObject);
+					return;
+				}
+				DefaultPage.gotoDefaultPage();
+			}
+
+			//价格输入框移出事件
+			private function priceFix2(con:*):void
+			{
+				if (con.text != "" && con.text != "")
+				{
+					con.text=Number(con.text).toFixed(2);
+				}
+
+			}
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<s:BorderContainer width="100%"
+					   height="100%"
+					   backgroundColor="0xE2E8E8"
+					   borderVisible="false">
+			<s:layout>
+				<s:VerticalLayout/>
+			</s:layout>			
+			<s:HGroup width="100%"
+					  height="31"
+					  gap="0">
+				<s:BorderContainer x="0"
+								   y="0"
+								   width="227"
+								   height="100%"
+								   borderVisible="false"
+								   backgroundImage="@Embed(source='assets/images/title/title01.png')">
+					<mx:Text x="19"
+							 y="5"
+							 width="188"
+							 fontWeight="bold"
+							 fontSize="14"
+							 height="28"
+							 text="领用证卡维护"/>
+				</s:BorderContainer>
+				<s:BorderContainer width="100%"
+								   height="100%"
+								   borderVisible="false"
+								   backgroundImage="@Embed(source='assets/images/title/title02.png')">
+					<s:HGroup width="100%"
+							  height="31"
+							  verticalAlign="middle">
+						<mx:Spacer width="100%"/>
+						<mx:Spacer width="10"/>
+					</s:HGroup>
+				</s:BorderContainer>
+			</s:HGroup>
+			<s:BorderContainer width="100%"
+							   height="100%"
+							   borderStyle="solid"
+							   borderColor="#9ABBE6"
+							   backgroundColor="#E2E8E8">
+				<s:layout>
+					<s:VerticalLayout gap="0"/>
+				</s:layout>			
+			<controls:PageGrid id="gdMaterialCardList"
+							   width="100%"
+							   height="100%"
+							   styleName="dataGrid"
+							   hasRowNo="true"
+							   format="{[,,,,,'0.00','0.00','0.00']}"
+							   itemDoubleClick="btToolBar_modifyClickHandler(event)"
+							   doubleClickEnabled="true">
+				<controls:columns>
+					<mx:DataGridColumn headerText="序号"
+									   width="50"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="证卡编号"
+									   dataField="cardCode"
+									   width="130"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="条形码"
+									   dataField="barCode"
+									   width="130"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="所属部门"
+									   dataField="deptName"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="负责人"
+									   dataField="personIdName"
+									   width="80"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="最高限额"
+									   dataField="maxLimited"
+									   width="90"
+									   editable="true"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="支出金额"
+									   dataField="currentCredit"
+									   width="90"
+									   editable="true"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="账户余额"
+									   dataField="accountRemain"
+									   width="90"
+									   textAlign="right"/>
+					<mx:DataGridColumn headerText="启用日期"
+									   dataField="startDate"
+									   width="90"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="停用日期"
+									   dataField="stopDate"
+									   width="90"
+									   textAlign="left"/>
+				</controls:columns>
+			</controls:PageGrid>
+			<mx:Spacer height="5"/>
+			<s:HGroup height="31"
+					  paddingBottom="10"
+					  horizontalAlign="right"
+					  gap="5"
+					  width="100%">
+				<mx:LinkButton id="btAdd"
+							   label=" 增 加"
+							   fontSize="12"
+							   width="86"
+							   height="26"
+							   skin="mx.skins.halo.ButtonSkin"
+							   click="btToolBar_addClickHandler(event)"
+							   icon="@Embed(source='assets/images/button/new20.png')"/>
+				<mx:LinkButton id="btModify"
+							   label=" 修 改"
+							   fontSize="12"
+							   width="86"
+							   height="26"
+							   skin="mx.skins.halo.ButtonSkin"
+							   click="btToolBar_modifyClickHandler(event)"
+							   icon="@Embed(source='assets/images/button/change20.png')"/>
+				<mx:LinkButton id="btDelete"
+							   label=" 删 除"
+							   fontSize="12"
+							   width="86"
+							   height="26"
+							   skin="mx.skins.halo.ButtonSkin"
+							   icon="@Embed(source='assets/images/button/delete20.png')"
+							   click="btToolBar_deleteClickHandler(event)"/>
+				<mx:LinkButton id="btQuery"
+							   label=" 查 询"
+							   fontSize="12"
+							   width="86"
+							   height="26"
+							   skin="mx.skins.halo.ButtonSkin"
+							   icon="@Embed(source='assets/images/button/query20.png')"
+							   click="btToolBar_queryClickHandler(event)"/>		
+				<mx:LinkButton id="btPrint"
+							   label=" 打 印"
+							   fontSize="12"
+							   width="86"
+							   height="26"
+							   skin="mx.skins.halo.ButtonSkin"
+							   icon="@Embed('/assets/images/button/print20.png')"
+							   click="btToolBar_printExpClickHandler('05','1')"/>
+				<mx:LinkButton id="btExp"
+							   label=" 输 出"
+							   fontSize="12"
+							   width="86"
+							   height="26"
+							   skin="mx.skins.halo.ButtonSkin"
+							   icon="@Embed('/assets/images/button/exp20.png')"
+							   click="btToolBar_printExpClickHandler('08','0')"/>					
+				<mx:LinkButton id="btExit"
+							   label=" 返 回"
+							   fontSize="12"
+							   width="86"
+							   height="26"
+							   skin="mx.skins.halo.ButtonSkin"
+							   icon="@Embed(source='assets/images/button/return20.png')"
+							   click="btToolBar_exitClickHandler(event)"/>
+				<mx:Spacer width="5"/>
+			</s:HGroup>
+			</s:BorderContainer>
+		</s:BorderContainer>
+</mx:Module>

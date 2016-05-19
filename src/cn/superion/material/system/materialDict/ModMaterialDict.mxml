@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Module xmlns:fx="http://ns.adobe.com/mxml/2009"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   layout="vertical"
+		   verticalGap="5"
+		   horizontalAlign="center"
+		   horizontalScrollPolicy="off"
+		   verticalScrollPolicy="off"
+		   paddingBottom="5"
+		   paddingLeft="5"
+		   paddingRight="5"
+		   paddingTop="5"
+		   width="100%"
+		   height="100%"
+		   creationComplete="initModMaterial()"
+		   xmlns:controls="cn.superion.base.components.controls.*"
+		   xmlns:view1="cn.superion.material.system.view.*"
+		   xmlns:view="cn.superion.material.system.materialDict.view.*">
+	<fx:Script source="ModMaterialDictas.as"/>
+	<fx:Declarations>
+		<s:RadioButtonGroup id="queryType"/>
+	</fx:Declarations>
+	<s:BorderContainer width="100%"
+					   height="100%"
+					   backgroundColor="0xE2E8E8"
+					   borderVisible="false">
+		<s:VGroup width="100%"
+				  height="100%">
+			<s:HGroup width="100%"
+					  height="30"
+					  gap="0">
+				<s:BorderContainer backgroundImage="@Embed(source='assets/images/title/title01.png')"
+								   width="222"
+								   height="30"
+								   borderVisible="false">
+					<mx:Text x="19"
+							 y="2"
+							 width="188"
+							 fontWeight="bold"
+							 fontSize="14"
+							 height="28"
+							 text="物资档案维护"/>
+				</s:BorderContainer>
+				<s:BorderContainer backgroundImage="@Embed(source='assets/images/title/title02.png')"
+								   width="100%"
+								   height="30"
+								   borderVisible="false"/>
+			</s:HGroup>
+
+			<!--主要内容显示区-->
+			<s:BorderContainer width="100%"
+							   height="100%"
+							   borderStyle="solid"
+							   borderColor="#9ABBE6"
+							   backgroundColor="#E2E8E8">
+				<s:VGroup width="100%"
+						  height="100%"
+						  paddingLeft="5"
+						  paddingRight="5"
+						  paddingBottom="5"
+						  paddingTop="5">
+					<s:HGroup width="100%"
+							  height="100%">
+						<!--物资分类信息树-->
+						<s:VGroup width="255"
+								  height="100%">
+							<view:MaterialDictLeftTree id="materialClassLeftTree"
+													   width="100%"
+													   height="100%"
+													   parentThis="{this}"/>
+						</s:VGroup>
+
+						<!--物资档案详细信息显示区-->
+						<s:VGroup height="100%"
+								  width="100%">
+							<s:HGroup width="100%"
+									  height="31"
+									  verticalAlign="middle">
+								<s:Label text="所属仓库"
+										 width="56"/>
+								<s:ComboBox id="storageDefault"
+											labelField="storageName"
+											width="166"
+											height="25"/>
+								<s:RadioButton groupName="queryType"
+											   label="拼音简码"
+											   selected="true"
+											   value="phoInputCode"/>
+								<s:RadioButton groupName="queryType"
+											   label="五笔简码"
+											   value="fiveInputCode"/>
+								<s:TextInput id="txtQuery"
+											 width="141"
+											 enter="txtQuery_enterHandler(event)"
+											 height="25"/>
+								<mx:LinkButton id="btQuery"
+											   height="26"
+											   label=" 查 找"
+											   skin="mx.skins.halo.ButtonSkin"
+											   icon="@Embed(source='assets/images/button/query20.png')"
+											   click="btQuery_clickHandler(event)"/>
+							</s:HGroup>
+							<controls:SuperDataGrid id="pg_material_master"
+													width="100%"
+													height="100%"
+													hasRowNo="true"
+													styleName="dataGrid"
+													doubleClickEnabled="true"
+													format="{[,,,,'0.0000','0.0000','0.0000','0.0000','0.0000']}"
+													itemDoubleClick="showMaterialDictAddWin('modi')">
+								<controls:columns>
+									<mx:DataGridColumn headerText="序号"
+													   width="40"
+													   textAlign="center"/>
+									<mx:DataGridColumn headerText="物资编码"
+													   width="120"
+													   textAlign="left"
+													   dataField="materialCode"/>
+									<mx:DataGridColumn headerText="物资名称"
+													   width="320"
+													   textAlign="left"
+													   dataField="materialName"/>
+									<mx:DataGridColumn headerText="规格型号"
+													   dataField="materialSpec"
+													   width="200"/>
+									<mx:DataGridColumn headerText="单位"
+													   dataField="materialUnits"
+													   width="60"
+													   textAlign="left"/>
+									<mx:DataGridColumn headerText="进价"
+													   dataField="tradePrice"
+													   textAlign="right"
+													   width="80"/>
+									<mx:DataGridColumn headerText="售价"
+													   dataField="retailPrice"
+													   textAlign="right"
+													   width="80"/>
+									<mx:DataGridColumn headerText="招标价"
+													   dataField="invitePrice"
+													   textAlign="right"
+													   width="80"/>
+									<mx:DataGridColumn headerText="最高限价"
+													   dataField="maxPrice"
+													   textAlign="right"
+													   width="80"/>
+									<mx:DataGridColumn headerText="生产厂家"
+													   dataField="factoryName"
+													   width="200"
+													   textAlign="left"/>
+									<mx:DataGridColumn headerText="主要供应单位"
+													   dataField="mainProviderName"
+													   labelFunction="lbfMainProvider"
+													   width="200"/>
+									<mx:DataGridColumn headerText="所属仓库"
+													   dataField="storageDefault"
+													   width="100"
+													   labelFunction="lbfStorageDefault"
+													   textAlign="left"/>
+									<mx:DataGridColumn headerText="产品注册证有效期"
+													   dataField="registerAvlDate"
+													   width="120"
+													   textAlign="left"/>
+									<mx:DataGridColumn headerText="产品注册证有效天数"
+													   dataField="registerAvlDays"
+													   width="100"
+													   textAlign="left"
+													   visible="false"/>
+								</controls:columns>
+							</controls:SuperDataGrid>
+							<!--底部按钮显示区-->
+							<s:HGroup width="100%"
+									  height="33"
+									  verticalAlign="middle"
+									  horizontalAlign="right">
+								<mx:Text text="注：(产品注册证到期日)红色代表1个月到期，橙色代表2个月到期，绿色代表3个月到期；蓝色代表该物资已冻结"
+										 fontSize="11"
+										 color="red"
+										 width="100%"/>
+								<mx:LinkButton icon="@Embed('/assets/images/button/new20.png')"
+											   label=" 新 建 "
+											   id="btNew"
+											   skin="mx.skins.halo.ButtonSkin"
+											   buttonMode="true"
+											   fontSize="12"
+											   width="86"
+											   height="26"
+											   click="showMaterialDictAddWin('add')"/>
+								<mx:LinkButton id="btChange"
+											   label=" 修 改 "
+											   skin="mx.skins.halo.ButtonSkin"
+											   buttonMode="true"
+											   fontSize="12"
+											   width="86"
+											   height="26"
+											   icon="@Embed('/assets/images/button/change20.png')"
+											   click="showMaterialDictAddWin('modi')"/>
+								<mx:LinkButton label=" 删 除 "
+											   id="btDelete"
+											   skin="mx.skins.halo.ButtonSkin"
+											   buttonMode="true"
+											   fontSize="12"
+											   width="86"
+											   height="26"
+											   icon="@Embed('/assets/images/button/delete20.png')"
+											   click="delClick(event)"/>
+								<!--<mx:LinkButton label=" 过 滤 "
+									 skin="mx.skins.halo.ButtonSkin"
+									 buttonMode="true"
+									 fontSize="12"
+									 width="86"
+									 height="26"
+									 icon="@Embed('/assets/images/button/filtrate20.png')"/>-->
+								<mx:LinkButton label=" 打 印 "
+											   skin="mx.skins.halo.ButtonSkin"
+											   buttonMode="true"
+											   fontSize="12"
+											   width="86"
+											   height="26"
+											   icon="@Embed('/assets/images/button/print20.png')"
+											   click="printExpHandler('05','1')"/>
+								<mx:LinkButton label=" 输 出 "
+											   skin="mx.skins.halo.ButtonSkin"
+											   buttonMode="true"
+											   fontSize="12"
+											   width="86"
+											   height="26"
+											   icon="@Embed('/assets/images/button/exp20.png')"
+											   click="printExpHandler('08','0')"/>
+								<mx:LinkButton label=" 返 回 "
+											   skin="mx.skins.halo.ButtonSkin"
+											   buttonMode="true"
+											   fontSize="12"
+											   width="86"
+											   height="26"
+											   icon="@Embed('/assets/images/button/return20.png')"
+											   click="returnBack()"/>
+							</s:HGroup>
+						</s:VGroup>
+					</s:HGroup>
+				</s:VGroup>
+			</s:BorderContainer>
+		</s:VGroup>
+	</s:BorderContainer>
+</mx:Module>

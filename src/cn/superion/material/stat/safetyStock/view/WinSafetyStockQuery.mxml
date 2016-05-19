@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   backgroundColor="0xE2E8E8"
+			   width="500"
+			   height="196"
+			   title="安全库存预警"
+			   close="closeWin()"
+			   xmlns:controls="cn.superion.base.components.controls.*"
+			   creationComplete="doInit()">
+
+	<fx:Script source="WinSafetyStockQueryas.as"/>
+
+	<s:layout>
+		<s:VerticalLayout paddingLeft="10"
+						  paddingRight="10"
+						  paddingTop="10"/>
+	</s:layout>
+	<mx:TabNavigator width="100%"
+					 height="110"
+					 paddingBottom="15"
+					 paddingTop="15"
+					 paddingLeft="15"
+					 paddingRight="15"
+					 backgroundColor="0xE2E8E8">
+		<s:NavigatorContent width="100%"
+							height="64"
+							label="查询条件">
+			<s:VGroup id="safetyStockQuery"
+					  width="100%"
+					  height="100%">
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<mx:FormItem label="仓　　库"
+								 width="100%">
+						<s:ComboBox id="storage"
+									width="100%"
+									height="25"
+									labelField="storageName"
+									selectedIndex="0"
+									requireSelection="true"
+									keyUp="toNextControl(event,materialClass)"/>
+					</mx:FormItem>
+				</s:HGroup>
+				<mx:FormItem label="物资分类"
+							 width="100%">
+					<controls:TextInputIcon id="materialClass"
+											width="100%"
+											height="23"
+											queryIconClick="materialClass_queryIconClickHandler()"
+											keyUp="queryIcon_keyUpHandler(event,btConfirm)"/>
+				</mx:FormItem>
+			</s:VGroup>
+		</s:NavigatorContent>
+	</mx:TabNavigator>
+	<s:HGroup width="100%"
+			  height="31"
+			  horizontalAlign="right"
+			  verticalAlign="middle"
+			  gap="5">
+		<mx:LinkButton id="btConfirm"
+					   icon="@Embed('/assets/images/button/confirm20.png')"
+					   label=" 确 定 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   height="26"
+					   click="btConfirm_clickHandler(event)"/>
+		<mx:LinkButton id="btReturn"
+					   height="26"
+					   label=" 取 消 "
+					   skin="mx.skins.halo.ButtonSkin"
+					   icon="@Embed(source='assets/images/button/return20.png')"
+					   click="btReturn_clickHandler(event)"/>
+	</s:HGroup>
+</s:TitleWindow>

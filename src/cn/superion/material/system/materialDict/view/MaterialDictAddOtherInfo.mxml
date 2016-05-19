@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  gap="5"
+		  width="100%"
+		  height="100%"
+		  xmlns:view="cn.superion.base.components.controls.*"
+		  creationComplete="doInit(event)">
+
+	<fx:Script>
+		<![CDATA[
+			import cn.superion.base.util.DateUtil;
+			import cn.superion.base.util.StringUtils;
+			import cn.superion.dataDict.DictWinShower;
+			import cn.superion.vo.center.config.CdAccountClassDict;
+			import cn.superion.vo.center.config.CdReckoClassDict;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.CalendarLayoutChangeEvent;
+			import mx.events.FlexEvent;
+			
+			import spark.events.TextOperationEvent;
+
+			//价格输入框移出事件
+			private function priceFix2(con:*):void
+			{
+				if (con.text != "" && con.text != "")
+				{
+					con.text=Number(con.text).toFixed(2);
+				}
+
+			}
+
+			protected function changeHandler(event:Event):void
+			{
+				MateriaDictAddBasicInfo.changeHandler(event);
+			}
+
+			protected function stopDate_changeHandler(event:CalendarLayoutChangeEvent):void
+			{
+				MaterialDictAdd.currentItem.stopDate=stopDate.selectedDate;
+			}
+
+			/**
+			 * 核算分类
+			 * */
+			protected function reckoClass_queryIconClickHandler(event:Event):void
+			{
+				var x:int=0;
+				var y:int=this.parentApplication.screen.height - 345;
+				DictWinShower.showReckoClassDict(function(item:CdReckoClassDict):void
+					{
+						reckoClass.text=item.className;
+						MaterialDictAdd.currentItem.reckoClass=item.classCode;
+					}, x, y);
+			}
+			/**
+			 * 会计科目分类
+			 * */
+			protected function accountClass_queryIconClickHandler(event:Event):void
+			{
+				var x:int=0;
+				var y:int=this.parentApplication.screen.height - 345;
+				DictWinShower.showAccountClassDict(function(item:CdAccountClassDict):void
+				{
+					accountClass.text=item.className;
+					MaterialDictAdd.currentItem.accountClass=item.classCode;
+				}, x, y);
+			}
+			protected function doInit(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				preventDefaultForm();
+				
+			}
+			/**
+			 * 阻止放大镜表格输入内容 
+			 */
+			private function preventDefaultForm():void
+			{
+				reckoClass.txtContent.addEventListener(TextOperationEvent.CHANGING, function(e:TextOperationEvent):void
+				{
+					e.preventDefault();
+				})
+			}
+
+		]]>
+	</fx:Script>
+
+	<s:BorderContainer width="100%"
+					   height="100%"
+					   backgroundColor="#E2E8E8"
+					   borderVisible="false">
+		<mx:Spacer height="1"/>
+		<s:VGroup width="100%"
+				  height="100%"
+				  paddingBottom="10"
+				  paddingLeft="10"
+				  paddingRight="10"
+				  paddingTop="10">
+			<s:HGroup width="100%"
+					  gap="5"
+					  verticalAlign="middle">
+				<s:Label text="HIS编码"
+						 width="56"
+						 color="blue"/>
+				<s:TextInput id="hisCode"
+							 width="350"
+							 maxChars="18"
+							 restrict="0-9"
+							 color="#000000"
+							 change="changeHandler(event)"/>
+				
+				<s:Label text="最小系数"
+						 width="56"
+						 color="blue"/>
+				<s:TextInput id="amountPerUnits"
+							 width="100%"
+							 maxChars="18"
+							 restrict="0-9"
+							 color="#000000"
+							 change="changeHandler(event)"/>
+			</s:HGroup>
+			<s:HGroup width="100%"
+					  gap="5"
+					  verticalAlign="middle">
+				<s:Label text="HIS分类"
+						 width="56"
+						 color="blue"/>
+				<s:TextInput width="350"
+							 id="hisClass"
+							 maxChars="20"
+							 restrict="0-9,^ "
+							 color="#000000"
+							 enabled="false"
+							 change="changeHandler(event)"/>
+				<s:Label text="HIS规格"
+						 width="56"
+						 color="blue"/>
+				<s:TextInput width="50%"
+							 id="hisSpec"
+							 color="#000000"
+							 maxChars="40"
+							 change="changeHandler(event)"
+							 restrict="^ "
+							 enabled="true"/>
+				<s:Label text="HIS单位"
+						 width="56"
+						 color="blue"/>
+				<s:TextInput width="50%"
+							 id="hisUnits"
+							 color="#000000"
+							 maxChars="40"
+							 change="changeHandler(event)"
+							 restrict="^ "
+							 enabled="true"/>
+			</s:HGroup>
+			
+			<s:HGroup width="100%"
+					  gap="5"
+					  verticalAlign="middle">
+				<s:Label text="供应室规格"/>
+				<s:TextInput width="336"
+							 id="cssdSpec"
+							 color="#000000"
+							 maxChars="40"
+							 change="changeHandler(event)"
+							 restrict="^ "
+							 enabled="true"/>
+				<s:Label text="供应室单位"/>
+				<s:TextInput width="50%"
+							 id="cssdUnits"
+							 color="#000000"
+							 maxChars="40"
+							 change="changeHandler(event)"
+							 restrict="^ "
+							 enabled="true"/>
+				<s:Label text="包装系数"
+						 width="56"/>
+				<s:TextInput width="196"
+							 id="cssdAmountPerPackage"
+							 maxChars="20"
+							 restrict="0-9,^ "
+							 color="#000000"
+							 change="changeHandler(event)"/>
+			</s:HGroup>
+			
+			<s:HGroup width="100%"
+					  gap="5"
+					  verticalAlign="middle">
+				<s:Label text="会计科目"
+						 width="56"
+						 color="blue"/>
+				<view:TextInputIcon id="accountClass"
+							 width="350"
+							 maxChars="20"
+							 color="#000000"
+							 queryIconClick="accountClass_queryIconClickHandler(event)"/>
+				<s:Label text="核算分类"
+						 width="56"
+						 color="blue"/>
+				<view:TextInputIcon id="reckoClass"
+									width="100%"
+									color="#000000"
+									queryIconClick="reckoClass_queryIconClickHandler(event)"/>
+			</s:HGroup>
+			<s:HGroup width="100%"
+					  gap="5"
+					  verticalAlign="middle">
+				<s:Label text="启用日期"
+						 width="56"/>
+				<s:TextInput id="startDate"
+							 width="350"
+							 enabled="false"
+							 text="{DateUtil.dateToString(new Date(),'YYYY-MM-DD')}"/>
+				<!--<mx:DateField id="startDate"
+					 width="100%"
+					 enabled="false"
+					 formatString="YYYY-MM-DD"
+					 selectableRange="{{rangeStart:new Date()}}"
+					 enterFrame="{startDate.selectedDate==null?startDate.selectedDate=new Date():startDate.selectedDate}"/>-->
+				<s:Label text="停用日期"
+						 width="56"/>
+				<mx:DateField id="stopDate"
+							  width="100%"
+							  change="stopDate_changeHandler(event)"
+							  formatString="YYYY-MM-DD"
+							  selectableRange="{{rangeStart:new Date()}}"/>
+			</s:HGroup>
+			<s:HGroup width="100%"
+					  gap="5"
+					  verticalAlign="middle">
+				<s:Label text="建档人"
+						 width="56"/>
+				<s:TextInput id="createPerson"
+							 width="350"
+							 enabled="false"
+							 maxChars="80"
+							 color="#000000"
+							 restrict="^ "/>
+				<s:Label text="建档日期"
+						 width="56"/>
+				<s:TextInput id="createDate"
+							 width="100%"
+							 enabled="false"
+							 text="{DateUtil.dateToString(new Date(),'YYYY-MM-DD')}"/>
+				<!--<mx:DateField id="createDate"
+					 width="100%"
+					 formatString="YYYY-MM-DD"
+					 selectableRange="{{rangeStart:new Date()}}"
+					 enterFrame="{createDate.selectedDate==null?createDate.selectedDate=new Date():createDate.selectedDate}"/>-->
+			</s:HGroup>
+			<s:HGroup width="100%"
+					  gap="5"
+					  verticalAlign="middle">
+				<s:Label text="变更人"
+						 width="56"/>
+				<s:TextInput id="modifyPerson"
+							 width="350"
+							 maxChars="80"
+							 enabled="false"
+							 color="#000000"
+							 restrict="^ "/>
+				<s:Label text="变更日期"
+						 width="56"/>
+				<s:TextInput id="modifyDate"
+							 width="100%"
+							 enabled="false"/>
+				<!--<mx:DateField id="modifyDate"
+					 width="100%"
+					 formatString="YYYY-MM-DD"
+					 selectableRange="{{rangeStart:new Date()}}"
+					 enterFrame="{modifyDate.selectedDate==null?modifyDate.selectedDate=new Date():modifyDate.selectedDate}"/>-->
+			</s:HGroup>
+		</s:VGroup>
+	</s:BorderContainer>
+</s:VGroup>

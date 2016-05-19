@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:s="library://ns.adobe.com/flex/spark"
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  gap="5"
+		  width="100%"
+		  height="100%"
+		  xmlns:view="cn.superion.base.components.controls.*">
+
+	<fx:Script>
+		<![CDATA[
+			import cn.superion.base.util.StringUtils;
+
+			import spark.components.TextSelectionHighlighting;
+			import spark.events.TextOperationEvent;
+
+			protected function prefePrice_focusOutHandler(event:FocusEvent):void
+			{
+				//				var price:Object=prefePrice.text;
+				//				var formatPrice:String=StringUtils.toMoneyFormat(price);
+				//				this.prefePrice.text=formatPrice;
+			}
+
+			//价格输入框移出事件
+			private function priceFix2(con:*):void
+			{
+				if (con.text != "" && con.text != "")
+				{
+					con.text=Number(con.text).toFixed(2);
+				}
+
+			}
+
+			protected function changeHandler(event:Event):void
+			{
+				MateriaDictAddBasicInfo.changeHandler(event);
+			}
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+
+
+	</fx:Declarations>
+	<s:BorderContainer width="100%"
+					   height="100%"
+					   backgroundColor="#E2E8E8"
+					   borderVisible="false">
+		<mx:Spacer height="1"/>
+		<s:VGroup width="100%"
+				  height="100%"
+				  paddingBottom="10"
+				  paddingLeft="10"
+				  paddingRight="10"
+				  paddingTop="10">
+			<s:HGroup width="100%"
+					  gap="5"
+					  verticalAlign="middle">
+				<s:Label text="安全库存"
+						 width="56"
+						 color="blue"/>
+				<s:TextInput width="350"
+							 maxChars="10"
+							 id="safeStockAmount"
+							 color="#000000"
+							 restrict="0-9,^ "
+							 change="changeHandler(event)"/>
+				<s:Label text="最高库存"
+						 width="70"
+						 color="blue"/>
+				<s:TextInput width="100%"
+							 id="maxStockAmount"
+							 maxChars="10"
+							 restrict="0-9,^ "
+							 color="#000000"
+							 change="changeHandler(event)"/>
+			</s:HGroup>
+			<s:HGroup width="100%"
+					  gap="5"
+					  verticalAlign="middle">
+				<s:Label text="最低库存"
+						 width="56"
+						 color="blue"/>
+				<s:TextInput width="350"
+							 maxChars="10"
+							 id="minStockAmount"
+							 color="#000000"
+							 restrict="0-9,^ "
+							 change="changeHandler(event)"/>
+				<s:Label text="预警天数"
+						 width="70"
+						 color="blue"/>
+				<s:TextInput width="100%"
+							 maxChars="5"
+							 id="earlyWarningDay"
+							 restrict="0-9"
+							 textAlign="right"
+							 change="changeHandler(event)"/>
+			</s:HGroup>
+			<s:HGroup width="100%"
+					  gap="5"
+					  verticalAlign="middle">
+
+				<s:CheckBox id="qualitySign"
+							label="保质期管理"
+							width="410"
+							change="MateriaDictAddBasicInfo.chkChangeHandler(event)"/>
+				<s:Label text="保质期"
+						 width="70"/>
+				<s:TextInput id="qualityDay"
+							 width="100%"
+							 maxChars="6"
+							 restrict="0-9"
+							 editable="{qualitySign.selected}"
+							 change="changeHandler(event)"/>
+			</s:HGroup>
+			<s:HGroup width="100%"
+					  gap="5"
+					  verticalAlign="middle">
+				<s:CheckBox id="barCodeSign"
+							label="条码管理"
+							width="410"
+							change="MateriaDictAddBasicInfo.chkChangeHandler(event)"/>
+				<s:Label text="对应条形码"
+						 width="70"/>
+				<s:TextInput id="barCode"
+							 width="100%"
+							 maxChars="10"
+							 restrict="0-9"
+							 editable="{barCodeSign.selected}"
+							 change="changeHandler(event)"/>
+			</s:HGroup>
+			<s:HGroup width="100%"
+					  gap="5"
+					  verticalAlign="middle">
+				<s:Label text="产品注册证有效期"
+						 width="112"/>
+				<mx:DateField id="registerAvlDate"
+							  width="294"
+							  formatString="YYYY-MM-DD"
+							  change="changeHandler(event)"
+							  selectableRange="{{rangeStart:new Date()}}"/>
+			</s:HGroup>
+		</s:VGroup>
+	</s:BorderContainer>
+</s:VGroup>

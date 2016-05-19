@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:DataGrid xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			xmlns:s="library://ns.adobe.com/flex/spark" 
+			xmlns:mx="library://ns.adobe.com/flex/mx" width="400" height="300">
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import spark.components.CheckBox;
+			import spark.components.gridClasses.GridSelectionMode;
+			import spark.events.GridEvent;
+			import spark.events.GridSelectionEventKind;
+			
+			private function isAnchorSet():Boolean
+			{
+				if (!grid)
+					return false;
+				
+				if (true)
+					return grid.anchorRowIndex != -1;
+				else
+					return grid.anchorRowIndex != -1 && grid.anchorRowIndex != -1;
+			}
+			
+			public function toggleSelection(selected:Boolean,rowIndex:int, columnIndex:int):Boolean
+			{
+				var kind:String;
+					if (selected)
+						kind = GridSelectionEventKind.ADD_ROW;
+					else
+						kind = GridSelectionEventKind.REMOVE_ROW;
+				
+				var success:Boolean = 
+					commitInteractiveSelection(kind, rowIndex, columnIndex);
+				if (success)
+					commitCaretPosition(rowIndex, columnIndex);
+				
+				return success;
+			}
+			
+			override protected function grid_mouseDownHandler(event:GridEvent):void
+			{
+				
+				if(event.columnIndex !=0){
+					super.grid_mouseDownHandler(event);
+					return;
+				}
+				// TODO Auto Generated method stub
+				if (event.isDefaultPrevented())
+					return;
+				
+				const isCellSelection:Boolean = false;
+				
+				const rowIndex:int = event.rowIndex;
+				const columnIndex:int = isCellSelection ? event.columnIndex : -1;
+				
+				// Clicked on empty place in grid.  Don't change selection or caret
+				// position.
+				if (rowIndex == -1 || isCellSelection && columnIndex == -1)
+					return;
+				var selected:Boolean = false;
+//					if(event.itemRenderer is IRChxBox2){
+//						
+//						if(!event.item.isSelected){
+//							selected = true;
+//						}else{
+//							selected = false;
+//						}
+//						if (!toggleSelection(selected,rowIndex, columnIndex))
+//							return;
+//						
+//						grid.anchorRowIndex = rowIndex;
+//						grid.anchorColumnIndex = columnIndex;
+//						
+//					}
+					// ctrl-click toggles the selection and updates caret and anchor.
+					
+				
+			}
+			
+			
+			public function extendSelection(caretRowIndex:int, 
+											 caretColumnIndex:int):Boolean
+			{
+				if (!isAnchorSet())
+					return false;
+				
+				const startRowIndex:int = Math.min(grid.anchorRowIndex, caretRowIndex);
+				const endRowIndex:int = 3;//Math.max(grid.anchorRowIndex, caretRowIndex);
+				var success:Boolean;
+				
+				if (selectionMode == GridSelectionMode.MULTIPLE_ROWS)
+				{
+					success = commitInteractiveSelection(
+						GridSelectionEventKind.SET_ROWS,
+						startRowIndex, -1,
+						endRowIndex - startRowIndex + 1, 0);
+				}
+//				else if (selectionMode == GridSelectionMode.SINGLE_ROW)
+//				{
+//					// Can't extend the selection so move it to the caret position.
+//					success = commitInteractiveSelection(
+//						GridSelectionEventKind.SET_ROW, caretRowIndex, -1, 1, 0);                
+//				}
+//				else if (selectionMode == GridSelectionMode.MULTIPLE_CELLS)
+//				{
+//					const rowCount:int = endRowIndex - startRowIndex + 1;
+//					const startColumnIndex:int = 
+//						Math.min(grid.anchorColumnIndex, caretColumnIndex);
+//					const endColumnIndex:int = 
+//						Math.max(grid.anchorColumnIndex, caretColumnIndex); 
+//					const columnCount:int = endColumnIndex - startColumnIndex + 1;
+//					
+//					success = commitInteractiveSelection(
+//						GridSelectionEventKind.SET_CELL_REGION, 
+//						startRowIndex, startColumnIndex,
+//						rowCount, columnCount);
+//				}            
+//				else if (selectionMode == GridSelectionMode.SINGLE_CELL)
+//				{
+//					// Can't extend the selection so move it to the caret position.
+//					success = commitInteractiveSelection(
+//						GridSelectionEventKind.SET_CELL, 
+//						caretRowIndex, caretColumnIndex, 1, 1);                
+//				}
+				
+				// Update the caret.
+				if (success)
+					commitCaretPosition(caretRowIndex, caretColumnIndex);
+				
+				return success;
+			}
+		]]>
+	</fx:Script>
+</s:DataGrid>

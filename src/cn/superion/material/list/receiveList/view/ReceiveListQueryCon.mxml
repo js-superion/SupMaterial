@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   width="500"
+			   height="496"
+			   backgroundColor="0xE2E8E8"
+			   title="入库单据列表"
+			   close="PopUpManager.removePopUp(this)"
+			   xmlns:controls="cn.superion.base.components.controls.*"
+			   creationComplete="doInit()">
+	<s:layout>
+		<s:VerticalLayout paddingLeft="10"
+						  paddingRight="10"
+						  paddingTop="10"/>
+	</s:layout>
+	<fx:Script source="ReceiveListQueryConas.as"/>
+	<fx:Declarations>
+		<mx:NumberValidator id="beginTradePriceValid"
+							source="{beginTradePrice}"
+							property="text"
+							required="false"
+							domain="real"
+							precision="2"
+							precisionError="小数点后最多只能有2位数字"
+							minValue="0"
+							maxValue="9999999999.99"
+							exceedsMaxError="输入的值太大,不得超过最大值9999999999.99"/>
+		<mx:NumberValidator id="endTradePriceValid"
+							source="{endTradePrice}"
+							property="text"
+							required="false"
+							domain="real"
+							precision="2"
+							precisionError="小数点后最多只能有2位数字"
+							minValue="0"
+							maxValue="9999999999.99"
+							exceedsMaxError="输入的值太大,不得超过最大值9999999999.99"/>
+	</fx:Declarations>
+
+
+	<mx:TabNavigator width="100%"
+					 height="403"
+					 paddingBottom="15"
+					 paddingTop="15"
+					 paddingLeft="15"
+					 paddingRight="15"
+					 backgroundColor="0xE2E8E8">
+		<s:NavigatorContent id="queryCondition"
+							width="100%"
+							height="407"
+							label="查询条件">
+			<!-- 查询条件 -->
+			<s:VGroup id="queryPanel"
+					  width="100%"
+					  height="100%">
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="供应单位"
+							 width="75"/>
+					<controls:TextInputIcon id="salerCode"
+											width="100%"
+											queryIconClick="salerCode_queryIconClickHandler()"
+											keyUp="toNextControl(event,storageCode,salerCode)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="仓  库"
+							 width="75"/>
+					<s:DropDownList id="storageCode"
+									width="100%"
+									height="25"
+									selectedIndex="0"
+									requireSelection="true"
+									labelField="storageName"
+									keyUp="toNextControl(event,operationType,storageCode)"/>
+				</s:HGroup>
+
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="业务类型"
+							 width="75"/>
+					<s:DropDownList id="operationType"
+									width="100%"
+									height="25"
+									selectedIndex="0"
+									requireSelection="true"
+									labelField="operationTypeName"
+									keyUp="toNextControl(event,billNo,operationType)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="入库单号"
+							 width="75"/>
+					<s:TextInput id="billNo"
+								 width="100%"
+								 restrict="0-9"
+								 maxChars="30"
+								 keyUp="toNextControl(event,billDate,billNo)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:CheckBox id="billDate"
+								label="入库日期"
+								width="75"
+								change="date_changeHandler(event)"
+								keyUp="toNextControl(event,beginBillDate,billDate)"/>
+					<mx:DateField id="beginBillDate"
+								  width="50%"
+								  enabled="false"
+								  formatString="YYYY-MM-DD"
+								  editable="true"
+								  selectedDate="{beginBillDate.selectedDate==null?beginBillDate.selectedDate=new Date():beginBillDate.selectedDate}"
+								  selectableRange="{{rangeEnd:endBillDate.selectedDate}}"
+								  keyUp="toNextControl(event,endBillDate,beginBillDate)"/>
+
+					<s:Label text="-"/>
+					<mx:DateField id="endBillDate"
+								  enabled="false"
+								  formatString="YYYY-MM-DD"
+								  editable="true"
+								  selectedDate="{endBillDate.selectedDate==null?endBillDate.selectedDate=new Date():endBillDate.selectedDate}"
+								  selectableRange="{{rangeStart:beginBillDate.selectedDate,rangeEnd:new Date()}}"
+								  keyUp="toNextControl(event,availDate,endBillDate)"
+								  width="50%"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:CheckBox id="availDate"
+								label="有效日期"
+								width="75"
+								change="date_changeHandler(event)"
+								keyUp="toNextControl(event,beginAvailDate,availDate)"/>
+					<mx:DateField id="beginAvailDate"
+								  width="50%"
+								  enabled="false"
+								  formatString="YYYY-MM-DD"
+								  editable="true"
+								  selectedDate="{beginAvailDate.selectedDate==null?beginAvailDate.selectedDate=new Date():beginAvailDate.selectedDate}"
+								  selectableRange="{{rangeEnd:endAvailDate.selectedDate}}"
+								  keyUp="toNextControl(event,endAvailDate,beginAvailDate)"/>
+
+					<s:Label text="-"/>
+					<mx:DateField id="endAvailDate"
+								  width="50%"
+								  enabled="false"
+								  formatString="YYYY-MM-DD"
+								  editable="true"
+								  keyUp="toNextControl(event,materialCode,endAvailDate)"
+								  selectedDate="{endAvailDate.selectedDate==null?endAvailDate.selectedDate=new Date():endAvailDate.selectedDate}"
+								  selectableRange="{{rangeStart:beginAvailDate.selectedDate}}"/>
+				</s:HGroup>
+				<s:HGroup  width="100%"
+						  verticalAlign="middle">
+					<s:Label text="物资名称"
+							 width="75"/>
+					<controls:TextInputIcon id="materialCode"
+											width="100%"
+											queryIconClick="materialCode_queryIconClickHandler()"
+											keyUp="toNextControl(event,beginTradePrice,materialCode)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="进价范围"
+							 width="75"/>
+					<s:TextInput id="beginTradePrice"
+								 width="50%"
+								 restrict="0-9,\."
+								 textAlign="right"
+								 keyUp="toNextControl(event,endTradePrice,beginTradePrice)"/>
+					<s:Label text="-"/>
+					<s:TextInput id="endTradePrice"
+								 width="50%"
+								 restrict="0-9,\."
+								 textAlign="right"
+								 keyUp="toNextControl(event,personId,endTradePrice)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="业务人员"
+							 width="75"/>
+					<controls:TextInputIcon id="personId"
+											width="100%"
+											queryIconClick="personId_queryIconClickHandler()"
+											keyUp="toNextControl(event,deptCode,personId)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="部　　门"
+							 width="75"/>
+					<controls:TextInputIcon id="deptCode"
+											width="100%"
+											queryIconClick="deptCode_queryIconClickHandler()"
+											keyUp="toNextControl(event,factoryCode,deptCode)"/>
+				</s:HGroup>
+				<s:HGroup  width="100%"
+						  verticalAlign="middle">
+					<s:Label text="生产厂家"
+							 width="75"/>
+					<controls:TextInputIcon id="factoryCode"
+											width="100%"
+											queryIconClick="factoryCode_queryIconClickHandler()"
+											keyUp="toNextControl(event,currentStatus,factoryCode)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
+					<s:Label text="当前状态"
+							 width="75"/>
+					<s:DropDownList id="currentStatus"
+									width="100%"
+									height="25"
+									selectedIndex="0"
+									dataProvider="{currentStatusArray}"
+									labelField="currentStatusName"
+									keyUp="toNextControl(event,btConfirm,currentStatus)"/>
+				</s:HGroup>
+			</s:VGroup>
+		</s:NavigatorContent>
+	</mx:TabNavigator>
+	<!-- 操作按钮部分 -->
+	<s:HGroup width="100%"
+			  height="31"
+			  horizontalAlign="right"
+			  verticalAlign="middle"
+			  gap="5">
+		<mx:Spacer width="100%"/>
+		<mx:LinkButton id="btConfirm"
+					   label=" 确定"
+					   width="86"
+					   height="26"
+					   click="btQuery_clickHandler()"
+					   keyUp="btConfirm_keyUpHandler(event)"
+					   skin="mx.skins.halo.ButtonSkin"
+					   buttonMode="true"
+					   fontSize="12"
+					   icon="@Embed(source='/assets/images/button/confirm20.png')"/>
+		<mx:LinkButton id="btCancel"
+					   label="取消"
+					   width="86"
+					   height="26"
+					   click="btCancel_clickHandler(event)"
+					   skin="mx.skins.halo.ButtonSkin"
+					   buttonMode="true"
+					   fontSize="12"
+					   icon="@Embed(source='/assets/images/button/return20.png')"/>
+	</s:HGroup>
+
+</s:TitleWindow>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	 采购请购查询模块
+	 author:芮玉红   2011.02.21
+-->
+<mx:Module xmlns:fx="http://ns.adobe.com/mxml/2009"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   layout="vertical"
+		   height="100%"
+		   width="100%"
+		   horizontalScrollPolicy="auto"
+		   xmlns:controls="cn.superion.base.components.controls.*"
+		   creationComplete="doInit()"
+		   xmlns:view="cn.superion.material.util.*">
+	<fx:Script source="ModPurchaseListas.as"/>
+	<s:BorderContainer width="100%"
+					   height="100%"
+					   backgroundColor="0xE2E8E8"
+					   borderVisible="false">
+		<s:Scroller width="100%"
+					height="100%">
+
+			<s:VGroup id="vg"
+					  gap="0"
+					  height="100%"
+					  width="100%">
+				<view:MainToolBar id="tbarMain"
+								  width="100%"
+								  queryClick="queryClickHandler(event)"
+								  printClick="btToolBar_printExpClickHandler('05','1')"
+								  expClick="btToolBar_printExpClickHandler('08','0')"
+								  exitClick="exitClickHandler(event)"/>
+				<controls:BarSubTitle title="采购请购列表"/>
+				<controls:PageGrid id="dgDrug"
+								   hasRowNo="true"
+								   width="100%"
+								   height="100%"
+								   sumField="{['amount','tradeMoney','currentStockAmount','totalCurrentStockAmount']}"
+								   styleName="dataGrid"
+								   format="{[,,,,,,,,,'0.00','0.00','0.00','0.00','0.00','0.00']}">
+					<controls:columns>
+						<mx:DataGridColumn headerText="序号"
+										   width="40"
+										   dataField="rowno"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="业务类型"
+										   width="100"
+										   dataField="operationTypeName"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="单据编号"
+										   dataField="billNo"
+										   width="100"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="单据日期"
+										   dataField="billDate"
+										   width="100"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="部门"
+										   dataField="deptName"
+										   width="120"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="物资编码"
+										   dataField="materialCode"
+										   width="100"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="物资名称"
+										   dataField="materialName"
+										   width="220"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="规格型号"
+										   dataField="materialSpec"
+										   width="120"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="单位"
+										   dataField="materialUnits"
+										   width="80"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="数量"
+										   dataField="amount"
+										   width="100"
+										   textAlign="right"/>
+						<mx:DataGridColumn headerText="预计进价"
+										   dataField="tradePrice"
+										   width="100"
+										   textAlign="right"/>
+						<mx:DataGridColumn headerText="进价金额"
+										   dataField="tradeMoney"
+										   width="100"
+										   textAlign="right"/>
+						<mx:DataGridColumn headerText="售价"
+										   dataField="retailPrice"
+										   width="100"
+										   textAlign="right"/>
+						<mx:DataGridColumn headerText="现存量"
+										   dataField="currentStockAmount"
+										   width="100"
+										   textAlign="right"/>
+						<mx:DataGridColumn headerText="全院现存量"
+										   dataField="totalCurrentStockAmount"
+										   width="100"
+										   textAlign="right"/>
+						<mx:DataGridColumn headerText="需求日期"
+										   dataField="requireDate"
+										   width="100"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="建议订货日期"
+										   dataField="adviceBookDate"
+										   width="100"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="建议供应商"
+										   dataField="salerName"
+										   labelFunction="labelFun"
+										   width="200"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="备注"
+										   dataField="detailRemark"
+										   width="220"
+										   textAlign="left"/>
+					</controls:columns>
+				</controls:PageGrid>
+			</s:VGroup>
+		</s:Scroller>
+	</s:BorderContainer>
+</mx:Module>
+

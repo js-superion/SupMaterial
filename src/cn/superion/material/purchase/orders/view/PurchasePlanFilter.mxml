@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   close="PopUpManager.removePopUp(this)"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:controls="cn.superion.base.components.controls.*"
+			   creationComplete="doInit(event)"
+			   title="过滤采购计划"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   width="900"
+			   height="500">
+	<s:layout>
+		<s:VerticalLayout/>
+	</s:layout>
+	<fx:Script source="PurchasePlanFilteras.as"/>
+	<s:HGroup id="hgTop"
+			  gap="2"
+			  width="100%"
+			  height="100%">
+
+		<s:BorderContainer id="bord"
+						   width="100%"
+						   height="100%"
+						   backgroundColor="#E2E8E8">
+			<s:layout>
+				<s:VerticalLayout verticalAlign="top"
+								  paddingLeft="5"
+								  paddingRight="5"
+								  paddingTop="0"/>
+			</s:layout>
+			<s:HGroup id="masterGroup"
+					  height="62"
+					  width="100%">
+				<s:VGroup width="100%"
+						  paddingTop="3">
+					<s:HGroup id="hg1"
+							  paddingTop="5"
+							  width="100%"
+							  paddingLeft="20"
+							  verticalAlign="middle">
+						<s:Label text="物资分类"/>
+						<controls:TextInputIcon id="materialClass"
+												width="115"
+												queryIconClick="materialClass_queryIconClickHandler()"
+												keyUp="keyUpCtrl(event,beginMaterialCode)"/>
+
+						<s:Label text="物资编码"/>
+
+						<s:TextInput width="120"
+									 id="beginMaterialCode"
+									 restrict="a-zA-Z0-9"
+									 keyUp="keyUpCtrl(event,endMaterialCode)"/>
+						<s:Label text="-"/>
+						<s:TextInput width="120"
+									 id="endMaterialCode"
+									 restrict="0-9"
+									 keyUp="keyUpCtrl(event,salerCode)"/>
+						<s:Label text="供应单位"/>
+						<controls:TextInputIcon width="100%"
+												id="salerCode"
+												queryIconClick="salerCode_queryIconClickHandler()"
+												keyDown="keyUpCtrl(event,isBillDate)"/>
+						<mx:Spacer width="1"/>
+					</s:HGroup>
+
+					<s:HGroup width="867">
+						<mx:FormItem direction="horizontal"
+									 width="100%"
+									 indicatorGap="0">
+							<s:CheckBox id="isBillDate"
+										label="单据日期"
+										selected="false"
+										keyDown="keyUpCtrl(event,beginBillDate)"/>
+							<mx:DateField id="beginBillDate"
+										  width="43%"
+										  enabled="{isBillDate.selected}"
+										  formatString="YYYY-MM-DD"
+										  keyDown="keyUpCtrl(event,endBillDate)"
+										  enterFrame="{beginBillDate.selectedDate==null?beginBillDate.selectedDate=new Date():beginBillDate.selectedDate}"
+										  selectableRange="{{rangeEnd:endBillDate.selectedDate}}"/>
+							<mx:FormItem label="-"
+										 fontSize="14"
+										 labelWidth="10"
+										 width="50%"
+										 horizontalGap="0">
+								<mx:DateField id="endBillDate"
+											  width="100%"
+											  enabled="{isBillDate.selected}"
+											  formatString="YYYY-MM-DD"
+											  keyDown="keyUpCtrl(event,isBookDate)"
+											  enterFrame="{endBillDate.selectedDate==null?endBillDate.selectedDate=new Date():endBillDate.selectedDate}"
+											  selectableRange="{{rangeStart:beginBillDate.selectedDate}}"/>
+							</mx:FormItem>
+						</mx:FormItem>
+
+						<mx:FormItem direction="horizontal"
+									 width="100%"
+									 indicatorGap="0">
+							<s:CheckBox id="isBookDate"
+										label="需求日期"
+										selected="false"
+										keyDown="keyUpCtrl(event,beginRequireDate)"/>
+							<mx:DateField id="beginRequireDate"
+										  width="43%"
+										  enabled="{isBookDate.selected}"
+										  formatString="YYYY-MM-DD"
+										  keyDown="keyUpCtrl(event,endRequireDate)"
+										  enterFrame="{beginRequireDate.selectedDate==null?beginRequireDate.selectedDate=new Date():beginRequireDate.selectedDate}"
+										  selectableRange="{{rangeEnd:endBillDate.selectedDate}}"/>
+							<mx:FormItem label="-"
+										 fontSize="14"
+										 labelWidth="10"
+										 width="50%"
+										 horizontalGap="0">
+								<mx:DateField id="endRequireDate"
+											  width="100%"
+											  enabled="{isBookDate.selected}"
+											  formatString="YYYY-MM-DD"
+											  keyDown="keyUpCtrl(event,btQuery)"
+											  enterFrame="{endRequireDate.selectedDate==null?endRequireDate.selectedDate=new Date():endRequireDate.selectedDate}"
+											  selectableRange="{{rangeStart:beginRequireDate.selectedDate}}"/>
+							</mx:FormItem>
+						</mx:FormItem>
+
+						<mx:Spacer width="1"/>
+						<mx:LinkButton id="btQuery"
+									   icon="@Embed('/assets/images/button/query20.png')"
+									   label=" 查  询 "
+									   skin="mx.skins.halo.ButtonSkin"
+									   buttonMode="true"
+									   fontSize="12"
+									   width="86"
+									   height="26"
+									   keyUp="btQuery_clickHandler(event)"
+									   click="btQuery_clickHandler(event)"/>
+					</s:HGroup>
+				</s:VGroup>
+			</s:HGroup>
+			<controls:SuperDataGrid hasRowNo="true"
+									width="100%"
+									height="100%"
+									id="dgPlanList"
+									textAlign="center">
+				<controls:columns>
+					<mx:DataGridColumn headerText="选择"
+									   width="0.7"
+									   textAlign="center"
+									   editable="false">
+						<mx:itemRenderer>
+							<fx:Component>
+								<mx:CheckBox change="data.isSelected=this.selected;"
+											 selected="{this.parentDocument.selAll.selected}"/>
+							</fx:Component>
+						</mx:itemRenderer>
+					</mx:DataGridColumn>
+					<mx:DataGridColumn headerText="单据日期"
+									   width="1.5"
+									   dataField="billDate"/>
+					<mx:DataGridColumn headerText="物资编码"
+									   width="2"
+									   dataField="materialCode"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="物资名称"
+									   width="2.8"
+									   dataField="materialName"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="规格型号"
+									   width="1.5"
+									   dataField="materialSpec"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="单位"
+									   width="0.8"
+									   dataField="materialUnits"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="单价"
+									   width="1"
+									   dataField="tradePrice"/>
+					<mx:DataGridColumn headerText="计划数量"
+									   width="1.1"
+									   dataField="amount"/>
+					<mx:DataGridColumn headerText="已生成订单数"
+									   width="1.6"
+									   dataField="orderAmount"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="需求日期"
+									   width="1.5"
+									   dataField="requireDate"
+									   textAlign="left"/>
+					<mx:DataGridColumn headerText="来源单据号"
+									   width="1.5"
+									   dataField="detailAutoId"
+									   textAlign="left"
+									   visible="false"/>
+					<mx:DataGridColumn headerText="来源单据号中的序号"
+									   width="1.5"
+									   dataField="serialNo"
+									   textAlign="left"
+									   visible="false"/>
+				</controls:columns>
+			</controls:SuperDataGrid>
+			<mx:HBox width="100%"
+					 height="33"
+					 horizontalAlign="right">
+
+
+				<s:CheckBox id="selAll"
+							label="全选"
+							click="selectAll_clickHandler()"/>
+				<mx:HBox width="100%"
+						 height="100%"
+						 horizontalAlign="right">
+					<mx:LinkButton id="btConfirm"
+								   icon="@Embed('/assets/images/button/confirm20.png')"
+								   label=" 确 定 "
+								   skin="mx.skins.halo.ButtonSkin"
+								   buttonMode="true"
+								   fontSize="12"
+								   width="86"
+								   height="26"
+								   click="btConfirmHandler();"/>
+					<mx:LinkButton id="btReturn"
+								   icon="@Embed('/assets/images/button/return20.png')"
+								   label=" 取 消 "
+								   skin="mx.skins.halo.ButtonSkin"
+								   buttonMode="true"
+								   fontSize="12"
+								   width="86"
+								   height="26"
+								   click="PopUpManager.removePopUp(this)"/>
+					<mx:Spacer width="6"/>
+				</mx:HBox>
+				<mx:Spacer width="6"/>
+			</mx:HBox>
+		</s:BorderContainer>
+
+	</s:HGroup>
+</s:TitleWindow>

@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	 采购计划编制模块
+	 作者: 朱玉峰 2011.06.18
+	 检查：周作建 2011.06.22
+-->
+<mx:Module xmlns:fx="http://ns.adobe.com/mxml/2009"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   layout="absolute"
+		   width="100%"
+		   height="100%"
+		   xmlns:controls="cn.superion.base.components.controls.*"
+		   xmlns:util="cn.superion.material.util.*"
+		   creationComplete="doInit()"
+		   xmlns:dataDict="cn.superion.dataDict.*">
+
+	<fx:Script>
+		<![CDATA[
+			
+		]]>
+	</fx:Script>
+
+
+	<fx:Script source="ModPurchasePlanas.as"/>
+
+	<s:BorderContainer width="100%"
+					   height="100%"
+					   backgroundColor="0xE2E8E8"
+					   borderVisible="false">
+		<s:VGroup width="100%"
+				  height="100%"
+				  gap="0">
+			<util:ToolBar id="toolBar"
+						  width="100%"
+						  printClick="printClickHandler(event)"
+						  expClick="expClickHandler(event)"
+						  autoClick="toolBar_autoClickHandler(event)"
+						  addClick="addClickHandler(event)"
+						  modifyClick="modifyClickHandler(event)"
+						  deleteClick="deleteClickHandler(event)"
+						  saveClick="saveClickHandler(event)"
+						  cancelClick="cancelClickHandler(event)"
+						  verifyClick="verifyClickHandler(event)"
+						  addRowClick="addRowClickHandler(event)"
+						  delRowClick="delRowClickHandler(event)"
+						  queryClick="queryClickHandler(event)"
+						  firstPageClick="firstPageClickHandler(event)"
+						  prePageClick="prePageClickHandler(event)"
+						  nextPageClick="nextPageClickHandler(event)"
+						  lastPageClick="lastPageClickHandler(event)"
+						  exitClick="exitClickHandler(event)"/>
+			<controls:BarSubTitle title="采购计划编制"/>
+				<s:VGroup id="allPanel"
+						  width="100%"
+						  height="100%"
+						  paddingLeft="5"
+						  paddingBottom="5"
+						  paddingRight="5"
+						  paddingTop="5">
+					<s:HGroup width="100%"
+							  id="one"
+							  verticalAlign="middle">
+						<s:Label text="业务类型"
+								 width="56"/>
+						<s:DropDownList id="stockType"
+										width="25%"
+										height="25"
+										labelField="operationTypeName"
+										keyDown="toNextControl(event,billNo)"/>
+
+
+						<s:Label text="单据编号"
+								 width="56"/>
+						<s:TextInput id="billNo"
+									 width="20%"
+									 maxChars="13"
+									 keyDown="toNextControl(event,billDate)"/>
+
+						<s:Label text="单据日期"
+								 width="56"/>
+						<mx:DateField id="billDate"
+									  width="15%"
+									  formatString="YYYY-MM-DD"
+									  keyDown="toNextControl(event,deptCode)"/>
+						<s:Label text="部门"
+								 styleName="myFormItemStyle"
+								 color="blue"/>
+						<controls:TextInputIcon id="deptCode"
+												width="40%"
+												queryIconClick="deptCode_queryIconClickHandler(event)"
+												keyDown="toNextControl(event,personId)"/>
+					</s:HGroup>
+					<s:HGroup id="two"
+							  width="100%"
+							  verticalAlign="middle">
+						<s:Label text="业 务 员"
+								 styleName="myFormItemStyle"
+								 color="blue"
+								 width="56"/>
+						<controls:TextInputIcon id="personId"
+												queryIconClick="personId_queryIconClickHandler(event)"
+												keyDown="toNextControl(event,remark)"/>
+						<s:Label text="备    注"
+								 width="56"/>
+						<s:TextInput id="remark"
+									 width="100%"
+									 maxChars="20"
+									 keyDown="toNextControl(event,materialCode)"/>
+					</s:HGroup>
+					<s:VGroup id="addPanel"
+							  width="100%">
+						<mx:HRule width="100%"
+								  height="2"/>
+						<s:HGroup id="panel1"
+								  width="100%"
+								  verticalAlign="middle">
+
+							<s:Label id="txPhoLabel"
+									 text="物资编码"
+									 styleName="myFormItemStyle"
+									 color="blue"
+									 width="56"/>
+							<controls:TextInputIcon id="materialCode"
+													width="15%"
+													keyDown="toNextControl(event,amount)"
+													queryIconClick="materialCode_queryIconClickHandler(event)"/>
+							<s:Label text="物资名称"/>
+							<s:TextInput id="materialName"
+										 width="40%"
+										 enabled="false"
+										 keyDown="toNextControl(event,materialSpec)"/>
+							<s:Label text="规格型号"/>
+							<s:TextInput id="materialSpec"
+										 width="20%"
+										 enabled="false"
+										 keyDown="toNextControl(event,materialUnits)"/>
+							<s:Label text="单位"/>
+							<s:TextInput id="materialUnits"
+										 width="9%"
+										 enabled="false"
+										 keyDown="toNextControl(event,amount)"/>
+							<s:Label text="数量"/>
+							<s:TextInput id="amount"
+										 width="8%"
+										 restrict="0-9"
+										 maxChars="6"
+										 textAlign="right"
+										 change="evaluate_changeHandler(event)"
+										 keyDown="amountKey(event,tradePrice)"/>
+							<s:Label text="进价"/>
+							<s:TextInput id="tradePrice"
+										 width="8%"
+										 restrict="0-9."
+										 maxChars="6"
+										 textAlign="right"
+										 change="evaluate_changeHandler(event)"
+										 keyDown="toNextControl(event,requierDate)"/>
+						</s:HGroup>
+						<s:HGroup width="100%"
+								  verticalAlign="middle">
+							<s:Label text="需求日期"
+									 width="56"/>
+							<controls:DateFieldText id="requierDate"
+													keyDown="toNextControl(event,adviceBookDate)"
+													change="evaluate_changeHandler(event)"/>
+
+							<s:Label text="建议订货日期"/>
+							<controls:DateFieldText id="adviceBookDate"
+													keyDown="toNextControl(event,salerCode)"
+													change="evaluate_changeHandler(event)"
+													click="evaluate_changeHandler(event)"/>
+							<s:Label text="建议供应商"/>
+							<controls:TextInputIcon id="salerCode"
+													width="40%"
+													queryIconClick="productCode_queryIconClickHandler(event)"
+													keyDown="toNextControl(event,detailRemark)"/>
+							<s:Label text="备注"/>
+							<s:TextInput id="detailRemark"
+										 width="60%"
+										 restrict="^ "
+										 maxChars="20"
+										 change="evaluate_changeHandler(event)"
+										 keyDown="remarkDetail_keyUpHandler(event)"/>
+						</s:HGroup>
+					</s:VGroup>
+					<controls:SuperDataGrid id="gridDetail"
+											width="100%"
+											height="100%"
+											hasRowNo="true"
+											editable="false"
+											doubleClickEnabled="true"
+											styleName="dataGrid"
+											horizontalScrollPolicy="auto"
+											format="{[,,,,,,'0.00','0.00']}"
+											click="gridDetail_clickHandler(event)">
+						<controls:columns>
+							<mx:DataGridColumn headerText="序号"
+											   width="50"
+											   editable="false"/>
+							<mx:DataGridColumn headerText="物资编码"
+											   dataField="materialCode"
+											   width="120"
+											   editable="false"/>
+							<mx:DataGridColumn headerText="物资名称"
+											   dataField="materialName"
+											   width="220"
+											   editable="false"/>
+							<mx:DataGridColumn headerText="规格型号"
+											   dataField="materialSpec"
+											   width="100"
+											   editable="false"/>
+							<mx:DataGridColumn headerText="单位"
+											   dataField="materialUnits"
+											   width="60"
+											   editable="false"/>
+							<mx:DataGridColumn headerText="数量"
+											   dataField="amount"
+											   width="80"
+											   textAlign="right"
+											   editable="false"/>
+							<mx:DataGridColumn headerText="进价"
+											   dataField="tradePrice"
+											   width="80"
+											   textAlign="right"
+											   editable="false"/>
+							<mx:DataGridColumn headerText="金额"
+											   dataField="tradeMoney"
+											   width="100"
+											   textAlign="right"
+											   editable="false"/>
+
+							<mx:DataGridColumn headerText="售价"
+											   dataField="retailPrice"
+											   width="100"
+											   textAlign="right"
+											   visible="false"
+											   editable="false"/>
+							<mx:DataGridColumn headerText="现存量"
+											   dataField="currentStockAmount"
+											   width="80"
+											   textAlign="right"
+											   editable="false"/>
+							<mx:DataGridColumn headerText="需求日期"
+											   dataField="requireDate"
+											   width="100"
+											   editable="false"/>
+							<mx:DataGridColumn headerText="建议订货日期"
+											   dataField="adviceBookDate"
+											   width="100"
+											   editable="false"/>
+							<mx:DataGridColumn headerText="建议供应商"
+											   dataField="salerCode"
+											   editable="false"
+											   visible="false"/>
+							<mx:DataGridColumn headerText="建议供应商"
+											   dataField="salerName"
+											   editable="false"
+											   width="200"/>
+							<mx:DataGridColumn headerText="备注"
+											   width="220"
+											   dataField="detailRemark"
+											   editable="false"/>
+							<mx:DataGridColumn headerText="药品Id"
+											   dataField="materialId"
+											   visible="false"/>
+							<mx:DataGridColumn headerText="药品分类"
+											   dataField="materialClass"
+											   visible="false"/>
+						</controls:columns>
+					</controls:SuperDataGrid>
+					
+					<s:HGroup id="hou"
+							  width="100%"
+							  verticalAlign="middle">
+
+						<mx:FormItem label="制单人">
+							<s:TextInput id="maker"
+										 width="100"
+										 enabled="false"/>
+						</mx:FormItem>
+						<mx:FormItem label="制单日期">
+							<s:TextInput id="makeDate"
+										 width="100"
+										 enabled="false"/>
+						</mx:FormItem>
+						<mx:FormItem label="审核人">
+							<s:TextInput id="verifier"
+										 width="100"
+										 enabled="false"/>
+						</mx:FormItem>
+						<mx:FormItem label="审核日期">
+							<s:TextInput id="verifyDate"
+										 width="100"
+										 enabled="false"/>
+						</mx:FormItem>
+						<mx:FormItem label="现存量"
+									 indicatorGap="2">
+							<s:TextInput id="currentStockAmount"
+										 width="90"
+										 enabled="false"
+										 text=""/>
+						</mx:FormItem>
+					</s:HGroup>
+					<mx:Spacer height="5"/>
+				</s:VGroup>
+		</s:VGroup>
+	</s:BorderContainer>
+</mx:Module>

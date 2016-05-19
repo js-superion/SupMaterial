@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Module xmlns:fx="http://ns.adobe.com/mxml/2009"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   layout="absolute"
+		   width="100%"
+		   height="100%"
+		   xmlns:controls="cn.superion.base.components.controls.*"
+		   xmlns:util="cn.superion.material.util.*"
+		   creationComplete="doInit()"
+		   xmlns:dataDict="cn.superion.dataDict.*">
+	
+	<fx:Script>
+		<![CDATA[
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				fromDate.text = toDate.text = '';
+			}
+			protected function storageCode_changeHandler(event:IndexChangeEvent):void
+			{
+				// TODO Auto-generated method stub
+				queryClickHandler(null);
+			}
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Script source="ModProviderSumaryas.as"/>
+
+	<s:BorderContainer width="100%"
+					   height="100%"
+					   backgroundColor="0xE2E8E8"
+					   borderVisible="false">
+		<s:VGroup width="100%"
+				  height="100%"
+				  gap="0">
+			<util:ToolBar id="toolBar"
+						  width="100%"
+						  printClick="printClickHandler('2')"
+						  excelClick="printClickHandler('3')"
+						  verifyClick="verifyClickHandler(event)"
+						  sumClick="toolBar_sumClickHandler(event)"
+						  queryClick="queryClickHandler(event)"
+						  exitClick="exitClickHandler(event)"/>
+			<controls:BarSubTitle title="生成供货单"/>
+			
+				<s:VGroup id="allPanel"
+						  width="100%"
+						  height="100%"
+						  paddingLeft="5"
+						  paddingBottom="5"
+						  paddingRight="5" 
+						  paddingTop="5">
+					<s:HGroup id="two"
+							  width="100%"
+							  verticalAlign="middle">
+						<s:Label text="供应单位"
+								 styleName="myFormItemStyle"/>
+						<controls:TextInputIcon width="177"
+												id="salerCode"
+												queryIconClick="productCode_queryIconClickHandlers(event)"
+												/>
+						<s:Label text="单据日期"/>
+						<mx:DateField id="fromDate" width="120" formatString="YYYY-MM-DD"/><s:Label text="--"/><mx:DateField id="toDate" width="120" formatString="YYYY-MM-DD" />
+						<s:Button label="清空日期" click="button1_clickHandler(event)"/>
+						<s:Label text="仓　  库"
+								 color="#0000FF"/>
+						<s:DropDownList id="storageCode"
+										change="storageCode_changeHandler(event)"
+										labelField="storageName"
+										width="108"
+										height="25"/>
+					</s:HGroup>
+					<s:HGroup width="100%"
+							  height="100%">
+						<s:VGroup height="100%">
+							<controls:SuperDataGrid id="gridMasterList" width="287" height="100%"
+													itemClick="gridMasterList_itemClickHandler(event)"
+													verticalScrollPolicy="auto">
+								<controls:columns>
+									<mx:DataGridColumn headerText="序号"
+													  dataField="rowNo"
+													  labelFunction="labFun"
+													  width="25"/>
+									<mx:DataGridColumn headerText="供货单位"
+													  dataField="providerName"
+													  width="120"/>
+									<mx:DataGridColumn headerText="单号"
+													  dataField="billNo"
+													  width="100"/>
+									<!--<mx:DataGridColumn headerText="日期"
+													  dataField="billDate"
+													  labelFunction="labFun"
+													  width="100"/>-->
+								</controls:columns>
+							</controls:SuperDataGrid>
+							
+						</s:VGroup>
+						
+						<mx:TabNavigator width="100%" change="tabnavigator1_changeHandler(event)"
+										 height="100%" id="tab"
+										 creationPolicy="all">
+							<s:NavigatorContent
+								width="100%"
+								height="100%"
+								label="按供货单位汇总"
+								>
+								<s:DataGrid id="gridListCount" width="100%" height="100%"
+											alternatingRowColors="[#EFF3FA,#FFFFFF]" 
+											editable="false"
+											requestedMaxRowCount="2"
+											selectedIndex="0"
+											selectionMode="singleRow"
+											sortableColumns="false"
+											styleName="gridTemplate"
+											variableRowHeight="false" 
+											verticalScrollPolicy="auto"
+											horizontalScrollPolicy="auto" 
+											>
+									<s:columns>
+										<s:ArrayList>
+											<s:GridColumn headerText="序号"
+														  dataField="rowNum"
+														  width="50"
+														  labelFunction="labFunTotal"
+														  />
+											<s:GridColumn headerText="物资编码"
+														  dataField="materialCode"
+														  width="80"/>
+											<s:GridColumn headerText="物资名称"
+														  dataField="materialName"
+														  width="140"/>
+											<s:GridColumn headerText="规格型号"
+														  dataField="materialSpec"
+														  width="140"/>
+											<s:GridColumn headerText="单位"
+														  dataField="materialUnits"
+														  width="80"/>
+											<s:GridColumn headerText="配送数量"
+														  dataField="sendAmount"
+														  width="80"/>
+											<s:GridColumn headerText="进价"
+														  dataField="tradePrice"
+														  width="70"/>
+											<s:GridColumn headerText="进价金额"
+														  dataField="tradeMoney"
+														  width="80"
+														  />
+										</s:ArrayList>
+									</s:columns>
+								</s:DataGrid>
+							</s:NavigatorContent>
+							
+							<s:NavigatorContent
+								width="100%"
+								height="100%"
+								label="按领用部门汇总"
+								>
+								
+								<util:MyDataGrid 
+									id="gridGroupByDept" width="100%" height="100%"
+									alternatingRowColors="[#EFF3FA,#FFFFFF]" 
+									editable="false"
+									requestedMaxRowCount="2"
+									selectedIndex="0"
+									selectionMode="singleRow"
+									sortableColumns="false"
+									skinClass="assets.skin.MyDataGridSkin"
+									>
+									<util:columns>
+										<s:ArrayList>
+											<s:GridColumn headerText="序号"
+														  dataField="rowNo"
+														  width="50"
+														  labelFunction="labFunTotal"
+														  />
+											<s:GridColumn headerText="领用部门"
+														  dataField="deptCode"
+														  labelFunction="labFunTotal"
+														  width="140"/>
+											<s:GridColumn headerText="物资名称"
+														  dataField="materialName"
+														  width="140"/>
+											<s:GridColumn headerText="规格型号"
+														  dataField="materialSpec"
+														  width="140"/>
+											<s:GridColumn headerText="单位"
+														  dataField="materialUnits"
+														  width="80"/>
+											<s:GridColumn headerText="数量"
+														  dataField="amount"
+														  width="80"/>
+											<s:GridColumn headerText="配送数量"
+														  dataField="sendAmount"
+														  width="80"/>
+											<s:GridColumn headerText="进价"
+														  dataField="tradePrice"
+														  width="80"/>
+											<s:GridColumn headerText="进价金额"
+														  dataField="tradeMoney"
+														  width="80"
+														  />
+										</s:ArrayList>
+									</util:columns>
+								</util:MyDataGrid>
+								
+							</s:NavigatorContent>
+							
+						</mx:TabNavigator>
+					</s:HGroup>
+					<mx:Spacer height="5"/>
+				</s:VGroup>
+		</s:VGroup>
+	</s:BorderContainer>
+</mx:Module>

@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Module xmlns:fx="http://ns.adobe.com/mxml/2009"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   layout="vertical"
+		   height="100%"
+		   width="100%"
+		   horizontalScrollPolicy="auto"
+		   backgroundColor="#E2E8E8"
+		   xmlns:controls="cn.superion.base.components.controls.*"
+		   creationComplete="doInit()"
+		   xmlns:util="cn.superion.material.util.*">
+	<fx:Script>
+		<![CDATA[
+			import cn.superion.base.components.controls.CheckBoxIR;
+
+		]]>
+	</fx:Script>
+
+	<fx:Script source="ModSpeciaValueas.as"/>
+
+	<s:Scroller id="scrol"
+				width="100%"
+				height="100%">
+
+		<s:VGroup id="vg"
+				  gap="0"
+				  height="100%"
+				  width="100%">
+			<util:ToolBar id="toolBar"
+						  width="100%"
+						  expClick="expClickHandler(event)"
+						  printClick="printClickHandler(event)"
+						  verifyClick="verifyClickHandler(event)"
+						  queryClick="queryClickHandler(event)"
+						  exitClick="exitClickHandler(event)"/>
+			<controls:BarSubTitle title="特殊高值入库"/>
+			<s:VGroup width="100%"
+					  height="100%"
+					  paddingLeft="5"
+					  paddingRight="5">
+
+				<s:HGroup id="hg1"
+						  verticalAlign="middle"
+						  width="100%"
+						  paddingLeft="10">		
+					<s:Label text="仓　  库"/>
+					<s:DropDownList id="storageCode"
+									labelField="storageName"
+									width="180"
+									height="25"
+									keyDown="toNextCtrl(event,invoiceDate)"/>
+					<s:Label text="供应单位"/>
+					<s:TextInput id="salerName"
+								 width="150"
+								 text="{_tempSalerName}"
+								 editable="false"/>
+					<s:TextInput id="salerCode"
+								 text="{_tempSalerCode}"
+								 includeInLayout="false"
+								 visible="false"/>
+					<s:Label text="发票日期"/>
+					<controls:DateFieldText id="invoiceDate"
+											width="120"
+											keyDown="toNextCtrl(event,invoiceNo)"/>
+					<s:Label text="发 票 号"/>
+					<s:TextInput id="invoiceNo"
+								 width="120"/>
+				</s:HGroup>
+				<controls:GroupDataGrid id="gdRdsDetail"
+										width="100%"
+										height="100%"
+										hasRowNo="false" 
+										isAddEmptyRow="false" 
+										isCreateGroupTitle="false"
+										styleName="dataGrid"
+										sumFields="{['amount','wholeSaleMoney']}"
+										sumLableField="barCode"
+										sumRowLabelText="合计"
+										groupField="patientId" 
+										horizontalScrollPolicy="auto"
+										format="{[,,,,,,'0.00','0.00',,,'0.00','0.00']}">
+					<controls:columns>
+						<mx:DataGridColumn headerText="选择"
+										   width="50"
+										   headerRenderer="{new ClassFactory(CheckBoxIR)}"
+										   textAlign="center"
+										   dataField="isSelected">
+							<mx:itemRenderer>
+								<fx:Component>
+									<mx:CheckBox change="checkbox1_changeHandler(event)"
+												 textAlign="center"
+												 selected="{this.parentDocument.selAll.selected}" 
+												 creationComplete="checkbox1_creationCompleteHandler(event)">
+										<fx:Script>
+											<![CDATA[
+												import mx.events.FlexEvent;
+												protected function checkbox1_creationCompleteHandler(event:FlexEvent):void
+												{
+													if(data && !data.notData && data.isSelected){
+														this.visible=true; 
+													}
+													else 
+													{
+														this.visible=false;
+													}
+												}
+
+												protected function checkbox1_changeHandler(event:Event):void
+												{
+													if(data && !data.notData && !data.isGroupRow){
+														data.isSelected=this.selected
+													}
+													else
+													{
+														this.selected=false;
+														data.isSelected=false;
+													}
+												}
+
+											]]>
+										</fx:Script>
+									</mx:CheckBox>
+
+								</fx:Component>
+							</mx:itemRenderer>
+						</mx:DataGridColumn>
+						<mx:DataGridColumn headerText="医院条码"
+										   width="100"
+										   dataField="barCode"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="物资编码"
+										   width="110"
+										   dataField="materialCode"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="物资名称"
+										   width="200"
+										   dataField="materialName"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="姓名"
+										   width="80"
+										   dataField="personName"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="病区"
+										   width="120"
+										   dataField="wardName"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="批发价总金额"
+										   width="100"
+										   dataField="wholeSaleMoney"
+										   textAlign="right"/>
+						<mx:DataGridColumn headerText="使用数量"
+										   width="80"
+										   dataField="amount"
+										   textAlign="right"/>
+						<mx:DataGridColumn headerText="规格"
+										   width="150"
+										   dataField="materialSpec"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="单位"
+										   width="60"
+										   dataField="materialUnits"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="售价"
+										   width="80"
+										   dataField="retailPrice"
+										   textAlign="right"/>
+						<mx:DataGridColumn headerText="批发价"
+										   width="80"
+										   dataField="wholeSalePrice"
+										   textAlign="right"/>
+						<mx:DataGridColumn headerText="批号"
+										   width="80"
+										   dataField="batch"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="有效期至"
+										   width="100"
+										   dataField="availDate"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="生产厂家"
+										   width="120"
+										   dataField="factoryName"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="病人住院号"
+										   width="90"
+										   dataField="patientId"
+										   textAlign="left"/>
+					</controls:columns>
+				</controls:GroupDataGrid>
+				<controls:GroupDataGrid id="gdRdsDetailVisible"
+										width="100%"
+										height="100%"
+										visible="false"
+										includeInLayout="false"
+										hasRowNo="false"
+										styleName="dataGrid"
+										sumFields="{['amount','wholeSaleMoney']}"
+										sumLableField="barCode"
+										sumRowLabelText="合计"
+										groupField="patientId"
+										horizontalScrollPolicy="auto"
+										format="{[,,,,,,'0.00','0.00',,,'0.00','0.00']}">
+					<controls:columns>
+						<mx:DataGridColumn headerText="医院条码"
+										   width="200"
+										   dataField="barCode"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="物资编码"
+										   width="110"
+										   dataField="materialCode"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="物资名称"
+										   width="220"
+										   dataField="materialName"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="姓名"
+										   width="100"
+										   dataField="personName"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="病区"
+										   width="100"
+										   dataField="wardName"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="批发价总金额"
+										   width="100"
+										   dataField="wholeSaleMoney"
+										   textAlign="right"/>
+						<mx:DataGridColumn headerText="使用数量"
+										   width="100"
+										   dataField="amount"
+										   textAlign="right"/>
+						<mx:DataGridColumn headerText="规格"
+										   width="150"
+										   dataField="materialSpec"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="单位"
+										   width="70"
+										   dataField="materialUnits"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="售价"
+										   width="100"
+										   dataField="retailPrice"
+										   textAlign="right"/>
+						<mx:DataGridColumn headerText="批发价"
+										   width="80"
+										   dataField="wholeSalePrice"
+										   textAlign="right"/>
+						<mx:DataGridColumn headerText="批号"
+										   width="100"
+										   dataField="batch"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="有效期至"
+										   width="100"
+										   dataField="availDate"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="生产厂家"
+										   width="120"
+										   dataField="factoryName"
+										   textAlign="left"/>
+						<mx:DataGridColumn headerText="病人住院号"
+										   width="90"
+										   dataField="patientId"
+										   textAlign="left"/>
+					</controls:columns>
+				</controls:GroupDataGrid>
+			</s:VGroup>
+		</s:VGroup>
+	</s:Scroller>
+</mx:Module>

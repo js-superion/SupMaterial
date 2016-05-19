@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemEditor xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				  xmlns:s="library://ns.adobe.com/flex/spark"
+				  xmlns:mx="library://ns.adobe.com/flex/mx" width="100" height="20" 
+				  xmlns:components="com.superion.components.*">
+	
+	<fx:Script>
+		<![CDATA[
+			import cn.superion.base.config.ParameterObject;
+			import cn.superion.base.util.RemoteUtil;
+			import cn.superion.vo.material.MaterialProvideDetail;
+			import cn.superion.vo.material.MaterialProvideMaster;
+			
+			import com.adobe.utils.StringUtil;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			import mx.rpc.remoting.RemoteObject;
+			
+			import spark.components.DataGrid;
+			
+			[Bindable]
+			private var aryColDisease:ArrayCollection = new ArrayCollection();
+			
+			protected function auto_searchChangeHandler(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				var txt:String = StringUtil.trim(auto.searchText);
+				trace(txt);
+				if(txt.length==0)return;
+				if(txt.charCodeAt(0)< 97 || txt.charCodeAt(0)> 122){
+					return;
+				}
+				var paraObj:ParameterObject = new ParameterObject();
+				paraObj.itemsPerPage = 14000;//14000.足够检索
+				paraObj.conditions = {"phoInputCode":txt,"fiveInputCode":null};
+				var ro:RemoteObject = RemoteUtil.getRemoteObject('sendImpl',function(re:Object):void{
+					aryColDisease = re.data;
+					auto.search();
+				});
+				ro.findProvider(paraObj);
+			}
+			
+			override public function save():Boolean
+			{
+				// TODO Auto Generated method stub
+				if(auto.selectedItem){
+					var code:String = this.data.mainProvider;
+					
+					this.data.providerName = auto.selectedItem.providerName;
+					this.data.mainProvider = auto.selectedItem.providerId;
+					//将同一种物品全部更新
+					var ary:ArrayCollection = new ArrayCollection();
+					ary.addItem(data);
+//					var _dataGrid:DataGrid = this.owner as DataGrid;
+//					var _dataProvider:ArrayCollection = _dataGrid.dataProvider as ArrayCollection ;
+//					for each(var it:MaterialProvideDetail in _dataProvider){
+//						if(code ==null){
+//							it.mainProvider =  auto.selectedItem.providerId;
+//							it.providerName = auto.selectedItem.providerName;
+//							ary.addItem(it)
+//						}else{
+//							if(it.mainProvider &&it.mainProvider == code){
+//								it.mainProvider =  auto.selectedItem.providerId;
+//								it.providerName = auto.selectedItem.providerName;
+//								ary.addItem(it)
+//								
+//							}
+//						}
+//						
+//					}
+					//直接更新供货单位
+					var ro:RemoteObject = RemoteUtil.getRemoteObject('sendImpl',function(re:Object):void{
+						
+					});
+					ro.updateProviderDetail(ary);
+					
+				}
+				return true;//关键点就在这里，不能调用父类的save
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	
+	<components:AutoComplete labelField="providerName" filterField="phoInputCode"
+		dropDownItemRenderer="{new ClassFactory(MyItemRenderer)}" 
+		dataProvider="{aryColDisease}"
+		id="auto" 
+		searchChange="auto_searchChangeHandler(event)"
+		/>
+</s:GridItemEditor>

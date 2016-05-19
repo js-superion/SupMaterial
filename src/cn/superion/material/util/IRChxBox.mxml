@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx" clipAndEnableScrolling="true">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			override public function prepare(hasBeenRecycled:Boolean):void {
+				lblData.selected = data?data["isSelected"]:false;
+			}
+			
+			protected function lblData_changeHandler(event:Event):void
+			{
+				// TODO Auto-generated method stub
+//				data["isSelected"] = lblData.selected;
+				var gd:MyDataGrid = MyDataGrid(this.owner);
+				var ary:ArrayCollection = gd.dataProvider as ArrayCollection;
+				if(data.isGroupFirst){
+					
+				
+					for each(var it:Object in ary){
+						if(it.mainProvider == data.mainProvider){
+							it.isSelected = lblData.selected;
+							ary.itemUpdated(it,"isSelected")
+						}
+					}
+				}else{
+					data["isSelected"] = lblData.selected;
+//					ary.itemUpdated(data,"isSelected")
+				}
+				
+				
+			}
+			
+			override public function set data(value:Object):void
+			{
+				// TODO Auto Generated method stub
+				super.data = value;
+				if(value&&value.isGroupFirst){
+					lblData.visible = true;
+					//													this.visible = false;
+//					this.label = "样本号"+value.sampleNo;
+//					this.setStyle("color","blue");
+//					this.setStyle("textAlign","center");
+					
+				}else{
+					lblData.visible = true;
+//					this.label = "";
+//					this.selected = false;
+//					this.setStyle("textAlign","left");
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:CheckBox id="lblData" top="9" left="7"
+				change="lblData_changeHandler(event)"
+				/>
+	
+</s:GridItemRenderer>

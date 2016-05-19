@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Module xmlns:fx="http://ns.adobe.com/mxml/2009"
+		   xmlns:s="library://ns.adobe.com/flex/spark"
+		   xmlns:mx="library://ns.adobe.com/flex/mx"
+		   layout="vertical"
+		   height="100%"
+		   width="100%"
+		   horizontalScrollPolicy="auto"
+		   backgroundColor="#E2E8E8"
+		   xmlns:controls="cn.superion.base.components.controls.*"
+		   creationComplete="doInit()"
+		   xmlns:view="cn.superion.material.util.*">
+
+	
+	<fx:Script source="ModRdsStatas.as"/>
+	
+	<s:Scroller width="100%"
+				height="100%">
+		<s:VGroup id="vg"
+				  gap="0"
+				  height="100%"
+				  width="100%">
+			<view:ToolBar id="toolBar"
+						  width="100%"
+						  printClick="printClickHandler(event)"
+						  expClick="expClickHandler(event)"
+						  feeClick="toolBar_feeClickHandler(event)"
+						  queryClick="queryClickHandler(event)"
+						  exitClick="exitClickHandler(event)"/>
+			
+			<controls:BarSubTitle title="结账汇总表"/>
+			
+			<controls:SuperAdvancedDataGrid id="gdRdsDetailList"
+								 width="100%"
+								 height="100%"
+								 styleName="dataGrid"
+								 hasRowNo="true"
+								 isAutoFetchDictData="false"
+								 sumLableField="rowno"
+								 sumRowLabelText="合计"
+								 sumField="{['initAmount','initMoney','receiveAmount','tradeMoney','deliveryAmount','retailMoney','currentStockAmount','currentStockMoney']}"
+								 format="{[,,,,,,'0.0000',,'0.0000',,'0.0000',,'0.0000',,'0.0000']}"
+								 horizontalScrollPolicy="auto">
+				<controls:groupedColumns>
+					<mx:AdvancedDataGridColumn headerText="序号"
+									   dataField="rowno"
+									   width="50"
+									   textAlign="left"/>
+					<mx:AdvancedDataGridColumn headerText="仓库"
+											   dataField="storageName"
+											   width="120"
+											   textAlign="left"
+											   labelFunction="storageCodeLBF"/>
+					<mx:AdvancedDataGridColumn headerText="物资编码"
+											   dataField="materialCode"
+											   width="120"
+											   textAlign="left"/>
+					<mx:AdvancedDataGridColumn headerText="物资名称"
+											   dataField="materialName"
+											   width="200"
+											   textAlign="left"/>
+					<mx:AdvancedDataGridColumn headerText="批号"
+											   dataField="batch"
+											   width="60"
+											   textAlign="left"/>
+			
+					<mx:AdvancedDataGridColumn headerText="期初数量"
+											   width="100"
+											   dataField="initAmount"
+											   textAlign="right"/>
+					<mx:AdvancedDataGridColumn headerText="期初金额"
+											   width="100"
+											   dataField="initMoney"
+											   textAlign="right"/>
+					<mx:AdvancedDataGridColumnGroup headerText="入库">
+						<mx:AdvancedDataGridColumn headerText="本期入库"
+												   dataField="receiveAmount"
+												   width="100"
+												   textAlign="right"/>
+					
+						<mx:AdvancedDataGridColumn headerText="本期入库金额"
+												   dataField="tradeMoney"
+												   width="120"
+												   textAlign="right"/>
+					</mx:AdvancedDataGridColumnGroup>
+					<mx:AdvancedDataGridColumnGroup headerText="出库">
+						<mx:AdvancedDataGridColumn headerText="本期出库"
+												   dataField="deliveryAmount"
+												   width="100"
+												   textAlign="right"/>
+					
+						<mx:AdvancedDataGridColumn headerText="本期出库金额"
+												   dataField="retailMoney"
+												   width="120"
+												   textAlign="right"/>
+					</mx:AdvancedDataGridColumnGroup>
+					<mx:AdvancedDataGridColumn headerText="期末库存"
+											   dataField="currentStockAmount"
+											   width="100"
+											   textAlign="right"/>
+					<mx:AdvancedDataGridColumn headerText="期末金额"
+											   dataField="currentStockMoney"
+											   width="80"
+											   textAlign="right"/>
+				</controls:groupedColumns>
+			</controls:SuperAdvancedDataGrid>
+		</s:VGroup>
+	</s:Scroller>
+</mx:Module>
+

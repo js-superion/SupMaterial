@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx"
+					xmlns:util="cn.superion.material.util.*"
+					clipAndEnableScrolling="true"
+					>
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.collections.ListCollectionView;
+			override public function prepare(hasBeenRecycled:Boolean):void {
+				cb.data = this.data;
+			}
+			
+			protected function cb_changeHandler(event:Event):void
+			{
+				data.isSelected=event.target.selected;
+				if(data.isSelected){
+					//选中的时候，查出对应的明细
+					this.parentDocument.parentDocument.findDetailByMainAutoId(data);
+					
+				}else{
+						this.parentDocument.parentDocument._autoId = this.data.autoId;
+						this.parentDocument.parentDocument.removeDataByAutoId();
+				}
+				var selectedAutoIds:Array = this.parentDocument.parentDocument.getSelectedAutoIds();
+				this.parentDocument.parentDocument.findSendMaterialTotal(selectedAutoIds);
+			}
+		
+		]]>
+	</fx:Script>
+	
+	<util:CBoxIR id="cb" 
+				change="cb_changeHandler(event)"
+				textAlign="center"/>
+	
+</s:GridItemRenderer>
+
