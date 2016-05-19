@@ -20,9 +20,9 @@
 			override public function save():Boolean
 			{
 				var txtNumber:Number = StringUtil.trim(txt.text)==''?0:Number(txt.text);
-				this.data.sendAmount = txtNumber;
+				this.data.tradePrice = txtNumber;
 				//直接更新明细
-				data.tradeMoney = data.tradePrice * txtNumber;
+				data.tradeMoney = data.sendAmount * txtNumber;
 				var ary:ArrayCollection = new ArrayCollection();
 				ary.addItem(this.data);
 				var ro:RemoteObject = RemoteUtil.getRemoteObject("sendImpl",function(rev:Object):void{
@@ -41,7 +41,7 @@
 			protected function txt_creationCompleteHandler(event:FlexEvent):void
 			{
 				// TODO Auto-generated method stub
-				txt.text= data.sendAmount;
+				txt.text= data.tradePrice;
 			}
 			
 		]]>
