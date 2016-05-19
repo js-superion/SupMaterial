@@ -49,10 +49,11 @@ Temporary Items
 *.actionScriptProperties
 *.flexProperties
 *.project
-#*.swc
-#*.png
-#*.jpg
-#*.gif
+*.swc
+*.png
+*.jpg
+*.gif
 *.txt
 *.css
-#*.swf
+*.swf
+*.html
