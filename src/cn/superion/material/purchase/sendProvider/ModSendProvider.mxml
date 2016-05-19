@@ -200,7 +200,7 @@
 											<s:GridColumn headerText="配送数量"
 														  itemEditor="cn.superion.material.purchase.send.IESendAmount"
 														  dataField="sendAmount"
-														  editable="false"
+														  editable="true"
 														  width="60"/>
 											<s:GridColumn headerText="进价"
 														  dataField="tradePrice"
