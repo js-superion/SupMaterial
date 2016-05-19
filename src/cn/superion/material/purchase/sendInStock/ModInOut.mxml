@@ -45,7 +45,7 @@
 						  sumClick="toolBar_sumClickHandler(event)"
 						  queryClick="queryClickHandler(event)"
 						  exitClick="exitClickHandler(event)"/>
-			<controls:BarSubTitle title="供货单确认"/>
+			<controls:BarSubTitle title="配送单验收"/>
 			
 				<s:VGroup id="allPanel"
 						  width="100%"
