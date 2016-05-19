@@ -14,7 +14,7 @@
 		<![CDATA[
 			protected function button1_clickHandler(event:MouseEvent):void
 			{
-				// TODO Auto-generated method stub
+				// TODO Auto-generated method stub6
 				fromDate.text = toDate.text = '';
 			}
 			
