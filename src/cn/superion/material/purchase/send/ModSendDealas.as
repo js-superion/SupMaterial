@@ -105,6 +105,13 @@ protected function status_changeHandler(event:IndexChangeEvent):void
 	queryClickHandler(null);
 }
 
+protected function storageCode_changeHandler(event:IndexChangeEvent):void
+{
+	// TODO Auto-generated method stub
+	queryClickHandler(null);
+}
+
+
 
 /**
  * 面板初始化
@@ -202,6 +209,21 @@ protected function cancelClickHandler(event:Event):void
 	});
 	ro.updateSendMaterialMaster3(newAry,"2");
 }
+
+
+
+import spark.events.GridItemEditorEvent;
+
+protected function gridDetailList_gridItemEditorSessionStartingHandler(event:GridItemEditorEvent):void
+{
+	// TODO Auto-generated method stub
+	//if(status.selectedItem.k =='3'){
+	//未审核（处理）的可以修改，其它状态不让改
+	if(status.selectedItem.k !='2'){
+		event.preventDefault();
+	}
+}
+
 
 /**
  * 清空明细
@@ -662,6 +684,19 @@ private function labFun(item:Object,column:DataGridColumn):String
 		var fmt:DateTimeFormatter = new DateTimeFormatter();
 		fmt.dateTimePattern = "yyyy-MM-dd";
 		reVal = fmt.format(item.billDate);
+	}
+	if (column.dataField == 'personId')
+	{
+		var person:Object=ArrayCollUtils.findItemInArrayByValue(BaseDict.personIdDict, 'personId', item.personId);
+		if (!person)
+		{
+			item.personName = "";
+		}
+		else
+		{
+			item.personName=person.personIdName;
+		}
+		reVal = item.personName
 	}
 	if (column.dataField == 'deptCode')
 	{

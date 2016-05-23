@@ -180,15 +180,14 @@
 									height="100%"
 									label="申请明细"
 									>
-								<s:DataGrid id="gridDetailList" width="100%" height="100%"
-											alternatingRowColors="[#EFF3FA,#FFFFFF]" 
-											selectedIndex="0"
-											editable="true" 
-											styleName="gridTemplate"
+								<s:DataGrid id="gridDetailList" x="0" y="-10" width="100%"
+											height="514" alternatingRowColors="[#EFF3FA,#FFFFFF]"
+											editable="true"
 											gridItemEditorSessionStarting="gridDetailList_gridItemEditorSessionStartingHandler(event)"
-											variableRowHeight="false" 
-											verticalScrollPolicy="auto"
-											horizontalScrollPolicy="auto" >
+											horizontalScrollPolicy="auto" selectedIndex="0"
+											skinClass="assets.skin.MyDataGridSkin"
+											styleName="gridTemplate" variableRowHeight="false"
+											verticalScrollPolicy="auto">
 									<s:columns>
 										<s:ArrayList>
 											<s:GridColumn headerText="物资名称"

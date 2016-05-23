@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:GridItemEditor xmlns:fx="http://ns.adobe.com/mxml/2009" 
 				  xmlns:s="library://ns.adobe.com/flex/spark"
-				  xmlns:mx="library://ns.adobe.com/flex/mx" width="100" height="20" 
+				  xmlns:mx="library://ns.adobe.com/flex/mx" width="200" height="20" 
 				  xmlns:components="com.superion.components.*">
 	
 	<fx:Script>
@@ -85,11 +85,8 @@
 	<fx:Declarations>
 		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
 	</fx:Declarations>
-	
-	<components:AutoComplete labelField="providerName" filterField="phoInputCode"
-		dropDownItemRenderer="{new ClassFactory(MyItemRenderer)}" 
-		dataProvider="{aryColDisease}"
-		id="auto" 
-		searchChange="auto_searchChangeHandler(event)"
-		/>
+		<components:AutoComplete id="auto" width="260" dataProvider="{aryColDisease}"
+								 dropDownItemRenderer="{new ClassFactory(MyItemRenderer)}"
+								 filterField="phoInputCode" labelField="providerName"
+								 searchChange="auto_searchChangeHandler(event)"/>
 </s:GridItemEditor>

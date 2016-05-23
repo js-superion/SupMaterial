@@ -120,7 +120,9 @@ protected function tabnavigator1_changeHandler(event:IndexChangedEvent):void
 protected function gridDetailList_gridItemEditorSessionStartingHandler(event:GridItemEditorEvent):void
 {
 	// TODO Auto-generated method stub
-	if(status.selectedItem.k =='4'){
+	//if(status.selectedItem.k =='4'){
+	//未审核（处理）的可以修改，其它状态不让改
+	if(status.selectedItem.k !='3'){
 		event.preventDefault();
 	}
 }
@@ -167,6 +169,20 @@ protected function storageCode_changeHandler(event:IndexChangeEvent):void
 //	var code:String = item.deptCode;;
 //	initDeptLimit(currentYear,season,code);
 //}
+
+
+
+public function deptCode_changeHandler(item:MaterialProvideMaster):void
+{
+	// TODO Auto-generated method stub
+	var currentYear:String = DateUtil.dateToString(new Date(),"YYYY");
+	var currentMonth:String = DateUtil.dateToString(new Date(),"MM");
+	var index:int = Number(currentMonth) - 1;
+	var season:String = seasonArray[index].season;
+	var code:String = item.deptCode;;
+	//initDeptLimit(currentYear,season,code);
+}
+
 
 /**
  * 面板初始化
@@ -711,7 +727,20 @@ private function labFun(item:Object,column:DataGridColumn):String
 		fmt.dateTimePattern = "yyyy-MM-dd";
 		reVal = fmt.format(item.billDate);
 	}
-	if (column.headerText == '病区')
+	if (column.dataField == 'personId')
+	{
+		var person:Object=ArrayCollUtils.findItemInArrayByValue(BaseDict.personIdDict, 'personId', item.personId);
+		if (!person)
+		{
+			item.personName = "";
+		}
+		else
+		{
+			item.personName=person.personIdName;
+		}
+		reVal = item.personName
+	}
+	if (column.dataField == 'deptCode')
 	{
 		var deptItem:Object=ArrayCollUtils.findItemInArrayByValue(BaseDict.deptDict, 'dept', item.deptCode);
 		if (!deptItem)

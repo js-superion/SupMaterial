@@ -657,7 +657,9 @@ import spark.events.GridItemEditorEvent;
 protected function gridDetailList_gridItemEditorSessionStartingHandler(event:GridItemEditorEvent):void
 {
 	// TODO Auto-generated method stub
-	if(status.selectedItem.k =='2'){
+	//if(status.selectedItem.k =='2'){
+	//未审核（处理）的可以修改，其它状态不让改
+	if(status.selectedItem.k !='1'){
 		event.preventDefault();
 	}
 }
@@ -684,6 +686,7 @@ protected function queryClickHandler(event:Event):void
 	_fparameter.toDate = toDate.text;
 	_fparameter.detailRemark = detailRemark.text;
 	_fparameter.currentStatus = status.selectedItem?status.selectedItem.k:"1,2,3,4,5";
+	_fparameter.storageCode = storageCode.selectedItem?storageCode.selectedItem.storageCode:null;
 	param.conditions = _fparameter
 	var ro:RemoteObject=RemoteUtil.getRemoteObject(DESTANATION, function(rev:Object):void
 	{

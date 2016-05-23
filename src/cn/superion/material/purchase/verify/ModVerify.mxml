@@ -34,7 +34,7 @@
 						  verifyClick="verifyClickHandler(event)"
 						  queryClick="queryClickHandler(event)"
 						  exitClick="exitClickHandler(event)"/>
-			<controls:BarSubTitle title="配送单审核"/>
+			<controls:BarSubTitle title="配送单验收"/>
 			
 				<s:VGroup id="allPanel"
 						  width="100%"
@@ -73,7 +73,7 @@
 						<s:Label text="供应单位"
 								 color="blue"
 								 styleName="myFormItemStyle"/>
-						<controls:TextInputIcon width="45%"
+						<controls:TextInputIcon width="120"
 												id="salerCode"
 												queryIconClick="productCode_queryIconClickHandlers(event)"
 												keyDown="toNextControl(event,deptCode)"/>
@@ -149,14 +149,12 @@
 									height="100%"
 									label="申请明细"
 									>
-								<s:DataGrid id="gridDetailList" width="100%" height="100%"
-											alternatingRowColors="[#EFF3FA,#FFFFFF]" 
-											selectedIndex="0"
-											editable="true"
-											styleName="gridTemplate"
-											variableRowHeight="false" 
-											verticalScrollPolicy="auto"
-											horizontalScrollPolicy="auto" >
+								<s:DataGrid id="gridDetailList" x="0" y="-10" width="100%"
+											height="514" alternatingRowColors="[#EFF3FA,#FFFFFF]"
+											editable="true" horizontalScrollPolicy="auto"
+											selectedIndex="0" skinClass="assets.skin.MyDataGridSkin"
+											styleName="gridTemplate" variableRowHeight="false"
+											verticalScrollPolicy="auto">
 									<s:columns>
 										<s:ArrayList>
 											<s:GridColumn headerText="序号"
@@ -216,18 +214,14 @@
 								height="100%"
 								label="申请汇总"
 								>
-								<s:DataGrid id="gridListCount" width="100%" height="100%"
-											alternatingRowColors="[#EFF3FA,#FFFFFF]" 
-											editable="false"
-											requestedMaxRowCount="2"
-											selectedIndex="0"
+								<s:DataGrid id="gridListCount" x="0" y="-10" width="100%"
+											height="514" alternatingRowColors="[#EFF3FA,#FFFFFF]"
+											editable="false" horizontalScrollPolicy="auto"
+											requestedMaxRowCount="2" selectedIndex="0"
 											selectionMode="singleRow"
-											sortableColumns="false"
-											styleName="gridTemplate"
-											variableRowHeight="false" 
-											verticalScrollPolicy="auto"
-											horizontalScrollPolicy="auto" 
-											>
+											skinClass="assets.skin.MyDataGridSkin"
+											sortableColumns="false" styleName="gridTemplate"
+											variableRowHeight="false" verticalScrollPolicy="auto">
 									<s:columns>
 										<s:ArrayList>
 											<s:GridColumn headerText="序号"
