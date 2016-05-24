@@ -227,7 +227,7 @@ protected function btConfirm_clickHandler(event:MouseEvent):void
 			 parentWin.gdDeliver.dataProvider=rev.data[0];
 		 }
 	});
-	ro.findDeliverStatByZw(paramQuery);//byzcl
+	ro.findDeliverStatListByDeptComputerFee(paramQuery);//byzcl
 }
 
 /**

@@ -31,7 +31,8 @@
 									queryIconClick="materialClass_queryIconClickHandler(event)"
 									keyUp="toNextControl(event,materialCode)"/>
 				<s:Label text="物资编码"
-						 width="56"/>
+						 width="56"
+						 color="blue"/>
 				<s:TextInput width="100%"
 							 id="materialCode"
 							 maxChars="20"
@@ -140,7 +141,7 @@
 				<view:TextInputIcon keyUp="toNextControl(event,tradePrice)"
 									id="factoryCode"
 									queryIconClick="factoryCode_queryIconClickHandler(event)"/>
-				<s:Label text="进　　价"
+				<s:Label text="进价"
 						 width="56"/>
 				<s:TextInput width="100%"
 							 id="tradePrice"
@@ -167,7 +168,7 @@
 			<s:HGroup width="100%"
 					  gap="5"
 					  verticalAlign="middle">
-				<s:Label text="批 发 价"
+				<s:Label text="批发价"
 						 width="56"/>
 				<s:TextInput width="100%"
 							 maxChars="10"
@@ -178,7 +179,7 @@
 							 keyUp="toNextControl(event,invitePrice)"
 							 focusOut="priceFix2(wholeSalePrice)"
 							 change="changeHandler(event)"/>
-				<s:Label text="中 标 价"
+				<s:Label text="中标价"
 						 width="56"/>
 				<s:TextInput width="100%"
 							 maxChars="10"
@@ -325,6 +326,7 @@
 					  gap="5"
 					  verticalAlign="middle">
 				<s:CheckBox label="是否库存管理"
+							
 							id="storageMaterialSign"
 							width="20%"
 							keyUp="toNextControl(event,logisticSign)"

@@ -50,8 +50,7 @@
 						<s:Label text="状态" color="#0000FF"/>
 						<s:DropDownList id="status" width="95" change="status_changeHandler(event)"
 										dataProvider="{new ArrayCollection([{'k':'1','v':'未审(1)'},{'k':'2','v':'已审(2)'},{'k':'3','v':'供货量已审(3)'},{'k':'4','v':'供货商已审(4)'},{'k':'0','v':'申请未提交(0)'}])}"
-										labelField="v" selectedIndex="0"/>
-						
+										labelField="v" selectedIndex="0"/>						
 						<s:Label text="仓库"
 								 color="#0000FF"/>
 						<s:DropDownList id="storageCode"
@@ -73,10 +72,7 @@
 								 includeInLayout="false"
 								 styleName="myFormItemStyle"
 								 color="blue"
-								 width="55"/>		
-
-		
-						
+								 width="55"/>			
 						<controls:TextInputIcon id="materialCode"
 												width="123"
 												visible="false"

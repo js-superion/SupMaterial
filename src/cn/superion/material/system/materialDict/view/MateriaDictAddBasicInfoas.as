@@ -29,9 +29,10 @@ private function priceFix2(con:*):void
 		}
 		
 	}
+	/*价格一改全改*/
 	wholeSalePrice.text=tradePrice.text;
-//	retailPrice.text=tradePrice.text;
-//	invitePrice.text=tradePrice.text;
+	retailPrice.text=tradePrice.text;
+	invitePrice.text=tradePrice.text;
 	MaterialDictAdd.currentItem.wholeSalePrice=Number(wholeSalePrice.text);
 	MaterialDictAdd.currentItem.invitePrice=Number(invitePrice.text);
 	MaterialDictAdd.currentItem.retailPrice=Number(retailPrice.text);

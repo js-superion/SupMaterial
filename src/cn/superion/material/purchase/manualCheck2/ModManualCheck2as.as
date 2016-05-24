@@ -668,7 +668,20 @@ private function labFun(item:Object,column:DataGridColumn):String
 		fmt.dateTimePattern = "yyyy-MM-dd";
 		reVal = fmt.format(item.billDate);
 	}
-	if (column.headerText == '病区')
+/*	if (column.headerText == '病区')
+	{
+		var deptItem:Object=ArrayCollUtils.findItemInArrayByValue(BaseDict.deptDict, 'dept', item.deptCode);
+		if (!deptItem)
+		{
+			item.deptName='';
+		}
+		else
+		{
+			item.deptName=deptItem.deptName;
+		}
+		reVal = item.deptName;
+	}*/
+	if (column.dataField == 'deptCode')
 	{
 		var deptItem:Object=ArrayCollUtils.findItemInArrayByValue(BaseDict.deptDict, 'dept', item.deptCode);
 		if (!deptItem)

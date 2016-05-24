@@ -375,6 +375,7 @@
 											   height="100%"/>
 			</s:VGroup>
 		</s:NavigatorContent>
+
 		<!--物资控制信息显示区-->
 		<s:NavigatorContent id="navContent_add_control_info"
 							label="控制信息">

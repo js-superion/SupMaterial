@@ -45,6 +45,7 @@ import mx.events.FlexEvent;
 import mx.events.ListEvent;
 import mx.managers.PopUpManager;
 import mx.rpc.remoting.RemoteObject;
+import mx.utils.ObjectUtil;
 
 import spark.components.gridClasses.GridColumn;
 import spark.events.TextOperationEvent;
@@ -69,18 +70,30 @@ private var _fparameter:Object={flag:"1"};
  * */
 public function doInit():void
 {
-//	if(parentDocument is WinModual){
-//		parentDocument.title="采购申请处理";
-//	}
-//	//重新注册客户端对应的服务端类
-//	registerClassAlias("cn.superion.material.entity.MaterialPlanMaster", MaterialPlanMaster);
-//	registerClassAlias("cn.superion.material.entity.MaterialPlanDetail", MaterialPlanDetail);
+	//	if(parentDocument is WinModual){
+	//		parentDocument.title="采购申请处理";
+	//	}
+	//	//重新注册客户端对应的服务端类
+	//	registerClassAlias("cn.superion.material.entity.MaterialPlanMaster", MaterialPlanMaster);
+	//	registerClassAlias("cn.superion.material.entity.MaterialPlanDetail", MaterialPlanDetail);
 	
 	//放大镜不可手动输入
+	preventDefaultForm();
 	initPanel();
 	initToolBar();
+	if (AppInfo.currentUserInfo.storageList != null && AppInfo.currentUserInfo.storageList.length > 0)
+	{
+		var result:ArrayCollection =ObjectUtil.copy(AppInfo.currentUserInfo.storageList) as ArrayCollection;
+		var newArray:ArrayCollection = new ArrayCollection();
+		for each(var it:Object in result){
+			if(it.type == '2'||it.type == '3'){
+				newArray.addItem(it);
+			}
+		}
+		storageCode.dataProvider=newArray;//AppInfo.currentUserInfo.storageList;
+		storageCode.selectedIndex=0;
+	}
 }
-
 
 import mx.events.IndexChangedEvent;
 
@@ -151,6 +164,21 @@ private function setReadOnly(boolean:Boolean):void
 //	stockType.enabled=boolean;
 }
 public var _autoId:String = null;
+/**
+ * 阻止放大镜表格输入内容
+ */
+private function preventDefaultForm():void
+{
+	deptCode.txtContent.addEventListener(TextOperationEvent.CHANGING, function(e:TextOperationEvent):void
+	{
+		e.preventDefault();
+	})
+	
+	materialCode.txtContent.addEventListener(TextOperationEvent.CHANGING, function(e:TextOperationEvent):void
+	{
+		e.preventDefault();
+	})
+}
 public function removeDataByAutoId():void{
 	//获取明细表格中的所有数据
 	var details:ArrayCollection = gridDetailList.dataProvider as ArrayCollection;
@@ -627,6 +655,7 @@ protected function queryClickHandler(event:Event):void
 //	_fparameter.sendGreaterThanZero = '1';
 //	_fparameter.checkAmountSign = status.selectedItem?status.selectedItem.k:"0,1";//'1,2';
 	_fparameter.currentStatus = status.selectedItem?status.selectedItem.k:"2,3";
+	_fparameter.storageCode = storageCode.selectedItem?storageCode.selectedItem.storageCode:null;
 	param.conditions = _fparameter
 	var ro:RemoteObject=RemoteUtil.getRemoteObject(DESTANATION, function(rev:Object):void
 	{
