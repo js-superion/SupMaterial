@@ -122,7 +122,7 @@ private function initPanel():void
 private function initToolBar():void
 {
 	var laryDisplays:Array=[toolBar.btPrint, toolBar.btExp,toolBar.btExcel, toolBar.btAdd, toolBar.btModify, toolBar.btDelete, toolBar.btCancel, toolBar.btSave, toolBar.btVerify, toolBar.btAddRow, toolBar.btDelRow, toolBar.btQuery, toolBar.btFirstPage, toolBar.btPrePage, toolBar.btNextPage, toolBar.btLastPage, toolBar.btExit, toolBar.imageList1, toolBar.imageList2, toolBar.imageList3, toolBar.imageList5, toolBar.imageList6];
-	var laryEnables:Array=[toolBar.btQuery,toolBar.btVerify, toolBar.btExit];
+	var laryEnables:Array=[toolBar.btPrint,toolBar.btQuery,toolBar.btVerify, toolBar.btExit];
 	ToolBar.showSpecialBtn(toolBar, laryDisplays, laryEnables, true);
 }
 
