@@ -1107,7 +1107,7 @@ private function createPrintSecondBottomLine(fLastItem:Object):String
 //			"",
 //			maker.text)
 //	}
-	lstrLine = "          采购:{0}                 接收人:{1}               制单人:{2}        ";
+	lstrLine = "采购:{0}                 会计:                 接收人:{1}                 制单人:{2}                 ";
 	lstrLine=StringUtils.format(lstrLine,"","",maker.text)
 	
 	return lstrLine;

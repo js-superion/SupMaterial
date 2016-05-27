@@ -59,7 +59,7 @@
 							  verticalAlign="middle">
 						<s:Label text="状态"  color="#0000FF"/>
 						<s:DropDownList id="status" width="95" change="status_changeHandler(event)"
-										dataProvider="{new ArrayCollection([{'k':'0','v':'未审'},{'k':'1','v':'已审'}])}"
+										dataProvider="{new ArrayCollection([{'k':'0','v':'未验收'},{'k':'1','v':'已验收'}])}"
 										labelField="v" selectedIndex="0"/>
 						<s:Label text="仓库"
 								 color="#0000FF"/>

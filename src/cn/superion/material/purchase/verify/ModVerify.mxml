@@ -34,7 +34,7 @@
 						  verifyClick="verifyClickHandler(event)"
 						  queryClick="queryClickHandler(event)"
 						  exitClick="exitClickHandler(event)"/>
-			<controls:BarSubTitle title="配送单验收"/>
+			<controls:BarSubTitle title="配送单验收2"/>
 			
 				<s:VGroup id="allPanel"
 						  width="100%"

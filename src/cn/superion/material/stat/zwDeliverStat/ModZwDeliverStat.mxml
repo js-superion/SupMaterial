@@ -27,7 +27,7 @@
 						  queryClick="queryClickHandler(event)"
 						  exitClick="exitClickHandler(event)"/>
 			
-			<controls:BarSubTitle title="总务出库部门汇总"/> 
+			<controls:BarSubTitle title="出库部门汇总（总务）"/> 
 
 			<controls:SuperDataGrid id="gdDeliver"
 									hasRowNo="true"

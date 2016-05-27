@@ -5,7 +5,7 @@
 			   backgroundColor="0xE2E8E8"
 			   width="500"
 			   height="374"
-			   title="计算机出库汇总表"
+			   title="出库部门汇总（总务）"
 			   close="closeWin()"
 			   xmlns:controls="cn.superion.base.components.controls.*"
 			   creationComplete="doInit()">

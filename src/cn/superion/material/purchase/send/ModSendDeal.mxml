@@ -46,7 +46,7 @@
 						  verifyClick="verifyClickHandler(event)"
 						  queryClick="queryClickHandler(event)"
 						  exitClick="exitClickHandler(event)"/>
-			<controls:BarSubTitle title="供货量审核"/>
+			<controls:BarSubTitle title="总务处审核"/>
 			
 				<s:VGroup id="allPanel"
 						  width="100%"
@@ -60,7 +60,7 @@
 							  verticalAlign="middle">
 						<s:Label text="状态"  color="#0000FF"/>
 						<s:DropDownList id="status" width="95" change="status_changeHandler(event)"
-										dataProvider="{new ArrayCollection([{'k':'2','v':'未审(2)'},{'k':'3','v':'已审(3)'},{'k':'1','v':'仓库未确认(1)'},{'k':'3','v':'供货商已审(4)'}])}"
+										dataProvider="{new ArrayCollection([{'k':'2','v':'未审(2)'},{'k':'3','v':'已审(3)'},{'k':'1','v':'仓库未确认(1)'},{'k':'4','v':'供货商已审(4)'}])}"
 										labelField="v" selectedIndex="0"/>
 						<s:Label text="仓库"
 								 color="#0000FF"/>

@@ -38,7 +38,7 @@ public var initArray:ArrayCollection = null;
 protected function doInit():void
 {
 	if(parentDocument is WinModual){
-		parentDocument.title="总务科室汇总表";
+		parentDocument.title="总务仓库汇总表";
 	}
 	initPanel();
 	var ro:RemoteObject = RemoteUtil.getRemoteObject("unitInforImpl",function(rev:Object):void{
@@ -133,7 +133,7 @@ private function makeExport(dataGridName:Object):void{
 	var mbytes:ByteArray = excelFile.saveToByteArray();
 	var  file:FileReference=new FileReference();
 	var _currentDate:String=DateField.dateToString(new Date(),'YYYY-MM-DD');
-	var excelTitle:String='计算机出库部门统计表'+_currentDate;
+	var excelTitle:String='出库部门汇总（总务）计表'+_currentDate;
 	file.save(mbytes,excelTitle+".xls");
 }
 private function addExcelHeader(dataList:Object,fsheet:Sheet):void{   

@@ -63,7 +63,7 @@
 						<controls:TextInputIcon width="130"
 												id="deptCode"
 												queryIconClick="deptCode_queryIconClickHandler(event)"
-												keyDown="toNextControl(event,deptCode)"/>						
+												keyDown="toNextControl(event,deptCode)"/>		
 						<s:Label text="明细备注"/>
 						<s:TextInput id="detailRemark" editable="true" width="100"/>
 						<s:Label id="xPhoLabel"

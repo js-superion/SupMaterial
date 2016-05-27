@@ -643,7 +643,7 @@ protected function verifyClickHandler(event:Event):void
 /**
  * 查询
  */
-protected function queryClickHandler(event:Event):void
+/*protected function queryClickHandler(event:Event):void
 {
 //	selAll.selected = false;
 	gridListCount.dataProvider = null;
@@ -657,6 +657,33 @@ protected function queryClickHandler(event:Event):void
 	var ro:RemoteObject=RemoteUtil.getRemoteObject(DESTANATION, function(rev:Object):void
 	{
 		if(rev.data){
+			gridMasterList.dataProvider = rev.data;
+		}
+		
+	});
+	ro.findSumary(param);
+}
+*/
+
+protected function queryClickHandler(event:Event):void
+{
+	//	selAll.selected = false;
+	gridMasterList.dataProvider = null;
+	gridGroupByDept.dataProvider =null;
+	var param:ParameterObject=new ParameterObject();
+	_fparameter.fromDate = fromDate.text;
+	_fparameter.toDate = toDate.text;
+	_fparameter.checkSign = status.selectedItem?status.selectedItem.k:null;
+	_fparameter.storageCode = storageCode.selectedItem?storageCode.selectedItem.storageCode:null;
+	param.conditions = _fparameter
+	var ro:RemoteObject=RemoteUtil.getRemoteObject(DESTANATION, function(rev:Object):void
+	{
+		if(rev.data){
+			if(_fparameter.checkSign == '1'){
+				toolBar.btVerify.enabled = false;
+			}else{
+				toolBar.btVerify.enabled = true;
+			}
 			gridMasterList.dataProvider = rev.data;
 		}
 		
