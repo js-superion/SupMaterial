@@ -63,7 +63,19 @@
 						<controls:TextInputIcon width="130"
 												id="deptCode"
 												queryIconClick="deptCode_queryIconClickHandler(event)"
-												keyDown="toNextControl(event,deptCode)"/>		
+												keyDown="toNextControl(event,deptCode)"/>
+						<s:Label id="txPhoLabel"
+								 text="物资编码"
+								 color="#0000FF"
+								 visible="true"
+								 includeInLayout="true"
+								 styleName="myFormItemStyle"
+								 width="56"/>
+						<controls:TextInputIcon id="materialCode"
+												width="120"
+												visible="true"
+												includeInLayout="true"
+												queryIconClick="materialCode_queryIconClickHandler(event)"/>
 						<s:Label text="明细备注"/>
 						<s:TextInput id="detailRemark" editable="true" width="100"/>
 						<s:Label id="xPhoLabel"
@@ -73,7 +85,7 @@
 								 styleName="myFormItemStyle"
 								 color="blue"
 								 width="55"/>			
-						<controls:TextInputIcon id="materialCode"
+						<controls:TextInputIcon id="materialRemark"
 												width="123"
 												visible="false"
 												includeInLayout="false"

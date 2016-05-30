@@ -76,13 +76,16 @@
 												queryIconClick="deptCode_queryIconClickHandler(event)"
 												keyDown="toNextControl(event,deptCode)"/>
 						<s:Label id="txPhoLabel"
-								 text="物资名称"
-								 visible="false"
-								 includeInLayout="false"
+								 text="物资编码"
+								 color="#0000FF"
+								 visible="true"
+								 includeInLayout="true"
+								 styleName="myFormItemStyle"
 								 width="56"/>
 						<controls:TextInputIcon id="materialCode"
-												width="15%" visible="false"
-												includeInLayout="false"
+												width="120"
+												visible="true"
+												includeInLayout="true"
 												queryIconClick="materialCode_queryIconClickHandler(event)"/>
 						<s:Label text="供应单位"
 								 styleName="myFormItemStyle"/>

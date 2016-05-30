@@ -666,9 +666,10 @@ protected function queryClickHandler(event:Event):void
 	_fparameter.deptCode = deptCode.txtContent.text == ''?null:_fparameter.deptCode;
 	_fparameter.materialCode = materialCode.txtContent.text == ''?null:_fparameter.materialCode;
 	_fparameter.mainProvider = salerCode.txtContent.text == ''?null:_fparameter.mainProvider;
+	_fparameter.manualSign = '0';
 	_fparameter.fromDate = fromDate.text;
 	_fparameter.toDate = toDate.text;
-	_fparameter.manualSign = '0';
+	//_fparameter.detailRemark = detailRemark.text;
 	_fparameter.storageCode = storageCode.selectedItem?storageCode.selectedItem.storageCode:null;
 	_fparameter.currentStatus = status.selectedItem?status.selectedItem.k:"3,4";//'1,2';
 	param.conditions = _fparameter

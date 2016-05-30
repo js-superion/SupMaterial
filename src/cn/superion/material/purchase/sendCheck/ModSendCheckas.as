@@ -681,12 +681,13 @@ protected function queryClickHandler(event:Event):void
 	var param:ParameterObject=new ParameterObject();
 	_fparameter.deptCode = deptCode.txtContent.text == ''?null:_fparameter.deptCode;
 	_fparameter.materialCode = materialCode.txtContent.text == ''?null:_fparameter.materialCode;
+	//_fparameter.mainProvider = salerCode.txtContent.text == ''?null:_fparameter.mainProvider;
 	_fparameter.manualSign ='0'//过滤病区审核过的申请单
 	_fparameter.fromDate = fromDate.text;
 	_fparameter.toDate = toDate.text;
 	_fparameter.detailRemark = detailRemark.text;
-	_fparameter.currentStatus = status.selectedItem?status.selectedItem.k:"1,2,3,4,5";
 	_fparameter.storageCode = storageCode.selectedItem?storageCode.selectedItem.storageCode:null;
+	_fparameter.currentStatus = status.selectedItem?status.selectedItem.k:"1,2,3,4,5";
 	param.conditions = _fparameter
 	var ro:RemoteObject=RemoteUtil.getRemoteObject(DESTANATION, function(rev:Object):void
 	{

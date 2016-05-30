@@ -53,38 +53,33 @@
 										height="25"/>
 						<s:Label text="申领部门"
 								 styleName="myFormItemStyle"/>
-						<controls:TextInputIcon width="178"
+						<controls:TextInputIcon width="130"
 												id="deptCode"
 												queryIconClick="deptCode_queryIconClickHandler(event)"
 												keyDown="toNextControl(event,deptCode)"/>
 						<s:Label text="供应单位"
 								 styleName="myFormItemStyle"/>
-						<controls:TextInputIcon width="151"
+						<controls:TextInputIcon width="120"
 												id="salerCode"
 												queryIconClick="productCode_queryIconClickHandlers(event)"
 												keyDown="toNextControl(event,deptCode)"/>
-					</s:HGroup>
-					<s:HGroup width="100%"
-							  id="hg3"
-							  verticalAlign="middle"
-							  paddingRight="2">
 						<s:Label id="txPhoLabel"
 								 text="物资编码"
+								 color="#0000FF"
 								 visible="true"
 								 includeInLayout="true"
 								 styleName="myFormItemStyle"
 								 width="56"/>
 						<controls:TextInputIcon id="materialCode"
-												width="197"
+												width="120"
 												visible="true"
 												includeInLayout="true"
 												queryIconClick="materialCode_queryIconClickHandler(event)"/>
 						<s:Label text="单据日期"/>
-						<mx:DateField id="fromDate" formatString="YYYY-MM-DD" width="132" />
+						<mx:DateField id="fromDate" formatString="YYYY-MM-DD" width="105" />
 						<s:Label text="--"/>
 						<mx:DateField id="toDate" formatString="YYYY-MM-DD" width="105" />
 						<s:Button label="清空日期" click="{fromDate.text = toDate.text = '';}"/>
-						
 					</s:HGroup>
 					
 					
