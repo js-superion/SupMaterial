@@ -55,7 +55,8 @@ private var _winY:int=0;
 
 private var _materialRdsMaster:MaterialRdsMaster=new MaterialRdsMaster();
 private var _materialRdsDetail:MaterialRdsDetail=new MaterialRdsDetail();
-
+//出库主记录
+private var _deliverRdsMaster:MaterialRdsMaster=new MaterialRdsMaster();
 //查询主记录ID列表
 public var arrayAutoId:Array=new Array();
 //当前页，翻页用
@@ -270,6 +271,7 @@ public function clearForm(masterFlag:Boolean, detailFlag:Boolean):void
 		verifyDate.text='';
 
 		_materialRdsMaster=new MaterialRdsMaster();
+		_deliverRdsMaster=new MaterialRdsMaster();
 	}
 	if (detailFlag)
 	{
@@ -320,6 +322,7 @@ protected function deptCode_queryIconClickHandler(event:Event):void
 			deptCode.txtContent.text=rev.deptName;
 			_materialRdsMaster.deptCode=rev.deptCode;
 			materialCode.txtContent.setFocus();
+			_deliverRdsMaster.deptCode=rev.deptCode;
 		}, x, y);
 }
 
@@ -335,6 +338,7 @@ protected function personId_queryIconClickHandler(event:Event):void
 			personId.txtContent.text=rev.name;
 
 			_materialRdsMaster.personId=rev.personId;
+			_deliverRdsMaster.personId=rev.personId;
 		}, x, y);
 }
 
@@ -1038,6 +1042,13 @@ protected function addClickHandler(event:Event):void
 	_materialRdsMaster.operationType='209';
 	_materialRdsMaster.currentStatus='0';
 
+	
+	_deliverRdsMaster.rdFlag='2';
+	_deliverRdsMaster.rdType='210';
+	_deliverRdsMaster.operationType='210';
+	_deliverRdsMaster.currentStatus='0';
+		
+		
 	//表尾赋值
 	maker.text=AppInfo.currentUserInfo.userName;
 	makeDate.text=DateUtil.dateToString(new Date(), "YYYY-MM-DD");
@@ -1199,7 +1210,7 @@ protected function saveClickHandler(event:Event):void
 	fillRdsMaster();
 	toolBar.btSave.enabled = false;
 	//保存当前数据
-	var ro:RemoteObject=RemoteUtil.getRemoteObject(DESTANATION, function(rev:Object):void
+	var ro:RemoteObject=RemoteUtil.getRemoteObject("rdTogetherImpl", function(rev:Object):void
 		{
 			if (rev && rev.data[0])
 			{
@@ -1214,7 +1225,7 @@ protected function saveClickHandler(event:Event):void
 				return;
 			}
 		});
-	ro.saveRdsOther(_materialRdsMaster, laryDetails);
+	ro.saveRdTogether(_materialRdsMaster, _deliverRdsMaster,laryDetails);
 }
 
 /**
@@ -1328,7 +1339,7 @@ protected function verifyClickHandler(event:Event):void
 		{
 			if (e.detail == Alert.YES)
 			{
-				var ro:RemoteObject=RemoteUtil.getRemoteObject(DESTANATION, function(rev:Object):void
+				var ro:RemoteObject=RemoteUtil.getRemoteObject("rdTogetherImpl", function(rev:Object):void
 					{
 						//显示输入明细区域
 						bord.height=70;
@@ -1491,8 +1502,14 @@ public function findRdsById(fstrAutoId:String):void
 				ObjectUtils.mergeObject(rev.data[0], _materialRdsMaster)
 				var details:ArrayCollection=rev.data[1] as ArrayCollection;
 				storageCode.enabled=false;
+				if(rev.data.length>2){
+					if(rev.data[2]){
+						_deliverRdsMaster=rev.data[2] as MaterialRdsMaster;
+					}
+				}
+				
 				//主记录赋值
-				fillMaster(_materialRdsMaster);
+				fillMaster(_materialRdsMaster,_deliverRdsMaster);
 				//明细赋值
 				gdRdsDetail.dataProvider=details;
 				stateButton(rev.data[0].currentStatus);
@@ -1524,7 +1541,7 @@ protected function toolBar_abandonClickHandler(event:Event):void
 /**
  * 填充表头部分
  */
-private function fillMaster(materialRdsMaster:MaterialRdsMaster):void
+private function fillMaster(materialRdsMaster:MaterialRdsMaster,deliverMaster:Object):void
 {
 	FormUtils.fillFormByItem(this, materialRdsMaster);
 	rdType.text=ArrayCollUtils.findItemInArrayByValue(BaseDict.deliverTypeDict, 'deliverType', materialRdsMaster.rdType) == null ? null : ArrayCollUtils.findItemInArrayByValue(BaseDict.deliverTypeDict, 'deliverType', materialRdsMaster.rdType).deliverTypeName;
@@ -1533,6 +1550,20 @@ private function fillMaster(materialRdsMaster:MaterialRdsMaster):void
 	FormUtils.fillTextByDict(personId, materialRdsMaster.personId, 'personId');
 	FormUtils.fillTextByDict(maker, materialRdsMaster.maker, 'personId');
 	FormUtils.fillTextByDict(verifier, materialRdsMaster.verifier, 'personId');
+	
+	
+	//领用科室
+	var obj:Object=ArrayCollUtils.findItemInArrayByValue(BaseDict.deptDict,'dept',deliverMaster.deptCode);
+//	deliverDept.text=obj==null ? "" : obj.deptName;
+	//领用人
+	obj=ArrayCollUtils.findItemInArrayByValue(BaseDict.personIdDict,'personId',deliverMaster.personId);
+//	deliverPerson.text=obj==null ? "" : obj.personIdName;
+//	
+//	deliverRemark.text=deliverMaster.remark;
+//	
+//	//出库单号
+//	deliverBillNo.text=deliverMaster.billNo;
+//	deliverbillMonthNo.text=deliverMaster.billMonthNo;
 }
 
 
