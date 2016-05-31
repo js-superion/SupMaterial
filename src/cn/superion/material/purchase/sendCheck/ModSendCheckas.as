@@ -120,7 +120,7 @@ private function initPanel():void
 private function initToolBar():void
 {
 	var laryDisplays:Array=[toolBar.btPrint, toolBar.btExp,toolBar.btExcel, toolBar.btAdd, toolBar.btModify, toolBar.btDelete, toolBar.btCancel, toolBar.btSave, toolBar.btVerify, toolBar.btAddRow, toolBar.btDelRow, toolBar.btQuery, toolBar.btFirstPage, toolBar.btPrePage, toolBar.btNextPage, toolBar.btLastPage, toolBar.btExit, toolBar.imageList1, toolBar.imageList2, toolBar.imageList3, toolBar.imageList5, toolBar.imageList6];
-	var laryEnables:Array=[toolBar.btQuery,toolBar.btVerify, toolBar.btExit];
+	var laryEnables:Array=[toolBar.btQuery,toolBar.btVerify, toolBar.btExit,toolBar.btDelete];
 	ToolBar.showSpecialBtn(toolBar, laryDisplays, laryEnables, true);
 }
 
@@ -187,6 +187,39 @@ private function clearDetail():void
 //	FormUtils.clearForm(addPanel);
 //	requierDate.selectedDate=new Date;
 //	adviceBookDate.selectedDate=new Date;
+}
+
+
+
+protected function toolBar_deleteClickHandler(event:Event):void
+{
+	// TODO Auto-generated method stub
+
+	if(!gridMasterList.dataProvider)
+	{
+		return;
+	}
+	var tempAry:ArrayCollection = gridMasterList.dataProvider as ArrayCollection;
+	var newAry:ArrayCollection = new ArrayCollection();
+	for each(var item:Object in tempAry){
+		if(item.isSelected){
+			var materialProvideMaster:MaterialProvideMaster = new MaterialProvideMaster();
+			materialProvideMaster = MainToolBar.classTransfer(item,materialProvideMaster);
+			newAry.addItem(materialProvideMaster);
+		}
+	}
+	if(newAry.length == 0){
+		Alert.show("请选择主记录", "提示");
+		return
+	}
+	var ro:RemoteObject=RemoteUtil.getRemoteObject(DESTANATION, function(rev:Object):void
+	{
+		initToolBar();
+		queryClickHandler(null);
+		Alert.show("删除成功", "提示");
+	});
+	ro.updateSendMaterialMaster3(newAry,"9");
+	
 }
 
 /**
