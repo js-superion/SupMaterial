@@ -297,10 +297,10 @@
 									<mx:DataGridColumn headerText="单号"
 													   dataField="billNo"
 													   width="90"/>
-									<mx:DataGridColumn headerText="部门"
+									<!--<mx:DataGridColumn headerText="部门"
 													   dataField="deptCode"
 													   labelFunction="labFun"
-													   width="120"/>
+													   width="120"/>-->
 									<mx:DataGridColumn headerText="请领人"
 													   dataField="personId"
 													   labelFunction="labFun"
