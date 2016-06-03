@@ -60,7 +60,7 @@
 						  lastPageClick="lastPageClickHandler(event)"
 						  exitClick="exitClickHandler(event)"
 						  abandonClick="toolBar_abandonClickHandler(event)"/>
-			<controls:BarSubTitle title="其它出库处理"/>
+			<controls:BarSubTitle title="其他出库处理"/>
 			<s:HGroup id="hgTop"
 					  gap="2"
 					  width="100%">
@@ -109,6 +109,12 @@
 												width="17%"
 												height="25"
 												keyDown="toNextCtrl(event,deptCode)"/>
+								<s:Label text="供应单位"
+										 color="#0000FF"/>
+								<controls:TextInputIcon id="salerCode"
+														width="17%"
+														queryIconClick="salerCode_queryIconClickHandler(event)"
+														/>
 								<s:Label text="请领部门"
 										 color="#0000FF"/>
 								<controls:TextInputIcon id="deptCode"

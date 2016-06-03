@@ -311,6 +311,32 @@ private function toNextCtrl(event:KeyboardEvent, fctrlNext:Object):void
 }
 
 /**
+ * 供应商档案
+ */
+protected function salerCode_queryIconClickHandler(event:Event):void
+{
+	//考虑到登陆人员看到不同科室的的仓库，这里根据仓库编码和单位编码到仓库字典中查对应的 所属部门；
+	var ro:RemoteObject = RemoteUtil.getRemoteObject('centerStorageImpl',function(rev1:Object):void{
+		if(rev1.data){
+			var x:int=0;
+			DictWinShower.showProviderDict(function(rev:Object):void
+			{
+				salerCode.txtContent.text=rev.providerName;
+				
+				_materialRdsMaster.salerCode=rev.providerId; 
+				_materialRdsMaster.salerName=rev.providerName;
+				
+				_deliverRdsMaster.salerCode=rev.providerId; 
+				_deliverRdsMaster.salerName=rev.providerName;
+				
+				
+			}, x, _winY,rev1.data[0].deptCode);
+		}
+	});
+	ro.findStorageById(storageCode.selectedItem.storageCode);
+}
+
+/**
  * 部门档案
  */
 protected function deptCode_queryIconClickHandler(event:Event):void
@@ -892,6 +918,7 @@ private function printReport(printSign:String):void
 		dict["零售总额"]=lastItem.retailMoney.toFixed(2);
 		dict["单位名称"]=AppInfo.currentUserInfo.unitsName;
 		dict["仓库"]=storageCode.selectedItem.storageName;
+		dict["供货单位"]=_materialRdsMaster.salerName;
 		dict["请领部门"]=ArrayCollUtils.findItemInArrayByValue(BaseDict.deptDict, 'dept', _materialRdsMaster.deptCode) == null ? "" : ArrayCollUtils.findItemInArrayByValue(BaseDict.deptDict, 'dept', _materialRdsMaster.deptCode).deptName;
 		dict["出库日期"]=_materialRdsMaster.billDate;
 		dict["出库单号"]=_materialRdsMaster.billNo == null ? "" : _materialRdsMaster.billNo;
@@ -911,6 +938,7 @@ private function printReport(printSign:String):void
 		dict["批发总额"]=lastItem.wholeSaleMoney.toFixed(2);
 		dict["零售总额"]=lastItem.retailMoney.toFixed(2);
 		dict["单位名称"]=AppInfo.currentUserInfo.unitsName;
+		dict["供货单位"]=_materialRdsMaster.salerName;
 		dict["仓库"]=storageCode.selectedItem.storageName;
 		dict["请领部门"]=ArrayCollUtils.findItemInArrayByValue(BaseDict.deptDict, 'dept', _materialRdsMaster.deptCode) == null ? "" : ArrayCollUtils.findItemInArrayByValue(BaseDict.deptDict, 'dept', _materialRdsMaster.deptCode).deptName;
 		dict["出库日期"]=_materialRdsMaster.billDate;
@@ -966,7 +994,7 @@ private function preparePrintData(faryData:ArrayCollection):void
 		item.factoryName=!item.factoryName ? '' : item.factoryName
 		item.pageNo=pageNo;
 		item.factoryName=item.factoryName.substr(0, 6);
-		item.nameSpec=item.materialName + "  " + (item.materialSpec == null ? "" : item.materialSpec);
+		//item.nameSpec=item.materialName + "  " + (item.materialSpec == null ? "" : item.materialSpec);
 	}
 }
 
@@ -987,7 +1015,7 @@ private function createPrintFirstBottomLine(fLastItem:Object):String
  * */
 private function createPrintFirstBottomLine1(verifierName:String,personIdName:String,makerv:String):String
 {
-	var lstrLine:String="审核人:{0}                                      请领人:{1}               接收人:{2}         制单:{3}";
+	var lstrLine:String="审核人:{0}               请领人:{1}               接收人:{2}               制单:{3}";
 	var makerv:String=shiftTo(_materialRdsMaster.maker);
 	var verifierv:String=shiftTo(_materialRdsMaster.verifier)
 	lstrLine=StringUtils.format(lstrLine,verifierName,personIdName,"    ",makerv);
@@ -1038,14 +1066,15 @@ protected function addClickHandler(event:Event):void
 	}
 	rdType.txtContent.text="其它出库";
 	_materialRdsMaster.rdFlag='2';
-	_materialRdsMaster.rdType='209';
-	_materialRdsMaster.operationType='209';
+	_materialRdsMaster.rdType='109';
+	_materialRdsMaster.operationType='109';
 	_materialRdsMaster.currentStatus='0';
 
 	
 	_deliverRdsMaster.rdFlag='2';
-	_deliverRdsMaster.rdType='210';
-	_deliverRdsMaster.operationType='210';
+	_deliverRdsMaster.rdType='209';
+	_deliverRdsMaster.invoiceType = blueType.selected ? '1':'2';
+	_deliverRdsMaster.operationType='209';
 	_deliverRdsMaster.currentStatus='0';
 		
 		
@@ -1133,13 +1162,13 @@ protected function deleteClickHandler(event:Event):void
 		{
 			if (e.detail == Alert.YES)
 			{
-				var ro:RemoteObject=RemoteUtil.getRemoteObject(DESTANATION, function(rev:Object):void
+				var ro:RemoteObject=RemoteUtil.getRemoteObject("rdTogetherImpl", function(rev:Object):void
 					{
 						Alert.show("删除其它出库单成功！", "提示信息");
 						doInit();
 						clearForm(true, true);
 					});
-				ro.deleteRdsOther(_materialRdsMaster.autoId);
+				ro.deleteRds(_materialRdsMaster.autoId);
 			}
 		});
 }
@@ -1284,6 +1313,16 @@ private function fillRdsMaster():void
 	_materialRdsMaster.operationType='209';
 
 	_materialRdsMaster.remark=remark.text;
+	
+	
+	//出库记录
+	_deliverRdsMaster.invoiceType=blueType.selected ? '1' : '2';
+	_deliverRdsMaster.storageCode=storageCode.selectedItem.storageCode;
+	_deliverRdsMaster.billNo=billNo.text;
+	_deliverRdsMaster.billDate=billDate.selectedDate;
+//	_deliverRdsMaster.invoiceDate=billDate.selectedDate;
+//	_deliverRdsMaster.operationNo=operationNo.text;
+	
 }
 
 /**
@@ -1355,7 +1394,7 @@ protected function verifyClickHandler(event:Event):void
 						findRdsById(rev.data[0].autoId);
 						Alert.show("其它出库单审核成功！", "提示信息");
 					});
-				ro.verifyRdsOther(_materialRdsMaster.autoId);
+				ro.verifyRds(_materialRdsMaster.autoId);
 			}
 		})
 }
@@ -1528,7 +1567,7 @@ protected function toolBar_abandonClickHandler(event:Event):void
 	{
 		if (e.detail == Alert.YES)
 		{
-			var ro:RemoteObject=RemoteUtil.getRemoteObject(DESTANATION, function(rev:Object):void
+			var ro:RemoteObject=RemoteUtil.getRemoteObject("rdTogetherImpl", function(rev:Object):void
 			{
 				findRdsById(_materialRdsMaster.autoId);
 				Alert.show("其它出库单弃审成功！", "提示信息");
@@ -1588,7 +1627,7 @@ private function batchLBF(item:Object, column:DataGridColumn):String
  */
 private function nameSpecLBF(item:Object, column:DataGridColumn):String
 {
-	var nameSpec:String=item.materialName + (item.materialSpec == null ? "" : item.materialSpec);
+	var nameSpec:String=item.materialName/* + (item.materialSpec == null ? "" : item.materialSpec)*/;
 	item.nameSpec=nameSpec;
 	return "";
 }

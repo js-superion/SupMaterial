@@ -438,6 +438,23 @@ protected function gdItems_itemClickHandler(event:ListEvent):void
 	//FormUtils.fillFormByItem(addPanel, gridDetail.selectedItem);
 }
 
+
+private function initReportParam(map:Object,flag:String):Object{
+	map.intOrient = 1;
+	map.pageWidth = 0;
+	map.pageHeight = 0;
+	map.pageName = "A4" ;
+	map.hidePreviewPb = "0"; //隐藏预览窗口的打印按钮 
+	//内容大小、方向
+	map.top = "8mm";
+	map.left = "10mm";
+	map.width = "200mm";
+	map.height = "297mm";
+	
+	map.printFlag = flag;
+	return map;
+}
+
 //打印
 protected function printClickHandler(event:Event):void
 {
@@ -449,6 +466,7 @@ protected function printClickHandler(event:Event):void
 	var selectedItem:* =gridMasterList.selectedItem;
 	if(!selectedItem) return;
 	var map:Object = {};
+	map = initReportParam(map,"1");
 	map.jspName = "apply.jsp";
 	map.title = "特殊申请单";
 	map.billNo = selectedItem.billNo;

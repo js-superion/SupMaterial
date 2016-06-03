@@ -725,9 +725,11 @@ protected function queryClickHandler(event:Event):void
 	var ro:RemoteObject=RemoteUtil.getRemoteObject(DESTANATION, function(rev:Object):void
 	{
 		gridMasterList.dataProvider = rev.data;
+		toolBar.btDelete.enabled = false; //默认不可编辑
 		if(_fparameter.currentStatus == '1'){
 			toolBar.btCancel.enabled = false;
 			toolBar.btVerify.enabled = true;
+			toolBar.btDelete.enabled = true;//只有当状态为1，才可以编辑
 		}else if(_fparameter.currentStatus=='2'){
 			toolBar.btCancel.enabled = true;
 			toolBar.btVerify.enabled = false;

@@ -369,7 +369,7 @@ protected function printClickHandler(flag:String):void
 		map.deptName = AppInfo.currentUserInfo.deptName;
 		map.dataProvider1 = providerGroup;
 		var date:Date = new Date();
-		map.totalCharges = getTotalCharges(providerGroup);
+		map.totalCharges = getTotalCharges(providerGroup).toFixed(2);
 		map.printDate = cn.superion.base.util.DateUtil.dateToString(date,'YYYY-MM-DD hh:mm:ss');
 		
 		var ro:RemoteObject=RemoteUtil.getRemoteObject(DESTANATION,function(rev:Object):void{

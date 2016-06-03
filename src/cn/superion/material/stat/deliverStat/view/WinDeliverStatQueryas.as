@@ -109,6 +109,20 @@ protected function deptCode_queryIconClickHandler(event:Event):void
 }
 
 /**
+ * 供应商字典
+ */
+protected function productCode_queryIconClickHandlers(event:Event):void
+{
+	// TODO Auto-generated method stub
+	var y:int=this.parentApplication.screen.height - 345;
+	DictWinShower.showProviderDict(function(rev:Object):void
+	{
+		event.target.text=rev.providerName;
+		_condition["salerName"] =rev.providerName;
+	},x , y);
+}
+
+/**
  * 出库类别
  * */
 protected function rdType_queryIconClickHandler(event:Event):void

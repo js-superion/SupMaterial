@@ -158,7 +158,8 @@
 											horizontalScrollPolicy="auto" selectedIndex="0"
 											skinClass="assets.skin.MyDataGridSkin"
 											styleName="gridTemplate" variableRowHeight="false"
-											verticalScrollPolicy="auto">
+											verticalScrollPolicy="auto"
+											>
 									<s:columns>
 										<s:ArrayList>
 											<s:GridColumn headerText="物资名称"
@@ -185,7 +186,11 @@
 											<s:GridColumn headerText="备注"
 														  dataField="detailRemark"
 														  editable="false"
-														  width="120"/>
+														  width="200"/>
+											<s:GridColumn headerText=""
+														  dataField="detailRemark"
+														  editable="false"
+														  width="200"/>
 										</s:ArrayList>
 									</s:columns>
 								</s:DataGrid>

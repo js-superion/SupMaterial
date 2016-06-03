@@ -522,7 +522,7 @@ protected function verifyClickHandler(event:Event):void
 		return;
 	}
 	var groupedDetails:ArrayCollection = gridGroupByDept.dataProvider as ArrayCollection;
-	
+	toolBar.btVerify.enabled = false
 	var ro:RemoteObject=RemoteUtil.getRemoteObject(DESTANATION, function(rev:Object):void
 	{
 		initToolBar();

@@ -10,7 +10,7 @@ checked by
 			   width="500"
 			   height="436"
 			   backgroundColor="0xE2E8E8"
-			   title="其它出库处理"
+			   title="其他出库处理"
 			   creationComplete="doInit()"
 			   close="closeWin()"
 			   xmlns:controls="cn.superion.base.components.controls.*">

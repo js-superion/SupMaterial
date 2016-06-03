@@ -136,6 +136,14 @@
 				</s:HGroup>
 				<s:HGroup width="100%"
 						  verticalAlign="middle">
+					<s:Label text="供货单位"
+							 width="75"/>
+					<controls:TextInputIcon id="supply"
+											width="100%"
+											queryIconClick="productCode_queryIconClickHandlers(event)"/>
+				</s:HGroup>
+				<s:HGroup width="100%"
+						  verticalAlign="middle">
 					<s:Label text="备注"
 							 width="75"/>
 					<s:TextInput            id="remark"
