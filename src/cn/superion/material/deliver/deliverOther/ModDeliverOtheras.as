@@ -1212,29 +1212,7 @@ protected function saveClickHandler(event:Event):void
 	//处理票面数量,应该放保存时处理
 	for each (var item:MaterialRdsDetail in laryDetails){
 		item.acctAmount = item.amount;
-//		if(item.amount > Number(currentStockAmount.text)){
-//			Alert.show('['+item.materialName+']'+'库存量不足，不允许出库！');
-//			return;
-//		}
 	}
-//	var i:int=0;
-//	for (var i:int=0; i < laryPares.length; i++)
-//	{
-//		var itemPre:Object=laryPares.getItemAt(i);
-//		i=0;
-//		for(var j:int=0;j<laryDetails.length;j++){
-//			var itemPro:Object = laryDetails.getItemAt(j);
-//			if(itemPre.materialId == itemPro.materialId && itemPre.batch == itemPro.batch){
-//				i++;
-//				if(i>1){
-//					Alert.show("明细中存在相同的"+itemPre.materialName+"记录", "提示");
-//					return;
-//				}
-//				
-//			}
-//		}
-//		
-//	}
 	//填充主记录
 	fillRdsMaster();
 	toolBar.btSave.enabled = false;
@@ -1248,8 +1226,8 @@ protected function saveClickHandler(event:Event):void
 				copyFieldsToCurrentMaster(rev.data[0], _materialRdsMaster);
 				//
 				billNo.text=_materialRdsMaster.billNo;
-				doInit();
-				findRdsById(rev.data[0].autoId);
+//				doInit();
+				findRdsById(rev.data[1].autoId);
 				Alert.show("其它出库单保存成功！", "提示信息");
 				return;
 			}
@@ -1290,6 +1268,20 @@ private function validateMaster():Boolean
 		return false;
 	}
 
+	if (salerCode.txtContent.text == "")
+	{
+		salerCode.txtContent.setFocus();
+		Alert.show("供货单位必填", "提示");
+		return false;
+	}
+	
+	if (salerCode.txtContent.text == "仓库直供")
+	{
+		salerCode.txtContent.setFocus();
+		Alert.show("其他出库（0库存）不允许选择仓库直供", "提示");
+		return false;
+	}
+	
 	if (rdType.txtContent.text == "")
 	{
 		rdType.txtContent.setFocus();
@@ -1310,7 +1302,9 @@ private function fillRdsMaster():void
 	_materialRdsMaster.billDate=billDate.selectedDate;
 	_materialRdsMaster.operationNo=operationNo.text;
 
-	_materialRdsMaster.operationType='209';
+	_materialRdsMaster.rdFlag='1';
+	_materialRdsMaster.operationType='109';
+	_materialRdsMaster.rdType='109';
 
 	_materialRdsMaster.remark=remark.text;
 	
@@ -1320,6 +1314,12 @@ private function fillRdsMaster():void
 	_deliverRdsMaster.storageCode=storageCode.selectedItem.storageCode;
 	_deliverRdsMaster.billNo=billNo.text;
 	_deliverRdsMaster.billDate=billDate.selectedDate;
+	_deliverRdsMaster.rdFlag="2";
+	_deliverRdsMaster.operationType='209';
+	_deliverRdsMaster.rdType='209';
+	_deliverRdsMaster.remark = remark.text;
+//	_deliverRdsMaster.
+	
 //	_deliverRdsMaster.invoiceDate=billDate.selectedDate;
 //	_deliverRdsMaster.operationNo=operationNo.text;
 	
@@ -1533,17 +1533,17 @@ protected function lastPageClickHandler(event:Event):void
  * */
 public function findRdsById(fstrAutoId:String):void
 {
-	var ro:RemoteObject=RemoteUtil.getRemoteObject(DESTANATION, function(rev:Object):void
+	var ro:RemoteObject=RemoteUtil.getRemoteObject("rdTogetherImpl", function(rev:Object):void
 		{
 
 			if (rev.data && rev.data.length > 0 && rev.data[0] != null && rev.data[1] != null)
 			{
-				ObjectUtils.mergeObject(rev.data[0], _materialRdsMaster)
+				ObjectUtils.mergeObject(rev.data[0], _deliverRdsMaster)
 				var details:ArrayCollection=rev.data[1] as ArrayCollection;
 				storageCode.enabled=false;
 				if(rev.data.length>2){
 					if(rev.data[2]){
-						_deliverRdsMaster=rev.data[2] as MaterialRdsMaster;
+						_deliverRdsMaster=rev.data[0] as MaterialRdsMaster;
 					}
 				}
 				
@@ -1555,7 +1555,7 @@ public function findRdsById(fstrAutoId:String):void
 			}
 
 		});
-	ro.findOtherDetailById(fstrAutoId);
+	ro.findRdTogetherByAutoId(fstrAutoId);
 }
 /**
  * 弃审按钮
@@ -1582,15 +1582,15 @@ protected function toolBar_abandonClickHandler(event:Event):void
  */
 private function fillMaster(materialRdsMaster:MaterialRdsMaster,deliverMaster:Object):void
 {
-	FormUtils.fillFormByItem(this, materialRdsMaster);
-	rdType.text=ArrayCollUtils.findItemInArrayByValue(BaseDict.deliverTypeDict, 'deliverType', materialRdsMaster.rdType) == null ? null : ArrayCollUtils.findItemInArrayByValue(BaseDict.deliverTypeDict, 'deliverType', materialRdsMaster.rdType).deliverTypeName;
-	redOrBlue.selection = materialRdsMaster.invoiceType == '1'?blueType:redType;
-	FormUtils.fillTextByDict(deptCode, materialRdsMaster.deptCode, 'dept');
-	FormUtils.fillTextByDict(personId, materialRdsMaster.personId, 'personId');
-	FormUtils.fillTextByDict(maker, materialRdsMaster.maker, 'personId');
-	FormUtils.fillTextByDict(verifier, materialRdsMaster.verifier, 'personId');
+	FormUtils.fillFormByItem(this, deliverMaster);
+	rdType.text=ArrayCollUtils.findItemInArrayByValue(BaseDict.deliverTypeDict, 'deliverType', deliverMaster.rdType) == null ? null : ArrayCollUtils.findItemInArrayByValue(BaseDict.deliverTypeDict, 'deliverType', deliverMaster.rdType).deliverTypeName;
+	redOrBlue.selection = deliverMaster.invoiceType == '1'?blueType:redType;
+	FormUtils.fillTextByDict(deptCode, deliverMaster.deptCode, 'dept');
+	FormUtils.fillTextByDict(personId, deliverMaster.personId, 'personId');
+	FormUtils.fillTextByDict(maker, deliverMaster.maker, 'personId');
+	FormUtils.fillTextByDict(verifier, deliverMaster.verifier, 'personId');
 	
-	
+	salerCode.txtContent.text = deliverMaster.salerName;
 	//领用科室
 	var obj:Object=ArrayCollUtils.findItemInArrayByValue(BaseDict.deptDict,'dept',deliverMaster.deptCode);
 //	deliverDept.text=obj==null ? "" : obj.deptName;

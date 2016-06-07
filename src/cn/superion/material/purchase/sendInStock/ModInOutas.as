@@ -321,16 +321,7 @@ protected function gdItems_itemClickHandler(event:ListEvent):void
 {
 }
 
-//打印
-protected function printClickHandler(flag:String):void
-{
-//	printReport("1");
-	var selectedItem:MaterialSupplierSummary = gridMasterList.selectedItem as MaterialSupplierSummary;
-	if(!selectedItem){
-		Alert.show("请点击一条记录！", "提示");
-		return;
-	}
-	var map:Object={};
+private function initReportParam(map:Object,flag:String):Object{
 	map.intOrient = 1;
 	map.pageWidth = 0;
 	map.pageHeight = 0;
@@ -343,23 +334,127 @@ protected function printClickHandler(flag:String):void
 	map.height = "297mm";
 	
 	map.printFlag = flag;
-	map.jspName = "GroupSupply.jsp";
-	
-	map.createPerson = AppInfo.currentUserInfo.userName;
-	map.deptName = AppInfo.currentUserInfo.deptName;
-	map.dataProvider2 = gridGroupByDept.dataProvider;
-	
-	var date:Date = new Date();
-	map.printDate = cn.superion.base.util.DateUtil.dateToString(date,'YYYY-MM-DD hh:mm:ss');
-	var ro:RemoteObject=RemoteUtil.getRemoteObject(DESTANATION,function(rev:Object):void{
-		ExternalInterface.call("PreviewOrExp",map);
-		map.jspName = "GroupDept.jsp";
-		ExternalInterface.call("PreviewOrExp",map);
-		
-	})
-	ro.findPrintData(map);
-
+	return map;
 }
+
+
+//打印
+protected function printClickHandler(flag:String):void
+{
+	//	printReport("1");
+	var selectedItem:MaterialSupplierSummary = gridMasterList.selectedItem as MaterialSupplierSummary;
+	if(!selectedItem){
+		Alert.show("请点击一条记录！", "提示");
+		return;
+	}
+	if(tab.selectedIndex == 0){//打印供货单位
+		var providerGroup:ArrayCollection = gridListCount.dataProvider as ArrayCollection;
+		if(providerGroup.length ==0){
+			Alert.show("供货单位数据为空！", "提示");
+			return;
+		}
+		
+		var map:Object = {};
+		map = initReportParam(map,flag);
+		map.jspName = "GroupSupply.jsp";
+		map.title = selectedItem.providerName+"配送汇总";
+		map.providerName = selectedItem.providerName;
+		map.billNo = selectedItem.billNo;
+		map.createPerson = AppInfo.currentUserInfo.userName;
+		map.deptName = AppInfo.currentUserInfo.deptName;
+		map.dataProvider1 = providerGroup;
+		var date:Date = new Date();
+		map.totalCharges = getTotalCharges(providerGroup).toFixed(2);
+		map.printDate = cn.superion.base.util.DateUtil.dateToString(date,'YYYY-MM-DD hh:mm:ss');
+		
+		var ro:RemoteObject=RemoteUtil.getRemoteObject(DESTANATION,function(rev:Object):void{
+			//打印供货商汇总单
+			ExternalInterface.call("PreviewOrExp",map);
+			
+		})
+		ro.findPrintData(map);
+		
+	}
+	if(tab.selectedIndex == 1){//打印申领部门
+		
+		if(flag == '2'){
+			/** 以下 Lodop纯画线函数，打印方式 **/
+			//打印申领部门汇总单  
+			var deptGroup:ArrayCollection = gridGroupByDept.dataProvider as ArrayCollection;
+			if(deptGroup.length ==0){
+				Alert.show("科室汇总数据为空！", "提示");
+				return;
+			}
+			var lst:ArrayCollection = groupList2(selectedItem,deptGroup);
+			var printFlag:String = flag;
+			ExternalInterface.call("PrintDeptGroupInit",lst.toArray(),printFlag);
+			
+			/**以上 Lodop纯画线函数，打印方式 **/
+		}
+		
+		
+		if(flag =='3'){
+			var deptGroup:ArrayCollection = gridGroupByDept.dataProvider as ArrayCollection;
+			if(deptGroup.length ==0){
+				Alert.show("科室汇总数据为空！", "提示");
+				return;
+			}
+			var lst:ArrayCollection = groupList3(deptGroup);
+			
+			var map:Object = {};
+			map = initReportParam(map,flag);
+			map.jspName = "GroupDept.jsp";
+			map.title = selectedItem.providerName+"配送明细";
+			map.providerName = selectedItem.providerName;
+			map.billNo = selectedItem.billNo;
+			map.createPerson = AppInfo.currentUserInfo.userName;
+			map.deptName = AppInfo.currentUserInfo.deptName;
+			map.dataProvider1 = lst;
+			var date:Date = new Date();
+			map.totalCharges = getTotalCharges(providerGroup);
+			map.printDate = cn.superion.base.util.DateUtil.dateToString(date,'YYYY-MM-DD hh:mm:ss');
+			var storageName:String = storageCode.selectedItem.storageName;
+			map.storageName = storageName;
+			var ro:RemoteObject=RemoteUtil.getRemoteObject(DESTANATION,function(rev:Object):void{
+				//打印供货商汇总单
+				ExternalInterface.call("PreviewOrExp",map);
+				
+			})
+			ro.findPrintData(map);
+		}
+		
+		
+		
+		
+	}
+	
+}
+
+
+private function groupList3(lst:ArrayCollection):ArrayCollection{
+	var temp:Object = {};
+	//	var groupArray:ArrayCollection = new ArrayCollection();
+	//	var detailArray:ArrayCollection = new ArrayCollection();
+	//	temp.deptCode = null;
+	//	var storageCode1:String = storageCode.selectedItem.storageCode;
+	//	var storageName:String = storageCode.selectedItem.storageName;
+	for each(var it:Object in lst){
+		//		if(it.isSelected){
+		if(temp.deptCode==it.deptCode)
+		{
+			it.isGroupFirst = false;
+			it.deptName = '';//为了导出部门汇总单，
+		}else{
+			it.isGroupFirst = true;
+			
+		}
+		temp.deptCode = it.deptCode;
+		//		}
+		
+	}
+	return lst;
+}
+
 
 private function groupList(lst:ArrayCollection):ArrayCollection{
 	var temp:Object = {};
@@ -377,6 +472,13 @@ private function groupList(lst:ArrayCollection):ArrayCollection{
 	return lst;
 }
 
+private function getTotalCharges(lst:ArrayCollection):Number{
+	var sum:Number = 0;
+	for each(var it:Object in lst ){
+		sum += it.tradeMoney;
+	}
+	return sum;
+}
 
 protected function gridMasterList_itemClickHandler(event:ListEvent):void
 {

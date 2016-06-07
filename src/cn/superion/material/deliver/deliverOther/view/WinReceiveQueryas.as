@@ -113,7 +113,7 @@ protected function btConfirm_clickHandler(event:MouseEvent):void
 	}
 	if (rdType.selectedItem)
 	{
-		params['rdType']=rdType.selectedItem.receviceType;
+		params['rdType']="209"
 	}
 
 	if (paramsObj['salerCode'])
@@ -160,7 +160,7 @@ protected function btConfirm_clickHandler(event:MouseEvent):void
 	var paramsQuery:ParameterObject=new ParameterObject();
 	paramsQuery.conditions=params;
 
-	var ro:RemoteObject=RemoteUtil.getRemoteObject(_destination, function(rev:Object):void
+	var ro:RemoteObject=RemoteUtil.getRemoteObject("rdTogetherImpl", function(rev:Object):void
 	{
 		if (rev.data && rev.data.length > 0)
 		{
@@ -176,7 +176,7 @@ protected function btConfirm_clickHandler(event:MouseEvent):void
 			parentWin.clearForm(true,true);
 		}
 	});
-	ro.findOtherMasterListByCondition(paramsQuery);
+	ro.findRdsMasterListByCondition(paramsQuery);
 	PopUpManager.removePopUp(this);
 }
 

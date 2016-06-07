@@ -471,8 +471,10 @@ protected function printClickHandler(event:Event):void
 	map.title = "特殊申请单";
 	map.billNo = selectedItem.billNo;
 	map.createPerson = AppInfo.currentUserInfo.userName;
-	map.deptName = AppInfo.currentUserInfo.deptName;
+	map.deptName = selectedItem.deptName;
+	map.remark = selectedItem.remark; //
 	map.dataProvider = details;
+	map.remark1 = selectedItem.remark1;
 	var date:Date = new Date();
 	map.printDate = cn.superion.base.util.DateUtil.dateToString(date,'YYYY-MM-DD hh:mm:ss');
 	

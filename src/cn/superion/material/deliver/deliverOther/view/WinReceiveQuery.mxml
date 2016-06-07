@@ -49,10 +49,10 @@ checked by
 
 				<s:HGroup width="100%"
 						  verticalAlign="middle">
-					<s:Label text="业务类型"
+					<s:Label text="业务类型" visible="false" includeInLayout="false"
 							 width="75"/>
 					<s:ComboBox id="operationType"
-								width="100%"
+								width="100%" visible="false" includeInLayout="false"
 								height="25"
 								labelField="operationTypeName"
 								keyUp="toNextControl(event,rdType)"/>
@@ -60,9 +60,9 @@ checked by
 
 				<s:HGroup width="100%"
 						  verticalAlign="middle">
-					<s:Label text="出库类别"
+					<s:Label text="出库类别" visible="false" includeInLayout="false"
 							 width="75"/>
-					<s:ComboBox id="rdType"
+					<s:ComboBox id="rdType" visible="false" includeInLayout="false"
 								width="100%"
 								height="25"
 								labelField="deliverTypeName"

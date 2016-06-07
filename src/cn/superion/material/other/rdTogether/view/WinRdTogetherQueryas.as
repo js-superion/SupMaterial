@@ -201,6 +201,7 @@ protected function btConfirm_clickHandler(event:MouseEvent):void
 		parentWin.ischen=true;
 		params['rdFlag']='2';
 	}
+	params['remark']='整进整出';
 
 	var paramsQuery:ParameterObject=new ParameterObject();
 	paramsQuery.conditions=params;
