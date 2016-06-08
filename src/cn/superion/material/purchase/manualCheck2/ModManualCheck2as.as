@@ -474,7 +474,9 @@ protected function printClickHandler(event:Event):void
 	map.deptName = selectedItem.deptName;
 	map.remark = selectedItem.remark; //
 	map.dataProvider = details;
-	map.remark1 = selectedItem.remark1;
+	map.remark1 =  selectedItem.checkAmountSign=='8'?"不同意":selectedItem.checkAmountSign=='9'?"同意":selectedItem.checkAmountSign=='10'?"院内调配":"";
+	var person = ArrayCollUtils.findItemInArrayByValue(BaseDict.personIdDict, 'personId', selectedItem.personId);
+	map.applyPerson = person?person.personIdName:"";
 	var date:Date = new Date();
 	map.printDate = cn.superion.base.util.DateUtil.dateToString(date,'YYYY-MM-DD hh:mm:ss');
 	
@@ -624,7 +626,7 @@ protected function verifyClickHandler(event:Event):void
 }
 
 /**
- * 查询，三个条件，手工标志为1，总务同意checkAmountSign为9，且currenStatus为3，表示总务审核过的
+ * 查询，三个条件，手工标志为1，总务同意checkAmountSign为9、10，且currenStatus为3，表示总务审核过的
  */
 protected function queryClickHandler(event:Event):void
 {
@@ -632,7 +634,7 @@ protected function queryClickHandler(event:Event):void
 	gridDetailList.dataProvider = null
 	var param:ParameterObject=new ParameterObject();
 	_fparameter.deptCode = deptCode.txtContent.text == ''?null:_fparameter.deptCode;
-	_fparameter.checkAmountSign = '9'; //表示总务批准了
+	_fparameter.checkAmountSign = '9,10'; //表示总务批准了
 	_fparameter.manualSign = '1'; //手工登记
 	_fparameter.fromDate = fromDate.text;
 	_fparameter.toDate = toDate.text;

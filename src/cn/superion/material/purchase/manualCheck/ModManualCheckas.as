@@ -549,7 +549,7 @@ protected function verifyClickHandler(event:Event):void
 	tempAry.addItem(selectedItem);
 	var newAry:ArrayCollection = new ArrayCollection();
 	for each(var item:Object in tempAry){
-		if(item.checkAmountSign=='8'||item.checkAmountSign=='9'){
+		if(item.checkAmountSign=='8'||item.checkAmountSign=='9'||item.checkAmountSign=='10'){
 			var materialProvideMaster:MaterialProvideMaster = new MaterialProvideMaster();
 			materialProvideMaster = MainToolBar.classTransfer(item,materialProvideMaster);
 			materialProvideMaster.currentStatus = '3'; //总务审核手工单
@@ -646,7 +646,7 @@ private function labFun(item:Object,column:DataGridColumn):String
 	
 	if (column.headerText == '是否批准')
 	{
-		var lab:String = item.checkAmountSign =='9'?"批准":item.checkAmountSign =='8'?"不批准":"";
+		var lab:String = item.checkAmountSign =='9'?"批准":item.checkAmountSign =='8'?"不批准":item.checkAmountSign =='10'?"院内调配":"";
 		reVal =lab
 	}
 	if (column.dataField == 'personId')

@@ -96,7 +96,7 @@
 															import mx.collections.ArrayCollection;
 															import mx.events.FlexEvent;
 															[Bindable]
-															public var tempArray:ArrayCollection = new ArrayCollection([{'k':'9','v':'批准'},{'k':'8','v':'不批准'},{'k':'0','v':''}]);
+															public var tempArray:ArrayCollection = new ArrayCollection([{'k':'9','v':'批准'},{'k':'8','v':'不批准'},{'k':'10','v':'院内调配'},{'k':'0','v':''}]);
 															protected function checkbox1_changeHandler(event:Event):void
 															{
 																data.checkAmountSign=this.selectedItem.k;
@@ -107,13 +107,13 @@
 																// TODO Auto-generated method stub
 																var ary:ArrayCollection = this.dataProvider as ArrayCollection;
 																this.enabled = (data.check2 =='2' ||  data.check3 =='2')?false:true;
-																this.selectedIndex = data.checkAmountSign == '9'?0:data.checkAmountSign == '8'?1:2
+																this.selectedIndex = data.checkAmountSign == '9'?0:data.checkAmountSign == '8'?1:data.checkAmountSign == '10'?2:3;
 															}
 															
 															override public function set data(value:Object):void
 															{
 																super.data = value;
-																this.selectedIndex = value.checkAmountSign == '9'?0:value.checkAmountSign == '8'?1:2
+																this.selectedIndex = value.checkAmountSign == '9'?0:value.checkAmountSign == '8'?1:data.checkAmountSign == '10'?2:3;
 															}
 															
 														]]>

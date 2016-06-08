@@ -86,15 +86,20 @@ public function doInit():void
 	initToolBar();
 	if (AppInfo.currentUserInfo.storageList != null && AppInfo.currentUserInfo.storageList.length > 0)
 	{
+		//		storageCode.dataProvider=AppInfo.currentUserInfo.storageList;
+		//		storageCode.selectedIndex=0;
+		
 		var result:ArrayCollection =ObjectUtil.copy(AppInfo.currentUserInfo.storageList) as ArrayCollection;
 		var newArray:ArrayCollection = new ArrayCollection();
+		var ss:Array = [];
 		for each(var it:Object in result){
 			if(it.type == '2'||it.type == '3'){
 				newArray.addItem(it);
 			}
 		}
-		storageCode.dataProvider=newArray;//AppInfo.currentUserInfo.storageList;
-		storageCode.selectedIndex=0;
+		ss = newArray.toArray().reverse().sortOn("storageCode",Array.DESCENDING);
+		storageCode.dataProvider=new ArrayCollection(ss);//AppInfo.currentUserInfo.storageList;
+		storageCode.selectedIndex=0;		
 	}
 }
 

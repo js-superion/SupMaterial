@@ -160,7 +160,7 @@ private function initPanel():void
 	bord.height=70;
 	hiddenVGroup.includeInLayout=false;
 	hiddenVGroup.visible=false;
-	//授权仓库赋值
+	//授权仓库赋值，并按编码倒序排列
 	if (AppInfo.currentUserInfo.storageList != null && AppInfo.currentUserInfo.storageList.length > 0)
 	{
 //		storageCode.dataProvider=AppInfo.currentUserInfo.storageList;
@@ -168,14 +168,15 @@ private function initPanel():void
 		
 		var result:ArrayCollection =ObjectUtil.copy(AppInfo.currentUserInfo.storageList) as ArrayCollection;
 		var newArray:ArrayCollection = new ArrayCollection();
+		var ss:Array = [];
 		for each(var it:Object in result){
 			if(it.type == '2'||it.type == '3'){
 				newArray.addItem(it);
 			}
 		}
-		storageCode.dataProvider=newArray;//AppInfo.currentUserInfo.storageList;
-		storageCode.selectedIndex=0;
-		
+		ss = newArray.toArray().reverse().sortOn("storageCode",Array.DESCENDING);
+		storageCode.dataProvider=new ArrayCollection(ss);//AppInfo.currentUserInfo.storageList;
+		storageCode.selectedIndex=0;		
 	}
 	//设置只读
 	setReadOnly(true);
