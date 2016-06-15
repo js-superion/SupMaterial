@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemEditor xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				  xmlns:s="library://ns.adobe.com/flex/spark"
+				  xmlns:mx="library://ns.adobe.com/flex/mx" width="100" height="20" 
+				  xmlns:components="com.superion.components.*">
+	
+	<fx:Script>
+		<![CDATA[
+			import cn.superion.base.config.ParameterObject;
+			import cn.superion.base.util.RemoteUtil;
+			
+			import com.adobe.utils.StringUtil;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			import mx.rpc.remoting.RemoteObject;
+			
+			import spark.events.IndexChangeEvent;
+
+			
+			override public function save():Boolean
+			{
+				this.data.currentStatus =txt.selectedItem;
+				//直接更新明细
+				var ary:ArrayCollection = new ArrayCollection();
+				ary.addItem(this.data);
+				var ro:RemoteObject = RemoteUtil.getRemoteObject("sendImpl",function(rev:Object):void{
+				});
+				ro.updateProviderDetail(ary);
+				// TODO Auto Generated method stub
+				return true;//关键点就在这里，不能调用父类的save
+			}
+			
+			protected function textinput1_changeHandler(event:IndexChangeEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			protected function txt_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				txt.selectedItem= data.currentStatus;
+				this.txt.textInput.editable = false;
+			}
+			
+			protected function griditemeditor1_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	
+	<s:ComboBox creationComplete="txt_creationCompleteHandler(event)" id="txt" dataProvider="{new ArrayCollection(['采购','院内调配','不批准'])}" width="100%" change="textinput1_changeHandler(event)"/>
+</s:GridItemEditor>

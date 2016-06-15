@@ -560,6 +560,21 @@ protected function verifyClickHandler(event:Event):void
 		Alert.show("请选择审核主记录", "提示");
 		return
 	}
+	
+	
+	var lstBloodRdsDetail:ArrayCollection=gridDetailList.dataProvider as ArrayCollection;
+	for (var i:int=0; i <= lstBloodRdsDetail.length - 1; i++)
+	{
+		if (lstBloodRdsDetail[i].currentStatus ==''||lstBloodRdsDetail[i].currentStatus ==null)
+		{
+			
+			Alert.show("第" + (i + 1) + "条物品审核状态不能为空", "提示");
+			gridDetailList.selectedIndex=i;
+			return ;
+		}
+		
+	}
+	
 	var ro:RemoteObject=RemoteUtil.getRemoteObject(DESTANATION, function(rev:Object):void
 	{
 		initToolBar();
@@ -567,6 +582,11 @@ protected function verifyClickHandler(event:Event):void
 		Alert.show("审核成功", "提示");
 	});
 	ro.updateSendMaterialMaster2(newAry,"3");
+	
+	
+	
+	
+	
 }
 
 /**
@@ -644,7 +664,7 @@ private function labFun(item:Object,column:DataGridColumn):String
 		reVal = fmt.format(item.billDate);
 	}
 	
-	if (column.headerText == '是否批准')
+	if (column.headerText == '是否通过')
 	{
 		var lab:String = item.checkAmountSign =='9'?"批准":item.checkAmountSign =='8'?"不批准":item.checkAmountSign =='10'?"院内调配":"";
 		reVal =lab

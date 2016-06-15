@@ -71,10 +71,7 @@
 									<!--<mx:DataGridColumn headerText="病区"
 													  dataField="wardCode" editable="false"
 													  labelFunction="labFun"
-													  width="120"/>-->
-									<mx:DataGridColumn headerText="单号"
-													  dataField="billNo" editable="false"
-													  width="90"/>
+													  width="120"/>-->									
 									<mx:DataGridColumn headerText="领用部门"
 													   labelFunction="labFun"
 													   dataField="deptCode" editable="false"
@@ -111,8 +108,7 @@
 															{
 																super.data = value;
 																this.selectedIndex = value.check2 == '2'?0:value.check2 == '1'?1:2
-															}
-															
+															}															
 														]]>
 													</fx:Script>
 												</mx:ComboBox>
@@ -155,8 +151,7 @@
 															{
 																super.data = value;
 																this.selectedIndex = value.check3 == '2'?0:value.check3 == '1'?1:2
-															}
-															
+															}															
 														]]>
 													</fx:Script>
 												</mx:ComboBox>
@@ -170,6 +165,12 @@
 									<mx:DataGridColumn headerText="总务意见" editable="true"
 													   dataField="remark1"
 													   width="70"/>
+									<mx:DataGridColumn headerText="申请原因"
+													   dataField="remark" editable="false"
+													   width="300"/>
+									<mx:DataGridColumn headerText="单号"
+													   dataField="billNo" editable="false"
+													   width="90"/>
 								</controls:columns>
 							</controls:SuperDataGrid>
 							<s:HGroup>
@@ -196,6 +197,10 @@
 											verticalScrollPolicy="auto">
 									<s:columns>
 										<s:ArrayList>
+											<s:GridColumn headerText="审批状态"
+														  dataField="currentStatus"
+														  editable="false"
+														  width="70"/>
 											<s:GridColumn headerText="物资名称"
 														  dataField="materialName"
 														  editable="false"

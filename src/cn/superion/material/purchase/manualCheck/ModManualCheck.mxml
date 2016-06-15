@@ -57,7 +57,7 @@
 					</s:HGroup>
 					<s:HGroup width="100%"
 							  height="100%">
-						<s:VGroup height="100%" width="50%">
+						<s:VGroup height="100%" width="40%">
 							<controls:SuperDataGrid id="gridMasterList"    width="100%" editable="true"
 													itemClick="findDetailByMainAutoId()"
 										height="100%" colorWhereColors="['0x3F48CC','0x3F48CC']" colorWhereField="currentStatus"
@@ -68,10 +68,7 @@
 									<!--<mx:DataGridColumn headerText="日期" editable="false"
 													   dataField="billDate"
 													   labelFunction="labFun"
-													   width="100"/>-->
-									<mx:DataGridColumn headerText="单号"
-													   dataField="billNo" editable="false"
-													   width="90"/>
+													   width="100"/>-->									
 									<mx:DataGridColumn headerText="领用部门"
 													   labelFunction="labFun"
 													   dataField="deptCode" editable="false"
@@ -80,9 +77,9 @@
 													   labelFunction="labFun"
 													   dataField="personId" editable="false"
 													   width="50"/>
-									<mx:DataGridColumn headerText="是否批准" editable="true"
+									<mx:DataGridColumn headerText="是否通过" editable="true"
 													   labelFunction="labFun"
-													  width="70">
+													  width="70">										
 										<mx:itemEditor>
 											<fx:Component>
 												<mx:ComboBox change="checkbox1_changeHandler(event)"
@@ -96,7 +93,7 @@
 															import mx.collections.ArrayCollection;
 															import mx.events.FlexEvent;
 															[Bindable]
-															public var tempArray:ArrayCollection = new ArrayCollection([{'k':'9','v':'批准'},{'k':'8','v':'不批准'},{'k':'10','v':'院内调配'},{'k':'0','v':''}]);
+															public var tempArray:ArrayCollection = new ArrayCollection([{'k':'9','v':'通过'},{'k':'8','v':'不通过'} /* ,{'k':'10','v':'院内调配'}  */,{'k':'0','v':''}]);
 															protected function checkbox1_changeHandler(event:Event):void
 															{
 																data.checkAmountSign=this.selectedItem.k;
@@ -123,6 +120,9 @@
 											</fx:Component>
 										</mx:itemEditor>
 									</mx:DataGridColumn>
+									<mx:DataGridColumn headerText="申请原因"
+													   dataField="remark" editable="false"
+													   width="300"/>									
 								<!--	<mx:DataGridColumn headerText="病区"
 													  dataField="wardCode" editable="false"
 													  labelFunction="labFun"
@@ -133,8 +133,10 @@
 													   width="300"/>-->
 									<mx:DataGridColumn headerText="院办意见" editable="false"
 													   dataField="remark2"
-													   width="300"/>
-									
+													   width="150"/>
+									<mx:DataGridColumn headerText="单号"
+													   dataField="billNo" editable="false"
+													   width="90"/>
 								</controls:columns>
 							</controls:SuperDataGrid>
 							<s:HGroup>
@@ -144,7 +146,7 @@
 							
 						</s:VGroup>
 						
-						<mx:TabNavigator width="50%"
+						<mx:TabNavigator width="60%"
 										 height="100%" >
 							<s:NavigatorContent
 									width="100%"
@@ -162,6 +164,11 @@
 											>
 									<s:columns>
 										<s:ArrayList>
+											<s:GridColumn headerText="审批状态"
+														  dataField="currentStatus"
+														  itemEditor="cn.superion.material.purchase.manualCheck.IEStatus"
+														  editable="true"
+														  width="70"/>
 											<s:GridColumn headerText="物资名称"
 														  dataField="materialName"
 														  editable="false"
@@ -186,11 +193,10 @@
 											<s:GridColumn headerText="备注"
 														  dataField="detailRemark"
 														  editable="false"
-														  width="200"/>
+														  width="350"/>
 											<s:GridColumn headerText=""
-														  dataField="detailRemark"
 														  editable="false"
-														  width="200"/>
+														  width="50"/>
 										</s:ArrayList>
 									</s:columns>
 								</s:DataGrid>
