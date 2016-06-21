@@ -919,13 +919,13 @@ private function printReport(printSign:String):void
 		dict["零售总额"]=lastItem.retailMoney.toFixed(2);
 		dict["单位名称"]=AppInfo.currentUserInfo.unitsName;
 		dict["仓库"]=storageCode.selectedItem.storageName;
-		dict["供货单位"]=_materialRdsMaster.salerName;
-		dict["请领部门"]=ArrayCollUtils.findItemInArrayByValue(BaseDict.deptDict, 'dept', _materialRdsMaster.deptCode) == null ? "" : ArrayCollUtils.findItemInArrayByValue(BaseDict.deptDict, 'dept', _materialRdsMaster.deptCode).deptName;
-		dict["出库日期"]=_materialRdsMaster.billDate;
-		dict["出库单号"]=_materialRdsMaster.billNo == null ? "" : _materialRdsMaster.billNo;
-		dict["月单号"]=_materialRdsMaster.billMonthNo;
+		dict["供货单位"]=_deliverRdsMaster.salerName;
+		dict["请领部门"]=ArrayCollUtils.findItemInArrayByValue(BaseDict.deptDict, 'dept', _deliverRdsMaster.deptCode) == null ? "" : ArrayCollUtils.findItemInArrayByValue(BaseDict.deptDict, 'dept', _deliverRdsMaster.deptCode).deptName;
+		dict["出库日期"]=_deliverRdsMaster.billDate;
+		dict["出库单号"]=_deliverRdsMaster.billNo == null ? "" : _deliverRdsMaster.billNo;
+		dict["月单号"]=_deliverRdsMaster.billMonthNo;
 		//dict["表尾第一行"]=createPrintFirstBottomLine(lastItem);
-		var makerv:String=shiftTo(_materialRdsMaster.maker);
+		var makerv:String=shiftTo(_deliverRdsMaster.maker);
 		dict["表尾第一行"]=createPrintFirstBottomLine1(verifier.text,personId.text,makerv);
 		loadReportXml("report/material/deliver/deliverOther_1.xml", dataList, dict,printSign)
 	}else{
@@ -939,11 +939,11 @@ private function printReport(printSign:String):void
 		dict["批发总额"]=lastItem.wholeSaleMoney.toFixed(2);
 		dict["零售总额"]=lastItem.retailMoney.toFixed(2);
 		dict["单位名称"]=AppInfo.currentUserInfo.unitsName;
-		dict["供货单位"]=_materialRdsMaster.salerName;
+		dict["供货单位"]=_deliverRdsMaster.salerName;
 		dict["仓库"]=storageCode.selectedItem.storageName;
 		dict["请领部门"]=ArrayCollUtils.findItemInArrayByValue(BaseDict.deptDict, 'dept', _materialRdsMaster.deptCode) == null ? "" : ArrayCollUtils.findItemInArrayByValue(BaseDict.deptDict, 'dept', _materialRdsMaster.deptCode).deptName;
-		dict["出库日期"]=_materialRdsMaster.billDate;
-		dict["出库单号"]=_materialRdsMaster.billNo == null ? "" : _materialRdsMaster.billNo;
+		dict["出库日期"]=_deliverRdsMaster.billDate;
+		dict["出库单号"]=_deliverRdsMaster.billNo == null ? "" : _deliverRdsMaster.billNo;
 		dict["表尾第一行"]=createPrintFirstBottomLine(lastItem);
 		loadReportXml("report/material/deliver/deliverOther.xml", dataList, dict,printSign)
 	}
@@ -1004,9 +1004,9 @@ private function preparePrintData(faryData:ArrayCollection):void
  * */
 private function createPrintFirstBottomLine(fLastItem:Object):String
 {
-	var lstrLine:String="领用人:{0}        会计:{1}        审核:{2}        制单:{3}"        ;
-	var makerv:String=shiftTo(_materialRdsMaster.maker);
-	var verifierv:String=shiftTo(_materialRdsMaster.verifier)
+	var lstrLine:String="领用人:{0}        会计:{1}        审核:{2}        制单:{3}    "        ;
+	var makerv:String=shiftTo(_deliverRdsMaster.maker);
+	var verifierv:String=shiftTo(_deliverRdsMaster.verifier)
 	lstrLine=StringUtils.format(lstrLine, "    ","    ","    ", makerv);
 	return lstrLine;
 }
@@ -1016,9 +1016,9 @@ private function createPrintFirstBottomLine(fLastItem:Object):String
  * */
 private function createPrintFirstBottomLine1(verifierName:String,personIdName:String,makerv:String):String
 {
-	var lstrLine:String="审核人:{0}               请领人:{1}               接收人:{2}               制单:{3}";
-	var makerv:String=shiftTo(_materialRdsMaster.maker);
-	var verifierv:String=shiftTo(_materialRdsMaster.verifier)
+	var lstrLine:String="审核人:{0}             请领人:{1}             接收人:{2}             制单:{3}    ";
+	var makerv:String=shiftTo(_deliverRdsMaster.maker);
+	var verifierv:String=shiftTo(_deliverRdsMaster.verifier)
 	lstrLine=StringUtils.format(lstrLine,verifierName,personIdName,"    ",makerv);
 	return lstrLine;
 }
@@ -1392,7 +1392,7 @@ protected function verifyClickHandler(event:Event):void
 						//表尾赋值
 						verifier.text=AppInfo.currentUserInfo.userName;
 						verifyDate.text=DateUtil.dateToString(new Date(), "YYYY-MM-DD");
-						findRdsById(rev.data[0].autoId);
+						findRdsById(rev.data[1].autoId);
 						Alert.show("其它出库单审核成功！", "提示信息");
 					});
 				ro.verifyRds(_materialRdsMaster.autoId);

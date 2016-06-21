@@ -157,6 +157,7 @@ protected function btConfirm_clickHandler(event:MouseEvent):void
 		}
 	}
 
+	params['remark'] = '1';
 	var paramsQuery:ParameterObject=new ParameterObject();
 	paramsQuery.conditions=params;
 
