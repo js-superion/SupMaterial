@@ -1049,6 +1049,7 @@ protected function addClickHandler(event:Event):void
 	setReadOnly(false);
 	//清空当前表单
 	clearForm(true, true);
+	salerCode.txtContent.text = '';
 	//表头赋值
 	//授权仓库赋值
 	if (AppInfo.currentUserInfo.storageList != null && AppInfo.currentUserInfo.storageList.length > 0)
@@ -1543,8 +1544,12 @@ public function findRdsById(fstrAutoId:String):void
 				var details:ArrayCollection=rev.data[1] as ArrayCollection;
 				storageCode.enabled=false;
 				if(rev.data.length>2){
-					if(rev.data[2]){
+					if(rev.data[0]){//chu
 						_deliverRdsMaster=rev.data[0] as MaterialRdsMaster;
+						
+					}
+					if(rev.data[2]){ //ru
+						_materialRdsMaster=rev.data[2] as MaterialRdsMaster;
 					}
 				}
 				

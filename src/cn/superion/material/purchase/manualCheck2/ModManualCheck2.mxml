@@ -75,8 +75,51 @@
 									<mx:DataGridColumn headerText="领用部门"
 													   labelFunction="labFun"
 													   dataField="deptCode" editable="false"
-													   width="120"/>
-									<mx:DataGridColumn headerText="上级意见" editable="false"
+													   width="120"/>									
+									<mx:DataGridColumn headerText="是否同意(采购)" editable="false"
+													   width="70">
+										<mx:itemRenderer>
+											<fx:Component>
+												<mx:ComboBox change="checkbox1_changeHandler(event)"
+															 enabled="true" 
+															 creationComplete="combobox1_creationCompleteHandler(event)"
+															 labelField="v"
+															 dataProvider="{tempArray}"
+															 textAlign="center">
+													<fx:Script>
+														<![CDATA[
+															import mx.collections.ArrayCollection;
+															import mx.events.FlexEvent;
+															[Bindable]
+															public var tempArray:ArrayCollection = new ArrayCollection([{'k':'2','v':'批准'},{'k':'1','v':'不批准'},{'k':'0','v':''}]);
+															protected function checkbox1_changeHandler(event:Event):void
+															{
+																data.check3=this.selectedItem.k;
+															}
+															
+															protected function combobox1_creationCompleteHandler(event:FlexEvent):void
+															{
+																// TODO Auto-generated method stub
+																var ary:ArrayCollection = this.dataProvider as ArrayCollection;
+																//																this.selectedIndex = data.checkAmountSign == '9'?0:data.checkAmountSign == '8'?1:2
+															}
+															
+															override public function set data(value:Object):void
+															{
+																super.data = value;
+																this.selectedIndex = value.check3 == '2'?0:value.check3 == '1'?1:2
+															}															
+														]]>
+													</fx:Script>
+												</mx:ComboBox>
+												
+											</fx:Component>
+										</mx:itemRenderer>
+									</mx:DataGridColumn>
+									<mx:DataGridColumn headerText="采购部门分管领导意见" editable="true"
+													   dataField="remark3"
+													   width="150"/>
+									<mx:DataGridColumn headerText="是否同意(申领)" editable="false"
 													   width="70">
 										<mx:itemRenderer>
 											<fx:Component>
@@ -118,49 +161,6 @@
 									</mx:DataGridColumn>
 									<mx:DataGridColumn headerText="申领部门分管领导意见" editable="true"
 													   dataField="remark2"
-													   width="150"/>
-									<mx:DataGridColumn headerText="院方意见" editable="false"
-													   width="70">
-										<mx:itemRenderer>
-											<fx:Component>
-												<mx:ComboBox change="checkbox1_changeHandler(event)"
-															 enabled="true" 
-															 creationComplete="combobox1_creationCompleteHandler(event)"
-															 labelField="v"
-															 dataProvider="{tempArray}"
-															 textAlign="center">
-													<fx:Script>
-														<![CDATA[
-															import mx.collections.ArrayCollection;
-															import mx.events.FlexEvent;
-															[Bindable]
-															public var tempArray:ArrayCollection = new ArrayCollection([{'k':'2','v':'批准'},{'k':'1','v':'不批准'},{'k':'0','v':''}]);
-															protected function checkbox1_changeHandler(event:Event):void
-															{
-																data.check3=this.selectedItem.k;
-															}
-															
-															protected function combobox1_creationCompleteHandler(event:FlexEvent):void
-															{
-																// TODO Auto-generated method stub
-																var ary:ArrayCollection = this.dataProvider as ArrayCollection;
-																//																this.selectedIndex = data.checkAmountSign == '9'?0:data.checkAmountSign == '8'?1:2
-															}
-															
-															override public function set data(value:Object):void
-															{
-																super.data = value;
-																this.selectedIndex = value.check3 == '2'?0:value.check3 == '1'?1:2
-															}															
-														]]>
-													</fx:Script>
-												</mx:ComboBox>
-												
-											</fx:Component>
-										</mx:itemRenderer>
-									</mx:DataGridColumn>
-									<mx:DataGridColumn headerText="管理部门分管领导意见" editable="true"
-													   dataField="remark3"
 													   width="150"/>
 									<mx:DataGridColumn headerText="总务意见" editable="true"
 													   dataField="remark1"
