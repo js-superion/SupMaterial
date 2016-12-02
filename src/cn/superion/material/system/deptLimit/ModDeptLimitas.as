@@ -3,6 +3,7 @@ import cn.superion.base.config.ParameterObject;
 import cn.superion.base.util.DateUtil;
 import cn.superion.base.util.PurviewUtil;
 import cn.superion.base.util.RemoteUtil;
+import cn.superion.material.util.DefaultPage;
 import cn.superion.vo.center.deptPerson.CdDeptDict;
 import cn.superion.vo.material.CdDeptLimit;
 
@@ -100,6 +101,11 @@ private function delUnitConfirm(evt:CloseEvent):void
 			});
 		remoteObj.delDeptVsUserById(lselItem.deptCode, lselItem.userCode);
 	}
+}
+/**返回*/
+private function exp():void
+{
+	DefaultPage.exportExcel(deptPerInfo,'科室限额报表')
 }
 
 /**返回*/

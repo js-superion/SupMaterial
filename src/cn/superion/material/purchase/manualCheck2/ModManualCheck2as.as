@@ -472,6 +472,7 @@ protected function printClickHandler(event:Event):void
 	map.billNo = selectedItem.billNo;
 	map.createPerson = AppInfo.currentUserInfo.userName;
 	map.deptName = selectedItem.deptName;
+	map.yzCheck = selectedItem.yzCheck;
 	map.remark = selectedItem.remark; //
 	map.dataProvider = details;
 	map.remark1 =  selectedItem.checkAmountSign=='8'?"不同意":selectedItem.checkAmountSign=='9'?"同意":selectedItem.checkAmountSign=='10'?"院内调配":"";

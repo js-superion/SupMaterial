@@ -94,7 +94,7 @@ private function initToolBar():void
 protected function queryClickHandler(event:Event):void
 {
 	var win:WinDeliverStatQuery=WinDeliverStatQuery(PopUpManager.createPopUp(this, WinDeliverStatQuery, true));
-	win.parentWin=this;
+	win.parentWin=this; 
 	FormUtils.centerWin(win);
 }
 
@@ -103,7 +103,7 @@ protected function queryClickHandler(event:Event):void
  * */
 protected function printClickHandler(event:Event):void
 {
-	printReport("1");
+	printReport("1"); 
 }
 
 /**
